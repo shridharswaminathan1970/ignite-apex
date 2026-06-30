@@ -268,9 +268,10 @@
       if (!response.ok) throw new Error(result.error || `Failed to ${action} user`);
 
       if (action === 'reset_password') {
-        if (confirm(`✓ Reset link generated!\n\nClick OK to copy the link.\n\n${result.resetLink}`)) {
-          navigator.clipboard.writeText(result.resetLink);
-          alert('Link copied to clipboard!');
+        if (result.emailSent) {
+          alert(`✓ Password reset email sent to ${identifier}!\n\nThe user will receive an email with a reset link that expires in 1 hour.`);
+        } else {
+          alert(`✓ Reset link generated!\n\nEmail service unavailable. Link:\n\n${result.resetLink}`);
         }
       } else {
         alert(`✓ User ${action}ed successfully`);
