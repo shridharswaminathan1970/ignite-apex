@@ -1,0 +1,519 @@
+ <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Console — IGNITE_APEX</title>
+  <link
+  href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet">
+  <style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;--t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;--amber:#F59E0B;--a
+  mber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444}
+  html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent
+  1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+  .header{background:var(--s1);border-bottom:1px solid var(--b1);padding:1rem 2rem;position:sticky;top:0;z-index:100}
+  .header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+  .header-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+  .user-badge{background:var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.75rem}
+  .btn{background:var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;border:1px solid
+  var(--b1);cursor:pointer;transition:all .2s;text-decoration:none}
+  .btn:hover{background:var(--amber);color:#000;border-color:var(--amber)}
+  .container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+  .page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.5rem}
+  .page-subtitle{color:var(--t3);margin-bottom:2rem}
+  .tab-btn{background:transparent;border:none;color:var(--t3);padding:.75rem
+  1.5rem;font-size:.85rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+  .tab-btn:hover{color:var(--t1)}
+  .tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+  .company-selector{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+  .form-select{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem
+  1rem;color:var(--t1);font-size:.9rem;font-family:inherit;width:100%;max-width:400px;cursor:pointer}
+  .form-select:focus{outline:none;border-color:var(--amber)}
+  .user-list{list-style:none;background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem}
+  .user-item{padding:1rem;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:start}
+  .user-item:last-child{border-bottom:none}
+  .user-name{font-weight:600;color:var(--t1);margin-bottom:.25rem}
+  .user-meta{font-size:.75rem;color:var(--t3);display:flex;gap:1rem;flex-wrap:wrap}
+  .role-badge{background:var(--b2);padding:.2rem
+  .5rem;border-radius:4px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .role-super_duper_admin{background:var(--red);color:#fff}
+  .role-super_admin{background:var(--red);color:#fff}
+  .role-admin{background:var(--amber);color:#000}
+  .role-admin_m{background:var(--blue);color:#fff}
+  .role-sdr{background:var(--green);color:#000}
+  .role-account_executive{background:var(--t3);color:var(--t1)}
+  .user-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  .btn-sm{padding:.4rem .75rem;font-size:.75rem;border-radius:6px;border:1px solid
+  var(--b1);background:var(--s2);color:var(--t2);cursor:pointer;transition:all .2s}
+  .btn-sm:hover{background:var(--b1);color:var(--t1)}
+  .btn-sm.btn-green{background:var(--green);color:#000;border:none}
+  .btn-sm.btn-green:hover{background:#059669}
+  .btn-danger{border-color:var(--red);color:var(--red)}
+  .btn-danger:hover{background:var(--red);color:#fff}
+  .loading{text-align:center;padding:3rem;color:var(--t2)}
+  .empty-state{text-align:center;padding:3rem;color:var(--t3)}
+  </style>
+  </head>
+  <body>
+
+  <div class="header">
+    <div class="header-content">
+      <div class="header-logo">IGNITE_APEX MASTER CONSOLE</div>
+      <div style="display:flex;align-items:center;gap:1.5rem">
+        <div class="user-badge">
+          <div id="master-name" style="color:var(--t1);font-weight:600">Loading...</div>
+          <div style="color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:.7rem">PLATFORM
+  MASTER</div>
+        </div>
+        <a href="./launcher.html" class="btn">Launcher</a>
+        <button class="btn" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1 class="page-title">Platform Administration</h1>
+    <p class="page-subtitle">Manage all companies and users across the platform</p>
+
+    <div style="display:flex;gap:1rem;margin-bottom:2rem;border-bottom:1px solid var(--b1)">
+      <button class="tab-btn active" onclick="switchTab('companies')">Companies & Users</button>
+      <button class="tab-btn" onclick="switchTab('registrations')">Pending Registrations</button>
+    </div>
+
+    <div id="tab-companies">
+      <div class="company-selector">
+        <label
+  style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem;display:block">Select
+  Company</label>
+        <select id="company-selector" class="form-select" onchange="loadCompany()">
+          <option value="">-- Select a company --</option>
+        </select>
+      </div>
+
+      <div id="loading" class="loading" style="display:none">Loading users...</div>
+      <div id="empty" class="empty-state" style="display:none">Select a company to view users</div>
+      <ul id="user-list" class="user-list" style="display:none"></ul>
+    </div>
+
+    <div id="tab-registrations" style="display:none">
+      <div id="registrations-loading" class="loading">Loading registration requests...</div>
+      <div id="registrations-empty" class="empty-state" style="display:none">No pending registrations</div>
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;display:none"
+  id="registrations-table">
+        <table style="width:100%;font-size:.85rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--b1)">
+              <th style="text-align:left;padding:.75rem;color:var(--t3);font-weight:600">Name</th>
+              <th style="text-align:left;padding:.75rem;color:var(--t3);font-weight:600">Email</th>
+              <th style="text-align:left;padding:.75rem;color:var(--t3);font-weight:600">Company</th>
+              <th style="text-align:left;padding:.75rem;color:var(--t3);font-weight:600">Requested</th>
+              <th style="text-align:right;padding:.75rem;color:var(--t3);font-weight:600">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="registrations-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="../supabase-client.js"></script>
+  <script>
+  let sb = null;
+
+  async function init() {
+    sb = window.supabaseClient;
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.replace('./auth.html');
+      return;
+    }
+
+    const { data: profile } = await sb.from('users').select('name, role').eq('id', session.user.id).single();
+
+    if (!profile || profile.role !== 'super_duper_admin') {
+      alert('Access denied. Super Duper Admin only.');
+      await sb.auth.signOut();
+      window.location.replace('./auth.html');
+      return;
+    }
+
+    document.getElementById('master-name').textContent = profile.name || session.user.email;
+    loadCompanies();
+  }
+
+  async function loadCompanies() {
+    const { data: orgs } = await sb.from('orgs').select('id, company_name').order('company_name');
+
+    const selector = document.getElementById('company-selector');
+    if (orgs) {
+      orgs.forEach(org => {
+        const option = document.createElement('option');
+        option.value = org.id;
+        option.textContent = org.company_name;
+        selector.appendChild(option);
+      });
+    }
+  }
+
+  async function loadCompany() {
+    const companyId = document.getElementById('company-selector').value;
+
+    if (!companyId) {
+      document.getElementById('empty').style.display = 'block';
+      document.getElementById('user-list').style.display = 'none';
+      document.getElementById('loading').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('empty').style.display = 'none';
+    document.getElementById('user-list').style.display = 'none';
+
+    // Auto-assign users without teams to Team Alpha
+    await ensureTeamAlpha(companyId);
+
+    const { data: users } = await sb.from('users').select('*').eq('org_id', companyId).order('name');
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (!users || users.length === 0) {
+      document.getElementById('empty').textContent = 'No users in this company';
+      document.getElementById('empty').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('user-list').style.display = 'block';
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+
+    users.forEach(user => {
+      const li = document.createElement('li');
+      li.className = 'user-item';
+      const status = user.status || 'active';
+      const statusBadge = status === 'suspended' ? '<span style="color:var(--amber)">⏸️ Suspended</span>' :
+                          status === 'deactivated' ? '<span style="color:var(--red)">🔴 Deactivated</span>' :
+                          user.is_active ? '<span style="color:var(--green)">🟢 Active</span>' : '<span style="color:var(--red)">🔴
+  Inactive</span>';
+
+      const userName = (user.name || user.email).replace(/'/g, "\\'");
+
+      li.innerHTML = `
+        <div>
+          <div class="user-name">${user.name || user.email}</div>
+          <div class="user-meta">
+            <span class="role-badge role-${user.role}">${user.role.replace(/_/g, ' ')}</span>
+            <span>📧 ${user.email}</span>
+            ${statusBadge}
+          </div>
+        </div>
+        <div class="user-actions">
+          <button class="btn-sm" onclick="editUser('${user.id}', '${userName}')">Edit</button>
+          <button class="btn-sm" onclick="transferUser('${user.id}', '${userName}')">Transfer</button>
+          <button class="btn-sm" onclick="promoteUser('${user.id}', '${userName}', '${user.role}')">Change Role</button>
+          <button class="btn-sm" onclick="manageUser('reset_password', '${user.id}', '${user.email}')">Reset Password</button>
+          ${status === 'active'
+            ? `<button class="btn-sm" onclick="manageUser('suspend', '${user.id}', '${userName}')">Suspend</button>
+               <button class="btn-sm" onclick="manageUser('deactivate', '${user.id}', '${userName}')">Deactivate</button>`
+            : `<button class="btn-sm btn-green" onclick="manageUser('reactivate', '${user.id}',
+  '${userName}')">Reactivate</button>`
+          }
+          <button class="btn-sm btn-danger" onclick="manageUser('delete', '${user.id}', '${userName}')">Delete</button>
+        </div>
+      `;
+
+      userList.appendChild(li);
+    });
+  }
+
+  async function ensureTeamAlpha(companyId) {
+    let { data: teamAlpha } = await sb.from('teams').select('id').eq('org_id', companyId).eq('name', 'Team Alpha').single();
+
+    if (!teamAlpha) {
+      const { data: newTeam } = await sb.from('teams').insert({ name: 'Team Alpha', org_id: companyId }).select().single();
+      teamAlpha = newTeam;
+    }
+
+    if (teamAlpha) {
+      await sb.from('users').update({ team_id: teamAlpha.id }).eq('org_id', companyId).is('team_id', null);
+    }
+  }
+
+  async function manageUser(action, userId, identifier) {
+    const labels = {
+      suspend: 'Suspend',
+      reactivate: 'Reactivate',
+      deactivate: 'Deactivate',
+      delete: 'Delete',
+      reset_password: 'Generate password reset for'
+    };
+
+    if (!confirm(`${labels[action]} user: ${identifier}?`)) return;
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const response = await fetch(`https://gokslnrvxqledagcwghq.supabase.co/functions/v1/manage-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ action, userId })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || `Failed to ${action} user`);
+
+      if (action === 'reset_password') {
+        if (confirm(`✓ Reset link generated!\n\nClick OK to copy the link.\n\n${result.resetLink}`)) {
+          navigator.clipboard.writeText(result.resetLink);
+          alert('Link copied to clipboard!');
+        }
+      } else {
+        alert(`✓ User ${action}ed successfully`);
+        loadCompany();
+      }
+    } catch (err) {
+      console.error(`[Master] ${action} error:`, err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  async function editUser(userId, currentName) {
+    const newName = prompt(`Edit user name:\n\nCurrent: ${currentName}`, currentName);
+    if (!newName || newName === currentName) return;
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const response = await fetch(`https://gokslnrvxqledagcwghq.supabase.co/functions/v1/manage-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'update',
+          userId,
+          updates: { name: newName }
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to update user');
+
+      alert('✓ User updated successfully');
+      loadCompany();
+    } catch (err) {
+      console.error('[Master] Edit user error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  async function transferUser(userId, userName) {
+    try {
+      const companyId = document.getElementById('company-selector').value;
+
+      const { data: teams } = await sb.from('teams').select('id, name').eq('org_id', companyId);
+      const { data: managers } = await sb.from('users').select('id, name, role').eq('org_id', companyId).in('role', ['super_admin',
+  'admin']);
+
+      if (!teams || teams.length === 0) {
+        alert('No teams found in this company. Create a team first.');
+        return;
+      }
+
+      if (!managers || managers.length === 0) {
+        alert('No managers (super_admin/admin) found in this company.');
+        return;
+      }
+
+      const teamOptions = teams.map(t => `${t.id}: ${t.name}`).join('\n');
+      const teamInput = prompt(`Transfer ${userName} to team:\n\nAvailable teams:\n${teamOptions}\n\nEnter team ID:`);
+      if (!teamInput) return;
+
+      const managerOptions = managers.map(m => `${m.id}: ${m.name} (${m.role})`).join('\n');
+      const managerInput = prompt(`Assign manager:\n\nAvailable managers:\n${managerOptions}\n\nEnter manager ID:`);
+      if (!managerInput) return;
+
+      const { data: { session } } = await sb.auth.getSession();
+      const response = await fetch(`https://gokslnrvxqledagcwghq.supabase.co/functions/v1/manage-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'transfer',
+          userId,
+          updates: { teamId: teamInput.trim(), managerId: managerInput.trim() }
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to transfer user');
+
+      alert('✓ User transferred successfully');
+      loadCompany();
+    } catch (err) {
+      console.error('[Master] Transfer error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  async function promoteUser(userId, userName, currentRole) {
+    const roles = ['sdr', 'account_executive', 'admin', 'admin_m', 'super_admin'];
+    const roleOptions = roles.map(r => r.replace(/_/g, ' ')).join(', ');
+
+    const newRole = prompt(`Change role for ${userName}:\n\nCurrent: ${currentRole}\n\nAvailable roles: ${roleOptions}\n\nEnter new
+  role (use underscores: admin_m, super_admin):`, currentRole);
+    if (!newRole || newRole === currentRole) return;
+
+    if (!roles.includes(newRole)) {
+      alert('Invalid role. Must be one of: ' + roles.join(', '));
+      return;
+    }
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const response = await fetch(`https://gokslnrvxqledagcwghq.supabase.co/functions/v1/manage-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'promote',
+          userId,
+          updates: { newRole }
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to change role');
+
+      alert(`✓ User role changed to ${newRole}`);
+      loadCompany();
+    } catch (err) {
+      console.error('[Master] Promote error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.getElementById('tab-companies').style.display = tab === 'companies' ? 'block' : 'none';
+    document.getElementById('tab-registrations').style.display = tab === 'registrations' ? 'block' : 'none';
+
+    if (tab === 'registrations') loadRegistrations();
+  }
+
+  async function loadRegistrations() {
+    const { data: requests } = await sb.from('registration_requests').select('*').eq('status', 'pending').order('requested_at', {
+  ascending: false });
+
+    document.getElementById('registrations-loading').style.display = 'none';
+
+    if (!requests || requests.length === 0) {
+      document.getElementById('registrations-empty').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('registrations-table').style.display = 'block';
+    const tbody = document.getElementById('registrations-tbody');
+    tbody.innerHTML = '';
+
+    requests.forEach(req => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--b1)';
+      tr.innerHTML = `
+        <td style="padding:.75rem">${req.full_name}</td>
+        <td style="padding:.75rem">${req.email}</td>
+        <td style="padding:.75rem">${req.company || 'NA'}</td>
+        <td style="padding:.75rem">${new Date(req.requested_at).toLocaleDateString()}</td>
+        <td style="padding:.75rem;text-align:right">
+          <button class="btn-sm btn-green" onclick="approveRegistration('${req.id}', '${req.full_name}', '${req.email}',
+  '${req.company || 'NA'}')">Approve</button>
+          <button class="btn-sm btn-danger" onclick="rejectRegistration('${req.id}', '${req.full_name}')">Reject</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function approveRegistration(requestId, fullName, email, company) {
+    if (!confirm(`Approve registration for ${fullName} (${email})?`)) return;
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const response = await fetch(`https://gokslnrvxqledagcwghq.supabase.co/functions/v1/generate-invite-link`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+          role: 'public',
+          crmEnabled: true
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to create user');
+
+      await sb.from('registration_requests').update({
+        status: 'approved',
+        approved_by: session.user.id,
+        approved_at: new Date().toISOString()
+      }).eq('id', requestId);
+
+      alert(`✓ Registration approved!\n\nSetup link generated:\n${result.setupLink}`);
+      if (confirm('Copy setup link to clipboard?')) {
+        navigator.clipboard.writeText(result.setupLink);
+      }
+
+      loadRegistrations();
+    } catch (err) {
+      console.error('[Master] Approve registration error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  async function rejectRegistration(requestId, fullName) {
+    const reason = prompt(`Reject registration for ${fullName}?\n\nOptional rejection reason:`);
+    if (reason === null) return;
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      await sb.from('registration_requests').update({
+        status: 'rejected',
+        approved_by: session.user.id,
+        approved_at: new Date().toISOString(),
+        rejection_reason: reason || 'No reason provided'
+      }).eq('id', requestId);
+
+      alert('✓ Registration rejected');
+      loadRegistrations();
+    } catch (err) {
+      console.error('[Master] Reject registration error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  async function logout() {
+    await sb.auth.signOut();
+    window.location.replace('./auth.html');
+  }
+
+  init();
+  </script>
+
+  </body>
+  </html>
