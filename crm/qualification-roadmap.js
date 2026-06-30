@@ -867,7 +867,32 @@ window.saveGateAnswer = async function(field) {
 };
 
 window.toggleGate = async function(field) {
-  const checked = document.getElementById(`check-${field}`).checked;
+  const checkbox = document.getElementById(`check-${field}`);
+  const checked = checkbox.checked;
+
+  // Warn if marking complete with weak evidence
+  if (checked) {
+    const strengthSlider = document.getElementById(`strength-${field}`);
+    const strength = strengthSlider ? parseInt(strengthSlider.value) : 3;
+
+    if (strength <= 2) {
+      const proceed = confirm(
+        '⚠️ Weak Evidence Warning\n\n' +
+        `This gate is scored ${strength}/5 (Weak).\n\n` +
+        'Consider:\n' +
+        '• Strengthening your evidence with specific details\n' +
+        '• Getting verification from multiple sources\n' +
+        '• Using AI Coaching to improve this answer\n\n' +
+        'Mark complete anyway?'
+      );
+
+      if (!proceed) {
+        checkbox.checked = false;
+        return;
+      }
+    }
+  }
+
   try {
     await window.supabaseClient
       .from('opportunities')
