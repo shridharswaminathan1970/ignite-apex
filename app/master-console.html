@@ -147,14 +147,14 @@
   }
 
   async function loadCompanies() {
-    const { data: orgs } = await sb.from('organisations').select('id, company_name').order('company_name');
+    const { data: orgs } = await sb.from('organisations').select('id, name').order('name');
 
     const selector = document.getElementById('company-selector');
     if (orgs) {
       orgs.forEach(org => {
         const option = document.createElement('option');
         option.value = org.id;
-        option.textContent = org.company_name;
+        option.textContent = org.name;
         selector.appendChild(option);
       });
     }
