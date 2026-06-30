@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Dashboard — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.header{background:var(--s1);border-bottom:1px solid var(--b1);padding:1.5rem 2rem;position:sticky;top:0;z-index:100}
+.header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.header-right{display:flex;align-items:center;gap:1.5rem}
+.user-badge{background:var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;position:relative}
+.user-role{color:var(--amber);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:1px}
+.user-menu-btn{background:var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:8px;border:1px solid var(--b1);cursor:pointer;display:flex;align-items:center;gap:.5rem;font-size:.85rem}
+.user-menu-btn:hover{background:var(--b1);color:var(--t1)}
+.user-dropdown{display:none;position:absolute;top:100%;right:0;margin-top:.5rem;background:var(--s1);border:1px solid var(--b1);border-radius:8px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200}
+.user-dropdown.active{display:block}
+.dropdown-item{padding:.75rem 1rem;font-size:.85rem;color:var(--t2);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--b1)}
+.dropdown-item:last-child{border-bottom:none}
+.dropdown-item:hover{background:var(--s2);color:var(--t1)}
+.dropdown-item.danger{color:var(--red)}
+.dropdown-item.danger:hover{background:rgba(239,68,68,.1)}
+
+.container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.tabs{display:flex;gap:.5rem;margin-bottom:2rem;border-bottom:1px solid var(--b1)}
+.tab{background:none;border:none;color:var(--t3);padding:1rem 1.5rem;font-size:.9rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:var(--t1)}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.section-title{font-size:1.5rem;font-weight:700}
+.btn-primary{background:var(--amber);color:#000;padding:.75rem 1.5rem;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s}
+.btn-primary:hover{background:var(--amber2)}
+.btn-secondary{background:var(--blue);color:#fff;padding:.75rem 1.5rem;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s}
+.btn-secondary:hover{opacity:.9}
+
+.search-filter{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.search-input{flex:1;min-width:250px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.9rem}
+.search-input:focus{outline:none;border-color:var(--amber)}
+.filter-select{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.9rem;min-width:150px}
+
+.table-container{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden}
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead{background:var(--s2)}
+.data-table th{padding:1rem;text-align:left;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1px solid var(--b1)}
+.data-table td{padding:1rem;border-bottom:1px solid var(--b1);color:var(--t2)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr:hover{background:var(--s2)}
+
+.role-badge{padding:.3rem .6rem;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:inline-block}
+.role-super_admin{background:var(--red);color:#fff}
+.role-admin{background:var(--amber);color:#000}
+.role-admin_m{background:var(--blue);color:#fff}
+.role-sdr{background:var(--green);color:#000}
+.role-account_executive{background:var(--t3);color:var(--t1)}
+
+.status-badge{padding:.3rem .6rem;border-radius:4px;font-size:.7rem;font-weight:700;display:inline-block}
+.status-active{background:var(--green);color:#000}
+.status-inactive{background:var(--t3);color:var(--t1)}
+
+.action-buttons{display:flex;gap:.5rem}
+.btn-icon{background:none;border:1px solid var(--b1);color:var(--t2);padding:.4rem .6rem;border-radius:6px;cursor:pointer;font-size:.75rem;transition:all .2s}
+.btn-icon:hover{background:var(--b1);color:var(--t1)}
+.btn-icon.danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;max-width:600px;width:90%;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-size:1.3rem;font-weight:700}
+.btn-close{background:none;border:none;color:var(--t3);font-size:1.5rem;cursor:pointer;padding:.25rem;line-height:1}
+.btn-close:hover{color:var(--t1)}
+
+.form-group{margin-bottom:1.5rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input,.form-select{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.85rem;color:var(--t1);font-size:.9rem;font-family:inherit}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--amber)}
+.form-hint{font-size:.75rem;color:var(--t3);margin-top:.5rem}
+
+.toggle-switch{position:relative;display:inline-block;width:48px;height:24px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--t3);border-radius:24px;transition:.3s}
+.toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked + .toggle-slider{background:var(--green)}
+input:checked + .toggle-slider:before{transform:translateX(24px)}
+
+.alert{padding:1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem}
+.alert.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.alert.error{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.alert.info{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+
+.loading{text-align:center;padding:3rem;color:var(--t2)}
+.empty-state{text-align:center;padding:3rem;color:var(--t3)}
+
+.team-list{display:grid;gap:1rem}
+.team-item{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1rem;display:flex;justify-content:space-between;align-items:center}
+.team-name{font-weight:600;font-size:1rem;color:var(--t1)}
+.team-count{font-size:.8rem;color:var(--t3)}
+.team-actions{display:flex;gap:.5rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-logo">IGNITE_APEX</div>
+    <div class="header-right">
+      <a href="../crm/index.html" style="background:var(--green);color:#000;padding:.75rem 1.5rem;border-radius:8px;font-weight:700;text-decoration:none;font-size:.85rem;transition:all .2s;display:flex;align-items:center;gap:.5rem" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+        📊 Go to CRM
+      </a>
+      <a href="../system/index.html" style="background:var(--blue);color:#fff;padding:.75rem 1.5rem;border-radius:8px;font-weight:700;text-decoration:none;font-size:.85rem;transition:all .2s;display:flex;align-items:center;gap:.5rem" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+        🎯 Sales OS
+      </a>
+      <div class="user-badge" style="position:relative">
+        <div style="position:relative">
+          <button class="user-menu-btn" onclick="toggleUserMenu()">
+            <span id="user-name">Loading...</span>
+            <span>▼</span>
+          </button>
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="dropdown-item" onclick="resetMyPassword()">
+              🔑 Reset My Password
+            </div>
+            <div class="dropdown-item danger" onclick="logout()">
+              🚪 Sign Out
+            </div>
+          </div>
+        </div>
+        <div class="user-role">Company Admin</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="loading" class="loading">Loading dashboard...</div>
+
+  <div id="dashboard-content" style="display:none">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('users')">Team Members</button>
+      <button class="tab" onclick="switchTab('teams')">Teams</button>
+      <button class="tab" onclick="switchTab('company')">Company Profile</button>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="users-tab" class="tab-content active">
+      <div class="section-header">
+        <h2 class="section-title">Team Members</h2>
+        <button class="btn-primary" onclick="openAddUserModal()">+ Add Member</button>
+      </div>
+
+      <div class="search-filter">
+        <input type="text" class="search-input" id="userSearch" placeholder="Search by name or email..." oninput="filterUsers()">
+        <select class="filter-select" id="roleFilter" onchange="filterUsers()">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="admin_m">Admin Manager</option>
+          <option value="sdr">SDR</option>
+          <option value="account_executive">Account Executive</option>
+        </select>
+        <select class="filter-select" id="statusFilter" onchange="filterUsers()">
+          <option value="">All Status</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <select class="filter-select" id="teamFilter" onchange="filterUsers()">
+          <option value="">All Teams</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Team</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="6" class="loading">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Teams Tab -->
+    <div id="teams-tab" class="tab-content">
+      <div class="section-header">
+        <h2 class="section-title">Teams</h2>
+        <button class="btn-primary" onclick="openCreateTeamModal()">+ Create Team</button>
+      </div>
+
+      <div class="team-list" id="teams-list">
+        <div class="loading">Loading teams...</div>
+      </div>
+    </div>
+
+    <!-- Company Tab -->
+    <div id="company-tab" class="tab-content">
+      <h2 class="section-title">Company Profile</h2>
+      <div class="table-container" style="padding:2rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem">
+          <div>
+            <div class="form-label">Company Name</div>
+            <div style="color:var(--t1);font-size:1rem" id="comp-name">-</div>
+          </div>
+          <div>
+            <div class="form-label">Address</div>
+            <div style="color:var(--t1);font-size:1rem" id="comp-address">-</div>
+          </div>
+          <div>
+            <div class="form-label">Contact Email</div>
+            <div style="color:var(--t1);font-size:1rem" id="comp-email">-</div>
+          </div>
+          <div>
+            <div class="form-label">Contact Phone</div>
+            <div style="color:var(--t1);font-size:1rem" id="comp-phone">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal" id="userModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="userModalTitle">Add Team Member</h3>
+      <button class="btn-close" onclick="closeUserModal()">&times;</button>
+    </div>
+    <div class="alert" id="userModalAlert" style="display:none"></div>
+    <form id="userForm" onsubmit="saveUser(event)">
+      <input type="hidden" id="userId">
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-input" id="userFormName" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="userFormEmail" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-select" id="userFormRole" required>
+          <option value="">Select role...</option>
+          <option value="admin">Admin (Team Manager)</option>
+          <option value="admin_m">Admin Manager (Read-only)</option>
+          <option value="sdr">SDR (Team Lead)</option>
+          <option value="account_executive">Account Executive</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Team</label>
+        <select class="form-select" id="userFormTeam" required>
+          <option value="">Select team...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Manager</label>
+        <select class="form-select" id="userFormManager">
+          <option value="">No manager (reports to super admin)</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:1rem">
+        <label class="toggle-switch">
+          <input type="checkbox" id="userFormActive" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <label for="userFormActive" style="cursor:pointer;margin:0">Active (can login)</label>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:1rem">
+        <label class="toggle-switch">
+          <input type="checkbox" id="userFormCRM" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <label for="userFormCRM" style="cursor:pointer;margin:0">CRM Access</label>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%" id="userFormSubmit">Save</button>
+    </form>
+    <div id="userFormResult" style="display:none;margin-top:1rem">
+      <div class="alert success">User created! Copy the setup link below and send it to them.</div>
+      <div style="background:var(--s2);padding:1rem;border-radius:8px">
+        <div class="form-label">Setup Link</div>
+        <textarea id="setupLinkText" readonly style="width:100%;background:var(--bg);border:1px solid var(--b1);border-radius:6px;padding:.75rem;color:var(--blue);font-size:.75rem;font-family:monospace;resize:vertical;min-height:80px"></textarea>
+        <button class="btn-icon" onclick="copySetupLink()" style="margin-top:.5rem">Copy Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Team Modal -->
+<div class="modal" id="teamModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Create New Team</h3>
+      <button class="btn-close" onclick="closeTeamModal()">&times;</button>
+    </div>
+    <div class="alert" id="teamModalAlert" style="display:none"></div>
+    <form id="teamForm" onsubmit="saveTeam(event)">
+      <div class="form-group">
+        <label class="form-label">Team Name</label>
+        <input type="text" class="form-input" id="teamFormName" required placeholder="e.g., Sales Team East">
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%">Create Team</button>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal" id="confirmModal">
+  <div class="modal-content" style="max-width:400px">
+    <div class="modal-header">
+      <h3 class="modal-title">Confirm Action</h3>
+      <button class="btn-close" onclick="closeConfirmModal()">&times;</button>
+    </div>
+    <p id="confirmMessage" style="color:var(--t2);margin-bottom:1.5rem"></p>
+    <div style="display:flex;gap:1rem">
+      <button class="btn-primary" onclick="closeConfirmModal()" style="flex:1;background:var(--b2);color:var(--t2)">Cancel</button>
+      <button class="btn-primary" onclick="confirmAction()" id="confirmBtn" style="flex:1;background:var(--red)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script>
+const SUPABASE_URL = 'https://gokslnrvxqledagcwghq.supabase.co';
+let sb = null;
+let currentUser = null;
+let currentOrg = null;
+let allUsers = [];
+let allTeams = [];
+let confirmCallback = null;
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) {
+      resolve(window.supabaseClient);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) {
+        clearInterval(interval);
+        resolve(window.supabaseClient);
+      }
+    }, 50);
+  });
+}
+
+async function init() {
+  try {
+    sb = await waitForSupabaseClient();
+    console.log('[Dashboard] Supabase client ready');
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = './auth.html';
+      return;
+    }
+
+    const { data: user, error } = await sb
+      .from('users')
+      .select('*, organisations(*)')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error || !user) {
+      alert('Error loading user profile');
+      return;
+    }
+
+    const normalizedRole = user.role.replace(/\s+/g, '_').toLowerCase();
+    if (normalizedRole !== 'super_admin') {
+      alert('Access denied. This page is for company administrators only.');
+      window.location.href = './launcher.html';
+      return;
+    }
+
+    currentUser = user;
+    currentOrg = user.organisations;
+
+    document.getElementById('user-name').textContent = user.name || user.email;
+
+    // Load company profile
+    document.getElementById('comp-name').textContent = currentOrg.name;
+    document.getElementById('comp-address').textContent = currentOrg.address || '-';
+    document.getElementById('comp-email').textContent = currentOrg.contact_email || '-';
+    document.getElementById('comp-phone').textContent = currentOrg.contact_phone || '-';
+
+    await loadTeams();
+    await loadUsers();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard-content').style.display = 'block';
+
+  } catch (err) {
+    console.error('[Dashboard] Init error:', err);
+    alert('Error initializing dashboard');
+  }
+}
+
+async function loadUsers() {
+  try {
+    const { data: users, error } = await sb
+      .from('users')
+      .select('*, teams(name)')
+      .eq('org_id', currentOrg.id)
+      .order('name');
+
+    if (error) throw error;
+
+    allUsers = users || [];
+    renderUsers();
+  } catch (err) {
+    console.error('[Dashboard] Load users error:', err);
+    document.getElementById('users-tbody').innerHTML = '<tr><td colspan="6" class="empty-state">Error loading users</td></tr>';
+  }
+}
+
+function renderUsers() {
+  const tbody = document.getElementById('users-tbody');
+  let filteredUsers = [...allUsers];
+
+  // Apply filters
+  const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+  const roleFilter = document.getElementById('roleFilter').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+  const teamFilter = document.getElementById('teamFilter').value;
+
+  if (searchTerm) {
+    filteredUsers = filteredUsers.filter(u =>
+      (u.name || '').toLowerCase().includes(searchTerm) ||
+      (u.email || '').toLowerCase().includes(searchTerm)
+    );
+  }
+
+  if (roleFilter) {
+    filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
+  }
+
+  if (statusFilter) {
+    filteredUsers = filteredUsers.filter(u => u.is_active.toString() === statusFilter);
+  }
+
+  if (teamFilter) {
+    filteredUsers = filteredUsers.filter(u => u.team_id === teamFilter);
+  }
+
+  if (filteredUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No users found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filteredUsers.map(user => `
+    <tr>
+      <td style="color:var(--t1);font-weight:600">${user.name || '-'}</td>
+      <td>${user.email}</td>
+      <td><span class="role-badge role-${user.role.replace(/\s+/g, '_')}">${user.role.replace(/_/g, ' ')}</span></td>
+      <td>${user.teams?.name || '-'}</td>
+      <td><span class="status-badge status-${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+      <td>
+        <div class="action-buttons">
+          <button class="btn-icon" onclick="editUser('${user.id}')" title="Edit">✏️</button>
+          <button class="btn-icon" onclick="toggleUserStatus('${user.id}', ${!user.is_active})" title="${user.is_active ? 'Deactivate' : 'Activate'}">
+            ${user.is_active ? '🔒' : '🔓'}
+          </button>
+          <button class="btn-icon" onclick="resetUserPassword('${user.id}')" title="Reset Password">🔑</button>
+          <button class="btn-icon danger" onclick="deleteUser('${user.id}', '${user.name || user.email}')" title="Delete">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers() {
+  renderUsers();
+}
+
+async function loadTeams() {
+  try {
+    const { data: teams, error } = await sb
+      .from('teams')
+      .select('*')
+      .eq('org_id', currentOrg.id)
+      .order('name');
+
+    if (error) throw error;
+
+    allTeams = teams || [];
+    renderTeams();
+    populateTeamFilters();
+  } catch (err) {
+    console.error('[Dashboard] Load teams error:', err);
+  }
+}
+
+function renderTeams() {
+  const list = document.getElementById('teams-list');
+
+  if (allTeams.length === 0) {
+    list.innerHTML = '<div class="empty-state">No teams yet. Create one to get started!</div>';
+    return;
+  }
+
+  list.innerHTML = allTeams.map(team => {
+    const memberCount = allUsers.filter(u => u.team_id === team.id).length;
+    return `
+      <div class="team-item">
+        <div>
+          <div class="team-name">${team.name}</div>
+          <div class="team-count">${memberCount} member${memberCount !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="team-actions">
+          <button class="btn-icon" onclick="renameTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}')" title="Rename">✏️</button>
+          <button class="btn-icon danger" onclick="deleteTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}', ${memberCount})" title="Delete">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function populateTeamFilters() {
+  const teamFilter = document.getElementById('teamFilter');
+  const userFormTeam = document.getElementById('userFormTeam');
+
+  const teamOptions = allTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
+  teamFilter.innerHTML = '<option value="">All Teams</option>' + teamOptions;
+  userFormTeam.innerHTML = '<option value="">Select team...</option>' + teamOptions;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+  document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`${tab}-tab`).classList.add('active');
+}
+
+function toggleUserMenu() {
+  document.getElementById('user-dropdown').classList.toggle('active');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.user-badge')) {
+    document.getElementById('user-dropdown').classList.remove('active');
+  }
+});
+
+function openAddUserModal() {
+  document.getElementById('userModalTitle').textContent = 'Add Team Member';
+  document.getElementById('userId').value = '';
+  document.getElementById('userForm').reset();
+  document.getElementById('userFormActive').checked = true;
+  document.getElementById('userFormCRM').checked = true;
+  document.getElementById('userFormResult').style.display = 'none';
+  document.getElementById('userModalAlert').style.display = 'none';
+
+  // Populate manager dropdown
+  const managerSelect = document.getElementById('userFormManager');
+  const admins = allUsers.filter(u => u.role === 'admin');
+  managerSelect.innerHTML = '<option value="">No manager (reports to super admin)</option>' +
+    admins.map(a => `<option value="${a.id}">${a.name || a.email}</option>`).join('');
+
+  document.getElementById('userModal').classList.add('active');
+}
+
+function editUser(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+
+  document.getElementById('userModalTitle').textContent = 'Edit Team Member';
+  document.getElementById('userId').value = user.id;
+  document.getElementById('userFormName').value = user.name || '';
+  document.getElementById('userFormEmail').value = user.email;
+  document.getElementById('userFormRole').value = user.role;
+  document.getElementById('userFormTeam').value = user.team_id || '';
+  document.getElementById('userFormManager').value = user.manager_id || '';
+  document.getElementById('userFormActive').checked = user.is_active;
+  document.getElementById('userFormCRM').checked = user.crm_enabled;
+  document.getElementById('userFormResult').style.display = 'none';
+  document.getElementById('userModalAlert').style.display = 'none';
+
+  // Populate manager dropdown
+  const managerSelect = document.getElementById('userFormManager');
+  const admins = allUsers.filter(u => u.role === 'admin' && u.id !== userId);
+  managerSelect.innerHTML = '<option value="">No manager (reports to super admin)</option>' +
+    admins.map(a => `<option value="${a.id}">${a.name || a.email}</option>`).join('');
+
+  document.getElementById('userModal').classList.add('active');
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('active');
+}
+
+async function saveUser(e) {
+  e.preventDefault();
+  const btn = document.getElementById('userFormSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const userId = document.getElementById('userId').value;
+  const name = document.getElementById('userFormName').value;
+  const email = document.getElementById('userFormEmail').value;
+  const role = document.getElementById('userFormRole').value;
+  const teamId = document.getElementById('userFormTeam').value;
+  const managerId = document.getElementById('userFormManager').value;
+  const isActive = document.getElementById('userFormActive').checked;
+  const crmEnabled = document.getElementById('userFormCRM').checked;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+
+    if (userId) {
+      // Update existing user
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/update-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId,
+          updates: {
+            name,
+            email,
+            role,
+            team_id: teamId || null,
+            manager_id: managerId || null,
+            is_active: isActive,
+            crm_enabled: crmEnabled
+          }
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to update user');
+
+      showAlert('userModalAlert', 'success', 'User updated successfully!');
+      await loadUsers();
+      setTimeout(() => closeUserModal(), 1500);
+
+    } else {
+      // Create new user
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-invite-link`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          role,
+          managerId: managerId || currentUser.id,
+          crmEnabled
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to create user');
+
+      // Show setup link
+      document.getElementById('setupLinkText').value = result.setupLink || result.inviteLink;
+      document.getElementById('userFormResult').style.display = 'block';
+      await loadUsers();
+    }
+
+  } catch (err) {
+    console.error('[Dashboard] Save user error:', err);
+    showAlert('userModalAlert', 'error', err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save';
+  }
+}
+
+async function toggleUserStatus(userId, newStatus) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/update-user`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userId,
+        updates: { is_active: newStatus }
+      })
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to update user');
+
+    await loadUsers();
+  } catch (err) {
+    console.error('[Dashboard] Toggle status error:', err);
+    alert('Error: ' + err.message);
+  }
+}
+
+async function resetUserPassword(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+
+  if (!confirm(`Send password reset link to ${user.email}?`)) return;
+
+  try {
+    const { error } = await sb.auth.admin.generateLink({
+      type: 'recovery',
+      email: user.email
+    });
+
+    if (error) throw error;
+
+    alert(`Password reset link sent to ${user.email}`);
+  } catch (err) {
+    console.error('[Dashboard] Reset password error:', err);
+    alert('Error: ' + err.message);
+  }
+}
+
+function deleteUser(userId, userName) {
+  if (userId === currentUser.id) {
+    alert('You cannot delete your own account');
+    return;
+  }
+
+  showConfirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`, async () => {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to delete user');
+
+      await loadUsers();
+    } catch (err) {
+      console.error('[Dashboard] Delete user error:', err);
+      alert('Error: ' + err.message);
+    }
+  });
+}
+
+function openCreateTeamModal() {
+  document.getElementById('teamForm').reset();
+  document.getElementById('teamModalAlert').style.display = 'none';
+  document.getElementById('teamModal').classList.add('active');
+}
+
+function closeTeamModal() {
+  document.getElementById('teamModal').classList.remove('active');
+}
+
+async function saveTeam(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  const teamName = document.getElementById('teamFormName').value;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-team`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'create',
+        teamName,
+        orgId: currentOrg.id
+      })
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to create team');
+
+    showAlert('teamModalAlert', 'success', 'Team created successfully!');
+    await loadTeams();
+    setTimeout(() => closeTeamModal(), 1500);
+
+  } catch (err) {
+    console.error('[Dashboard] Create team error:', err);
+    showAlert('teamModalAlert', 'error', err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Team';
+  }
+}
+
+async function renameTeam(teamId, currentName) {
+  const newName = prompt('Enter new team name:', currentName);
+  if (!newName || newName === currentName) return;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-team`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'rename',
+        teamId,
+        teamName: newName
+      })
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to rename team');
+
+    await loadTeams();
+  } catch (err) {
+    console.error('[Dashboard] Rename team error:', err);
+    alert('Error: ' + err.message);
+  }
+}
+
+function deleteTeam(teamId, teamName, memberCount) {
+  if (memberCount > 0) {
+    alert(`Cannot delete team "${teamName}" - it has ${memberCount} member(s). Please reassign them first.`);
+    return;
+  }
+
+  showConfirm(`Are you sure you want to delete team "${teamName}"?`, async () => {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-team`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'delete',
+          teamId
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to delete team');
+
+      await loadTeams();
+    } catch (err) {
+      console.error('[Dashboard] Delete team error:', err);
+      alert('Error: ' + err.message);
+    }
+  });
+}
+
+function showConfirm(message, callback) {
+  document.getElementById('confirmMessage').textContent = message;
+  confirmCallback = callback;
+  document.getElementById('confirmModal').classList.add('active');
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('active');
+  confirmCallback = null;
+}
+
+function confirmAction() {
+  if (confirmCallback) {
+    confirmCallback();
+  }
+  closeConfirmModal();
+}
+
+function showAlert(elementId, type, message) {
+  const alert = document.getElementById(elementId);
+  alert.className = `alert ${type}`;
+  alert.textContent = message;
+  alert.style.display = 'block';
+}
+
+function copySetupLink() {
+  const textarea = document.getElementById('setupLinkText');
+  textarea.select();
+  navigator.clipboard.writeText(textarea.value);
+  alert('Setup link copied to clipboard!');
+}
+
+async function resetMyPassword() {
+  if (!confirm(`Send password reset link to ${currentUser.email}?`)) return;
+
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(
+      currentUser.email,
+      { redirectTo: `${window.location.origin}/app/reset-password.html` }
+    );
+
+    if (error) throw error;
+
+    alert(`Password reset link sent to ${currentUser.email}. Check your inbox!`);
+  } catch (err) {
+    console.error('[Dashboard] Reset my password error:', err);
+    alert('Error sending reset email: ' + err.message);
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = './auth.html';
+}
+
+init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+Step,Action,Expected Result,Status,Notes
+1,Click “+ Provision New Company” button,Modal opens,Fail,"it goes into a screen which shows Error Loading Admin Panel
+Cannot read properties of undefined (reading 'auth')"
+2,Fill form:,,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+,Company Name: “Test Corp UAT”,Accepted,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+,Super Admin Email: “testadmin@test.com”,Accepted,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+,Super Admin Name: “Test Admin”,Accepted,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+3,Click “Create Company & Send Invite”,Success message appears,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+4,Check result,Shows invite link generated,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+5,Copy invite link,Link copied to clipboard,Fail,that above error comes and when I click the button go to dashboard it takes me https://shaamelz.com/app/ where users can sign in or new users can register…it shouldn’t be going there in the first place since go back to admin dashboard means its supposed to go back to master console page instead 
+6,Check company dropdown,“Test Corp UAT” now appears,,
+,,,,
+,,,,
+Results,status updated,,,
+Pass,No,,,
+Fail,YES,,,
+Partial,NA,,,
+Remarks,Failed completely so all actions steps failed,,,

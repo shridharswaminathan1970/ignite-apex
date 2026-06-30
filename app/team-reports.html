@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Reports — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.header{background:var(--s1);border-bottom:1px solid var(--b1);padding:1.5rem 2rem;position:sticky;top:0;z-index:100}
+.header-content{max-width:1600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.header-right{display:flex;align-items:center;gap:1.5rem}
+.user-badge{background:var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.8rem}
+.user-role{color:var(--amber);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:1px}
+.btn{background:var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;border:1px solid var(--b1);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+.btn:hover{background:var(--amber);color:#000;border-color:var(--amber)}
+
+.container{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding:2rem}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800}
+.page-subtitle{color:var(--t3);margin-top:.5rem}
+.btn-primary{background:var(--amber);color:#000;padding:.75rem 1.5rem;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem}
+.btn-primary:hover{background:var(--amber2)}
+
+.filters{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;margin-bottom:2rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.filter-group{display:flex;flex-direction:column;gap:.5rem;flex:1;min-width:200px}
+.filter-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3)}
+.filter-select{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.9rem;font-family:inherit;cursor:pointer}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-bottom:2rem}
+.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;position:relative}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber)}
+.stat-label{font-size:.75rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem}
+.stat-value{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--t1)}
+.stat-change{font-size:.75rem;margin-top:.5rem}
+.stat-change.positive{color:var(--green)}
+.stat-change.negative{color:var(--red)}
+
+.section{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;margin-bottom:2rem}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.section-title{font-size:1.3rem;font-weight:700}
+
+.table-container{overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;padding:.75rem 1rem;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1px solid var(--b1)}
+.data-table td{padding:.75rem 1rem;border-bottom:1px solid var(--b1);font-size:.85rem}
+.data-table tr:hover{background:var(--s2)}
+
+.rep-name{font-weight:600;color:var(--t1)}
+.status-badge{padding:.25rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.status-badge.open{background:var(--blue);color:#fff}
+.status-badge.won{background:var(--green);color:#fff}
+.status-badge.lost{background:var(--red);color:#fff}
+
+.pipeline-bar{height:24px;background:var(--s2);border-radius:12px;overflow:hidden;display:flex}
+.pipeline-segment{height:100%;transition:width .3s}
+.segment-prospect{background:var(--blue)}
+.segment-qualified{background:var(--purple)}
+.segment-proposal{background:var(--amber)}
+.segment-negotiation{background:var(--green)}
+
+.btn-sm{padding:.4rem .75rem;font-size:.75rem;border-radius:6px;border:1px solid var(--b1);background:var(--s2);color:var(--t2);cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:var(--b1);color:var(--t1)}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;max-width:700px;width:90%;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-size:1.3rem;font-weight:700}
+.btn-close{background:none;border:none;color:var(--t3);font-size:1.5rem;cursor:pointer;padding:.25rem;line-height:1}
+.btn-close:hover{color:var(--t1)}
+
+.form-group{margin-bottom:1.5rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input,.form-textarea{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.85rem;color:var(--t1);font-size:.9rem;font-family:inherit}
+.form-textarea{resize:vertical;min-height:120px}
+
+.alert{padding:1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem}
+.alert.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.alert.error{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.alert.info{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+
+.loading{text-align:center;padding:3rem;color:var(--t2)}
+.empty{text-align:center;padding:2rem;color:var(--t3)}
+
+.chart-container{height:300px;position:relative}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-logo">TEAM REPORTS</div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div id="user-name" style="color:var(--t1);font-weight:600">Loading...</div>
+        <div class="user-role" id="user-role">Supervisor</div>
+      </div>
+      <a href="./launcher.html" class="btn">← Back to Launcher</a>
+      <button class="btn" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="loading" class="loading">Loading team data...</div>
+
+  <div id="reports-content" style="display:none">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Team Performance</h1>
+        <p class="page-subtitle">View and analyze your team's sales activity</p>
+      </div>
+      <button class="btn-primary" onclick="openEmailReportModal()">📧 Email Report</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <label class="filter-label">Team Member</label>
+        <select class="filter-select" id="repFilter" onchange="applyFilters()">
+          <option value="">All Team Members</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Time Period</label>
+        <select class="filter-select" id="periodFilter" onchange="applyFilters()">
+          <option value="all">All Time</option>
+          <option value="30">Last 30 Days</option>
+          <option value="60">Last 60 Days</option>
+          <option value="90" selected>Last 90 Days</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Deal Status</label>
+        <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+          <option value="">All Statuses</option>
+          <option value="open">Open</option>
+          <option value="won">Closed Won</option>
+          <option value="lost">Closed Lost</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Pipeline Value</div>
+        <div class="stat-value" id="stat-pipeline">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Deals Closed Won</div>
+        <div class="stat-value" id="stat-won">0</div>
+        <div class="stat-change positive" id="stat-won-value">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Opportunities</div>
+        <div class="stat-value" id="stat-active">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-value" id="stat-winrate">0%</div>
+      </div>
+    </div>
+
+    <!-- Team Performance Table -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Team Member Performance</h2>
+      </div>
+      <div class="table-container">
+        <table class="data-table" id="team-table">
+          <thead>
+            <tr>
+              <th>Rep</th>
+              <th>Active Deals</th>
+              <th>Pipeline Value</th>
+              <th>Closed Won</th>
+              <th>Closed Lost</th>
+              <th>Win Rate</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="team-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Deals List -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Recent Deals</h2>
+      </div>
+      <div class="table-container">
+        <table class="data-table" id="deals-table">
+          <thead>
+            <tr>
+              <th>Deal Name</th>
+              <th>Owner</th>
+              <th>Value</th>
+              <th>Stage</th>
+              <th>Status</th>
+              <th>Last Updated</th>
+            </tr>
+          </thead>
+          <tbody id="deals-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Report Modal -->
+<div class="modal" id="emailReportModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Email Team Report</h3>
+      <button class="btn-close" onclick="closeEmailReportModal()">&times;</button>
+    </div>
+
+    <div class="alert" id="email-alert" style="display:none"></div>
+
+    <form id="emailReportForm" onsubmit="handleEmailReport(event)">
+      <div class="form-group">
+        <label class="form-label">Report For</label>
+        <select class="filter-select" id="emailRepFilter" required>
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Send To (Your Email)</label>
+        <input type="email" class="form-input" id="emailTo" readonly>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CC: Admin Management</label>
+        <input type="text" class="form-input" id="emailCcAdmin" readonly>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CC: Rep</label>
+        <input type="email" class="form-input" id="emailCcRep" readonly>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Additional Notes (Optional)</label>
+        <textarea class="form-textarea" id="emailNotes" placeholder="Add any context or comments..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width:100%" id="emailBtn">Send Report</button>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script>
+const sb = window.supabaseClient;
+const SUPABASE_URL = window.SUPABASE_URL;
+
+let currentUser = null;
+let teamMembers = [];
+let allDeals = [];
+let filteredData = {
+  deals: [],
+  teamStats: []
+};
+
+async function init() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = './auth.html';
+      return;
+    }
+
+    const { data: user, error } = await sb
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error || !user) {
+      alert('Error loading user profile');
+      return;
+    }
+
+    // Check if user can view reports (super_admin, admin, admin_m, sdr)
+    if (!['super_admin', 'admin', 'admin_m', 'sdr'].includes(user.role)) {
+      alert('Access denied. This page is for supervisors only.');
+      window.location.href = './launcher.html';
+      return;
+    }
+
+    currentUser = user;
+    document.getElementById('user-name').textContent = user.name || user.email;
+    document.getElementById('user-role').textContent = user.role.replace(/_/g, ' ');
+
+    // Load team members (RLS will auto-filter to downline)
+    await loadTeamMembers();
+
+    // Load deals (RLS will auto-filter to managed users)
+    await loadDeals();
+
+    // Apply initial filters
+    applyFilters();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('reports-content').style.display = 'block';
+
+  } catch (err) {
+    console.error('[Reports] Init error:', err);
+    alert('Error initializing reports');
+  }
+}
+
+async function loadTeamMembers() {
+  try {
+    // RLS automatically filters to users we manage
+    const { data: users, error } = await sb
+      .from('users')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .order('name');
+
+    if (error) throw error;
+
+    teamMembers = users || [];
+
+    // Populate filter dropdowns
+    const repFilter = document.getElementById('repFilter');
+    const emailRepFilter = document.getElementById('emailRepFilter');
+
+    teamMembers.forEach(user => {
+      if (user.id !== currentUser.id) { // Exclude self
+        const option1 = document.createElement('option');
+        option1.value = user.id;
+        option1.textContent = `${user.name || user.email} (${user.role})`;
+        repFilter.appendChild(option1);
+
+        const option2 = option1.cloneNode(true);
+        emailRepFilter.appendChild(option2);
+      }
+    });
+
+  } catch (err) {
+    console.error('[Reports] Load team error:', err);
+    alert('Error loading team members');
+  }
+}
+
+async function loadDeals() {
+  try {
+    // Load all deal types - RLS will filter to deals owned by managed users
+    const { data: deals, error } = await sb
+      .from('deals')
+      .select(`
+        *,
+        users!deals_assigned_to_fkey(name, email)
+      `)
+      .eq('org_id', currentUser.org_id)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    allDeals = deals || [];
+
+  } catch (err) {
+    console.error('[Reports] Load deals error:', err);
+    // RLS might prevent access, that's ok
+    allDeals = [];
+  }
+}
+
+function applyFilters() {
+  const repId = document.getElementById('repFilter').value;
+  const period = document.getElementById('periodFilter').value;
+  const status = document.getElementById('statusFilter').value;
+
+  let deals = [...allDeals];
+
+  // Filter by rep
+  if (repId) {
+    deals = deals.filter(d => d.assigned_to === repId);
+  }
+
+  // Filter by period
+  if (period !== 'all') {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - parseInt(period));
+    deals = deals.filter(d => new Date(d.updated_at) >= cutoff);
+  }
+
+  // Filter by status
+  if (status) {
+    if (status === 'open') {
+      deals = deals.filter(d => d.status !== 'won' && d.status !== 'lost');
+    } else {
+      deals = deals.filter(d => d.status === status);
+    }
+  }
+
+  filteredData.deals = deals;
+  calculateTeamStats();
+  updateDashboard();
+}
+
+function calculateTeamStats() {
+  const statsByRep = {};
+
+  filteredData.deals.forEach(deal => {
+    const repId = deal.assigned_to;
+    if (!statsByRep[repId]) {
+      statsByRep[repId] = {
+        repId: repId,
+        repName: deal.users?.name || 'Unknown',
+        repEmail: deal.users?.email || '',
+        activeDeals: 0,
+        pipelineValue: 0,
+        closedWon: 0,
+        wonValue: 0,
+        closedLost: 0,
+        lostValue: 0
+      };
+    }
+
+    const value = parseFloat(deal.amount || 0);
+
+    if (deal.status === 'won') {
+      statsByRep[repId].closedWon++;
+      statsByRep[repId].wonValue += value;
+    } else if (deal.status === 'lost') {
+      statsByRep[repId].closedLost++;
+      statsByRep[repId].lostValue += value;
+    } else {
+      statsByRep[repId].activeDeals++;
+      statsByRep[repId].pipelineValue += value;
+    }
+  });
+
+  filteredData.teamStats = Object.values(statsByRep);
+}
+
+function updateDashboard() {
+  // Update stats cards
+  const totalPipeline = filteredData.deals
+    .filter(d => d.status !== 'won' && d.status !== 'lost')
+    .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+  const closedWon = filteredData.deals.filter(d => d.status === 'won');
+  const wonValue = closedWon.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+  const activeDeals = filteredData.deals.filter(d => d.status !== 'won' && d.status !== 'lost').length;
+
+  const totalClosed = closedWon.length + filteredData.deals.filter(d => d.status === 'lost').length;
+  const winRate = totalClosed > 0 ? ((closedWon.length / totalClosed) * 100).toFixed(1) : 0;
+
+  document.getElementById('stat-pipeline').textContent = formatCurrency(totalPipeline);
+  document.getElementById('stat-won').textContent = closedWon.length;
+  document.getElementById('stat-won-value').textContent = formatCurrency(wonValue);
+  document.getElementById('stat-active').textContent = activeDeals;
+  document.getElementById('stat-winrate').textContent = `${winRate}%`;
+
+  // Update team table
+  renderTeamTable();
+
+  // Update deals table
+  renderDealsTable();
+}
+
+function renderTeamTable() {
+  const tbody = document.getElementById('team-tbody');
+  tbody.innerHTML = '';
+
+  if (filteredData.teamStats.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No data for selected filters</td></tr>';
+    return;
+  }
+
+  filteredData.teamStats.forEach(stat => {
+    const totalClosed = stat.closedWon + stat.closedLost;
+    const winRate = totalClosed > 0 ? ((stat.closedWon / totalClosed) * 100).toFixed(1) : 0;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rep-name">${stat.repName}</span></td>
+      <td>${stat.activeDeals}</td>
+      <td>${formatCurrency(stat.pipelineValue)}</td>
+      <td>${stat.closedWon} (${formatCurrency(stat.wonValue)})</td>
+      <td>${stat.closedLost} (${formatCurrency(stat.lostValue)})</td>
+      <td>${winRate}%</td>
+      <td><button class="btn-sm" onclick="emailIndividualReport('${stat.repId}', '${stat.repName}', '${stat.repEmail}')">Email Report</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderDealsTable() {
+  const tbody = document.getElementById('deals-tbody');
+  tbody.innerHTML = '';
+
+  const recent = filteredData.deals.slice(0, 20);
+
+  if (recent.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No deals for selected filters</td></tr>';
+    return;
+  }
+
+  recent.forEach(deal => {
+    let statusClass = 'open';
+    if (deal.status === 'won') statusClass = 'won';
+    if (deal.status === 'lost') statusClass = 'lost';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${deal.title || 'Untitled Deal'}</strong></td>
+      <td>${deal.users?.name || 'Unknown'}</td>
+      <td>${formatCurrency(deal.amount || 0)}</td>
+      <td>${deal.stage || '-'}</td>
+      <td><span class="status-badge ${statusClass}">${deal.status || 'open'}</span></td>
+      <td>${formatDate(deal.updated_at)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function openEmailReportModal() {
+  document.getElementById('emailTo').value = currentUser.email;
+  document.getElementById('emailCcAdmin').value = 'admin@company.com'; // TODO: fetch actual admin email
+  document.getElementById('emailReportModal').classList.add('active');
+}
+
+function closeEmailReportModal() {
+  document.getElementById('emailReportModal').classList.remove('active');
+  document.getElementById('emailReportForm').reset();
+  document.getElementById('email-alert').style.display = 'none';
+}
+
+function emailIndividualReport(repId, repName, repEmail) {
+  document.getElementById('emailRepFilter').value = repId;
+  document.getElementById('emailCcRep').value = repEmail;
+  openEmailReportModal();
+}
+
+async function handleEmailReport(e) {
+  e.preventDefault();
+  const btn = document.getElementById('emailBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const repId = document.getElementById('emailRepFilter').value;
+    const notes = document.getElementById('emailNotes').value;
+
+    // Filter deals for this rep
+    const repDeals = allDeals.filter(d => d.assigned_to === repId);
+    const rep = teamMembers.find(u => u.id === repId);
+
+    // Generate report summary
+    const reportData = {
+      rep: rep.name || rep.email,
+      period: document.getElementById('periodFilter').selectedOptions[0].text,
+      totalDeals: repDeals.length,
+      activeDeals: repDeals.filter(d => d.status !== 'won' && d.status !== 'lost').length,
+      closedWon: repDeals.filter(d => d.status === 'won').length,
+      closedLost: repDeals.filter(d => d.status === 'lost').length,
+      pipelineValue: repDeals.filter(d => d.status !== 'won' && d.status !== 'lost').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0),
+      wonValue: repDeals.filter(d => d.status === 'won').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0),
+      notes: notes
+    };
+
+    const { data: { session } } = await sb.auth.getSession();
+
+    // Call email report Edge Function
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/send-team-report`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(reportData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to send report');
+    }
+
+    showEmailAlert('success', '✓ Report sent successfully!');
+    setTimeout(() => {
+      closeEmailReportModal();
+    }, 2000);
+
+  } catch (err) {
+    console.error('[Reports] Email error:', err);
+    showEmailAlert('error', err.message);
+    btn.disabled = false;
+    btn.textContent = 'Send Report';
+  }
+}
+
+function showEmailAlert(type, message) {
+  const alert = document.getElementById('email-alert');
+  alert.className = `alert ${type}`;
+  alert.textContent = message;
+  alert.style.display = 'block';
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value || 0);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  return date.toLocaleDateString();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = './auth.html';
+}
+
+init();
+</script>
+
+</body>
+</html>

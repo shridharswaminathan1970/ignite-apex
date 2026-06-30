@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Debug - Supabase Connection</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+.success { color: #0f0; }
+.error { color: #f00; }
+.info { color: #0ff; }
+h2 { color: #ff0; margin-top: 20px; }
+pre { background: #000; padding: 10px; border: 1px solid #333; overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<h1>🔍 Supabase Debug Page</h1>
+
+<div id="output"></div>
+
+<script>
+const output = document.getElementById('output');
+
+function log(msg, type = 'info') {
+  const div = document.createElement('div');
+  div.className = type;
+  div.textContent = msg;
+  output.appendChild(div);
+  console.log(msg);
+}
+
+async function runDebug() {
+  log('=== STEP 1: Check if Supabase SDK loads ===', 'info');
+
+  try {
+    if (typeof window.supabase === 'undefined') {
+      log('❌ window.supabase is undefined', 'error');
+      log('⏳ Loading Supabase SDK...', 'info');
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+      script.onload = () => {
+        log('✅ Supabase SDK loaded', 'success');
+        continueDebug();
+      };
+      script.onerror = () => {
+        log('❌ Failed to load Supabase SDK from CDN', 'error');
+      };
+      document.head.appendChild(script);
+    } else {
+      log('✅ window.supabase already exists', 'success');
+      continueDebug();
+    }
+  } catch (err) {
+    log('❌ Error in step 1: ' + err.message, 'error');
+    log('Stack: ' + err.stack, 'error');
+  }
+}
+
+async function continueDebug() {
+  log('\n=== STEP 2: Create Supabase Client ===', 'info');
+
+  try {
+    const SUPABASE_URL = 'https://gokslnrvxqledagcwghq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva3NsbnJ2eHFsZWRhZ2N3Z2hxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NzU1NDksImV4cCI6MjA5MjE1MTU0OX0.1FqlAQ51IdgDSksDFswdARTb3aFEXQL5m7ZrUzMY69w';
+
+    log('Creating client with URL: ' + SUPABASE_URL, 'info');
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    log('✅ Supabase client created', 'success');
+
+    log('\n=== STEP 3: Check Auth Session ===', 'info');
+
+    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      log('❌ Session error: ' + sessionError.message, 'error');
+    } else if (!sessionData.session) {
+      log('⚠️ No active session - user not logged in', 'error');
+      log('Redirect to: /app/auth.html to login', 'info');
+    } else {
+      log('✅ Session found!', 'success');
+      log('Auth User ID: ' + sessionData.session.user.id, 'success');
+      log('Auth Email: ' + sessionData.session.user.email, 'success');
+
+      log('\n=== STEP 4: Fetch User Profile from Database ===', 'info');
+
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('users')
+        .select('*')
+        .eq('id', sessionData.session.user.id)
+        .single();
+
+      if (profileError) {
+        log('❌ Profile error: ' + profileError.message, 'error');
+        log('Error details: ' + JSON.stringify(profileError), 'error');
+      } else if (!profile) {
+        log('❌ No profile found in users table', 'error');
+      } else {
+        log('✅ Profile loaded successfully!', 'success');
+        log('\nProfile Data:', 'success');
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(profile, null, 2);
+        output.appendChild(pre);
+
+        log('\n=== SUCCESS! ===', 'success');
+        log('✅ User ID: ' + profile.id, 'success');
+        log('✅ Name: ' + profile.name, 'success');
+        log('✅ Email: ' + profile.email, 'success');
+        log('✅ Role: ' + profile.role, 'success');
+        log('✅ Org ID: ' + profile.org_id, 'success');
+      }
+    }
+
+  } catch (err) {
+    log('❌ ERROR: ' + err.message, 'error');
+    log('Stack: ' + err.stack, 'error');
+
+    // Check for CSP error
+    if (err.message.includes('eval') || err.message.includes('CSP')) {
+      log('\n⚠️ CSP ERROR DETECTED!', 'error');
+      log('The Content Security Policy is blocking script execution.', 'error');
+      log('This is the root cause of the problem.', 'error');
+    }
+  }
+}
+
+// Start debug
+log('Starting debug...', 'info');
+runDebug();
+</script>
+
+</body>
+</html>

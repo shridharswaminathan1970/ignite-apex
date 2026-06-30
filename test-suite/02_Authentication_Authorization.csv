@@ -1,0 +1,51 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+AUTH-001,Login - Valid Credentials,Functional,User account exists (from REG-010),"1. Navigate to /app/auth.html
+2. Enter email and password
+3. Click 'Sign In'","1. Authentication successful
+2. Session created
+3. Redirected to /app/launcher.html
+4. User name displayed in topbar",,Pending,Critical,Basic login test
+AUTH-002,Login - Invalid Password,Negative,User account exists,"1. Navigate to /app/auth.html
+2. Enter correct email
+3. Enter wrong password
+4. Click 'Sign In'","Error: 'Invalid credentials' or similar
+User NOT logged in
+Stays on login page",,Pending,High,Tests password verification
+AUTH-003,Login - Non-existent Email,Negative,None,"1. Navigate to /app/auth.html
+2. Enter non-registered email
+3. Enter any password
+4. Click 'Sign In'","Error: 'User not found' or 'Invalid credentials'
+User NOT logged in",,Pending,High,Tests account existence check
+AUTH-004,Logout,Functional,User logged in,"1. Click user menu in topbar
+2. Click 'Sign Out'","1. Session destroyed
+2. Redirected to /app/auth.html
+3. Cannot access protected pages
+4. Accessing /crm redirects to login",,Pending,Critical,Tests logout flow
+AUTH-005,Session Persistence,Functional,User logged in,"1. Login successfully
+2. Close browser tab
+3. Reopen and navigate to /app/launcher.html","User still logged in
+Session persists
+No re-login required",,Pending,Medium,Tests session storage
+AUTH-006,Password Reset Request,Functional,User account exists,"1. Navigate to /app/auth.html
+2. Click 'Forgot Password'
+3. Enter email
+4. Submit","1. Success message shown
+2. Password reset email sent
+3. Email contains reset link
+4. Link valid for 24 hours",,Pending,High,Tests password recovery
+AUTH-007,Password Reset Complete,Functional,AUTH-006 passed,"1. Click reset link from email
+2. Enter new password
+3. Confirm new password
+4. Submit","1. Password updated
+2. Redirected to login
+3. Can login with new password
+4. Old password no longer works",,Pending,High,End-to-end password reset
+AUTH-008,Role-Based Redirect - Super Duper Admin,Functional,Logged in as muhammad.shaamel@gmail.com,"1. Login as Super Duper Admin
+2. Navigate to /app/launcher.html","Auto-redirected to /app/master-console.html
+Does not stay on launcher",,Pending,Critical,Tests admin routing
+AUTH-009,Role-Based Redirect - Company Super Admin,Functional,Logged in as Company Super Admin,"1. Login as Super Admin of a company
+2. Navigate to /app/launcher.html","Auto-redirected to /app/company-dashboard.html
+Does not stay on launcher",,Pending,High,Tests company admin routing
+AUTH-010,Protected Route Access Without Login,Negative,No user logged in,"1. Navigate directly to /crm/index.html
+2. Do NOT login","Redirected to /app/auth.html
+Cannot access CRM without authentication",,Pending,Critical,Tests route protection

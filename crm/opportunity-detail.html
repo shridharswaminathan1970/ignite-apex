@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opportunity Detail — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+.tb-nav a.active{color:var(--amber)}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem}
+.opp-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1)}
+.opp-subtitle{font-size:.85rem;color:var(--t2);margin-top:.5rem}
+.stage-badge{display:inline-block;background:var(--s2);border:2px solid var(--amber);color:var(--amber);padding:.5rem 1rem;border-radius:8px;font-size:.85rem;font-weight:700;margin-top:.5rem}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.metric-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.25rem}
+.metric-label{font-size:.7rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
+.metric-value{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--green)}
+
+.tabs{display:flex;gap:1rem;border-bottom:2px solid var(--b1);margin-bottom:2rem}
+.tab{padding:.75rem 1.5rem;font-size:.85rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab:hover{color:var(--t2)}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.section{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.section-title{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:1rem}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.form-group{margin-bottom:1.25rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:.65rem;color:var(--t1);font-size:.85rem;font-family:inherit}
+.form-input:focus{outline:none;border-color:var(--amber)}
+textarea.form-input{min-height:100px;resize:vertical}
+
+.btn-primary{background:var(--amber);color:#000;padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--amber2)}
+
+.checklist{list-style:none}
+.checklist li{padding:.75rem;background:var(--s2);border:1px solid var(--b1);border-radius:6px;margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem;cursor:pointer}
+.checklist li:hover{border-color:var(--amber)}
+.checklist li.checked{background:#021F12;border-color:var(--green)}
+.checklist input[type="checkbox"]{width:20px;height:20px;cursor:pointer}
+.checklist label{flex:1;cursor:pointer;font-size:.85rem}
+
+.activity-list{list-style:none}
+.activity-item{padding:1rem;background:var(--s2);border:1px solid var(--b1);border-radius:8px;margin-bottom:.75rem}
+.activity-header{display:flex;align-items:center;justify-content:between;gap:1rem;margin-bottom:.5rem}
+.activity-type{font-size:.7rem;text-transform:uppercase;font-weight:700;color:var(--amber)}
+.activity-date{font-size:.75rem;color:var(--t3)}
+.activity-subject{font-size:.85rem;font-weight:600;color:var(--t1);margin-bottom:.25rem}
+.activity-notes{font-size:.8rem;color:var(--t2)}
+
+.bypass-log{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1rem;margin-bottom:1rem}
+.bypass-entry{font-size:.8rem;color:var(--t2);padding:.5rem 0;border-bottom:1px solid var(--b1)}
+.bypass-entry:last-child{border-bottom:none}
+.bypass-reason{color:var(--amber);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <nav class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./leads.html">Leads</a>
+    <a href="./pipeline.html">Pipeline</a>
+    <a href="./accounts.html">Accounts</a>
+    <a href="./contacts.html">Contacts</a>
+    <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <div>
+      <h1 class="opp-title" id="opp-name">Loading...</h1>
+      <p class="opp-subtitle" id="opp-account">—</p>
+      <div class="stage-badge" id="stage-badge">Stage —</div>
+    </div>
+    <div style="text-align:right">
+      <button class="btn-primary" onclick="saveChanges()">Save Changes</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="metric-label">Value</div>
+      <div class="metric-value" id="metric-value">$0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Probability</div>
+      <div class="metric-value" id="metric-prob">0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Weighted Value</div>
+      <div class="metric-value" id="metric-weighted">$0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Expected Close</div>
+      <div class="metric-value" id="metric-close" style="font-size:1rem">—</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" onclick="switchTab('meddpicc')">MEDDPICC</button>
+    <button class="tab" onclick="switchTab('milestones')">Milestones</button>
+    <button class="tab" onclick="switchTab('activities')">Activities</button>
+    <button class="tab" onclick="switchTab('notes')">Notes</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div class="tab-content active" id="overview-tab">
+    <div class="section">
+      <h3 class="section-title">Opportunity Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Opportunity Name</label>
+          <input type="text" class="form-input" id="input-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Value (USD)</label>
+          <input type="number" class="form-input" id="input-value">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected Close Date</label>
+          <input type="date" class="form-input" id="input-close-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Owner</label>
+          <input type="text" class="form-input" id="input-owner" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="bypass-section" style="display:none">
+      <h3 class="section-title">Stage Bypass Log</h3>
+      <div id="bypass-log-content"></div>
+    </div>
+  </div>
+
+  <!-- MEDDPICC TAB -->
+  <div class="tab-content" id="meddpicc-tab">
+    <div class="section">
+      <h3 class="section-title">MEDDPICC Qualification</h3>
+
+      <div class="form-group">
+        <label class="form-label">M - Metrics (Quantified ROI/Pain)</label>
+        <textarea class="form-input" id="medd-metrics" placeholder="What measurable pain are they experiencing? What's the cost of doing nothing?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">E - Economic Buyer (Decision Maker)</label>
+        <textarea class="form-input" id="medd-economic" placeholder="Name, title, and contact info of the person who controls the budget"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">D - Decision Criteria (Evaluation Criteria)</label>
+        <textarea class="form-input" id="medd-criteria" placeholder="What criteria will they use to evaluate solutions?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">D - Decision Process (Steps, Timeline, Approvers)</label>
+        <textarea class="form-input" id="medd-process" placeholder="What is their procurement process? Who needs to approve?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">P - Paper Process (Legal, Procurement, IT)</label>
+        <textarea class="form-input" id="medd-paper" placeholder="What legal, security, or compliance reviews are required?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">I - Identify Pain (Root Cause & Urgency)</label>
+        <textarea class="form-input" id="medd-pain" placeholder="What is the root cause of their problem? Why now?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">C - Champion (Internal Advocate)</label>
+        <textarea class="form-input" id="medd-champion" placeholder="Who is selling on your behalf internally? Are they coached?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">C - Competition (Alternatives)</label>
+        <textarea class="form-input" id="medd-competition" placeholder="What other vendors are they considering? Build vs buy?"></textarea>
+      </div>
+
+      <button class="btn-primary" onclick="saveMEDDPICC()">Save MEDDPICC</button>
+    </div>
+  </div>
+
+  <!-- MILESTONES TAB -->
+  <div class="tab-content" id="milestones-tab">
+    <div class="section">
+      <h3 class="section-title">Stage Milestones</h3>
+      <p style="font-size:.85rem;color:var(--t2);margin-bottom:1.5rem">Check off key milestones as you progress through each stage</p>
+
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem">
+        <div>
+          <div class="form-label" style="margin-bottom:1rem">Stage 1: Qualification</div>
+          <ul class="checklist">
+            <li><input type="checkbox" data-stage="1" data-index="0"><label>IGNITE score documented</label></li>
+            <li><input type="checkbox" data-stage="1" data-index="1"><label>Budget confirmed</label></li>
+            <li><input type="checkbox" data-stage="1" data-index="2"><label>Timeline established</label></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="form-label" style="margin-bottom:1rem">Stage 2: Discovery</div>
+          <ul class="checklist">
+            <li><input type="checkbox" data-stage="2" data-index="0"><label>Pain identified</label></li>
+            <li><input type="checkbox" data-stage="2" data-index="1"><label>Champion identified</label></li>
+            <li><input type="checkbox" data-stage="2" data-index="2"><label>Economic buyer met</label></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="form-label" style="margin-bottom:1rem">Stage 3: Demo</div>
+          <ul class="checklist">
+            <li><input type="checkbox" data-stage="3" data-index="0"><label>Demo customized to pain</label></li>
+            <li><input type="checkbox" data-stage="3" data-index="1"><label>Positive feedback received</label></li>
+            <li><input type="checkbox" data-stage="3" data-index="2"><label>Next steps agreed</label></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="form-label" style="margin-bottom:1rem">Stage 4: Proposal</div>
+          <ul class="checklist">
+            <li><input type="checkbox" data-stage="4" data-index="0"><label>ROI documented</label></li>
+            <li><input type="checkbox" data-stage="4" data-index="1"><label>Proposal reviewed</label></li>
+            <li><input type="checkbox" data-stage="4" data-index="2"><label>Objections addressed</label></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="form-label" style="margin-bottom:1rem">Stage 5: Negotiation</div>
+          <ul class="checklist">
+            <li><input type="checkbox" data-stage="5" data-index="0"><label>Terms agreed</label></li>
+            <li><input type="checkbox" data-stage="5" data-index="1"><label>Legal review complete</label></li>
+            <li><input type="checkbox" data-stage="5" data-index="2"><label>Ready to close</label></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="form-label" style="margin-bottom:1rem">Stage 6: Closed Won</div>
+          <ul class="checklist">
+            <li><input type="checkbox" data-stage="6" data-index="0"><label>Contract signed</label></li>
+            <li><input type="checkbox" data-stage="6" data-index="1"><label>Payment received</label></li>
+            <li><input type="checkbox" data-stage="6" data-index="2"><label>Onboarding scheduled</label></li>
+          </ul>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="margin-top:1.5rem" onclick="saveMilestones()">Save Milestones</button>
+    </div>
+  </div>
+
+  <!-- ACTIVITIES TAB -->
+  <div class="tab-content" id="activities-tab">
+    <div class="section">
+      <h3 class="section-title">Activity Timeline</h3>
+      <ul class="activity-list" id="activities-list">
+        <li style="text-align:center;padding:2rem;color:var(--t3)">No activities logged</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- NOTES TAB -->
+  <div class="tab-content" id="notes-tab">
+    <div class="section">
+      <h3 class="section-title">Notes</h3>
+      <div class="form-group">
+        <textarea class="form-input" id="input-notes" rows="10" placeholder="Internal notes about this opportunity..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="saveNotes()">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script src="./crm-v2-client.js"></script>
+
+<script>
+let currentOpp = null;
+const urlParams = new URLSearchParams(window.location.search);
+const oppId = urlParams.get('id');
+
+document.addEventListener('ia:ready', async (event) => {
+  if (!event.detail.online || !event.detail.user) {
+    window.location.href = '../app/auth.html';
+    return;
+  }
+
+  if (event.detail.user.role === 'admin') {
+    document.getElementById('admin-link').style.display = 'inline-block';
+  }
+
+  if (!oppId) {
+    alert('No opportunity ID provided');
+    window.location.href = './pipeline.html';
+    return;
+  }
+
+  await loadOpportunity();
+  await loadActivities();
+});
+
+async function loadOpportunity() {
+  try {
+    currentOpp = await window.CRMv2.getOpportunity(oppId);
+    renderOpportunity();
+  } catch (err) {
+    console.error('Error loading opportunity:', err);
+    alert('Failed to load opportunity');
+  }
+}
+
+function renderOpportunity() {
+  // Header
+  document.getElementById('opp-name').textContent = currentOpp.name;
+  document.getElementById('opp-account').textContent = currentOpp.account_name || '—';
+  document.getElementById('stage-badge').textContent = `Stage ${currentOpp.stage}`;
+
+  // Metrics
+  document.getElementById('metric-value').textContent = formatCurrency(currentOpp.value);
+  document.getElementById('metric-prob').textContent = `${currentOpp.probability}%`;
+  document.getElementById('metric-weighted').textContent = formatCurrency(currentOpp.weighted_value);
+  document.getElementById('metric-close').textContent = currentOpp.expected_close_date || '—';
+
+  // Overview tab
+  document.getElementById('input-name').value = currentOpp.name || '';
+  document.getElementById('input-value').value = currentOpp.value || 0;
+  document.getElementById('input-close-date').value = currentOpp.expected_close_date || '';
+  document.getElementById('input-owner').value = currentOpp.owner_name || '';
+  document.getElementById('input-notes').value = currentOpp.notes || '';
+
+  // MEDDPICC tab
+  document.getElementById('medd-metrics').value = currentOpp.medd_metrics || '';
+  document.getElementById('medd-economic').value = currentOpp.medd_economic_buyer || '';
+  document.getElementById('medd-criteria').value = currentOpp.medd_decision_criteria || '';
+  document.getElementById('medd-process').value = currentOpp.medd_decision_process || '';
+  document.getElementById('medd-paper').value = currentOpp.medd_paper_process || '';
+  document.getElementById('medd-pain').value = currentOpp.medd_identify_pain || '';
+  document.getElementById('medd-champion').value = currentOpp.medd_champion || '';
+  document.getElementById('medd-competition').value = currentOpp.medd_competition || '';
+
+  // Bypass log
+  if (currentOpp.bypass_log && currentOpp.bypass_log.length > 0) {
+    document.getElementById('bypass-section').style.display = 'block';
+    const html = currentOpp.bypass_log.map(b => `
+      <div class="bypass-entry">
+        <strong>Stage ${b.from_stage} → ${b.to_stage}</strong> on ${new Date(b.bypassed_at).toLocaleDateString()}<br>
+        <span class="bypass-reason">Reason:</span> ${b.reason}<br>
+        <small>By: ${b.bypassed_by}</small>
+      </div>
+    `).join('');
+    document.getElementById('bypass-log-content').innerHTML = `<div class="bypass-log">${html}</div>`;
+  }
+
+  // Milestones
+  const milestones = currentOpp.milestone_checks || {};
+  document.querySelectorAll('.checklist input[type="checkbox"]').forEach(cb => {
+    const stage = cb.dataset.stage;
+    const index = cb.dataset.index;
+    const key = `stage_${stage}`;
+    if (milestones[key] && milestones[key][index]) {
+      cb.checked = true;
+      cb.closest('li').classList.add('checked');
+    }
+  });
+}
+
+async function loadActivities() {
+  try {
+    const activities = await window.CRMv2.getActivities({ opportunity_id: oppId });
+    if (activities.length === 0) {
+      document.getElementById('activities-list').innerHTML = '<li style="text-align:center;padding:2rem;color:var(--t3)">No activities logged</li>';
+      return;
+    }
+
+    const html = activities.map(act => `
+      <li class="activity-item">
+        <div class="activity-header">
+          <span class="activity-type">${act.type.replace('_', ' ')}</span>
+          <span class="activity-date">${new Date(act.activity_date).toLocaleDateString()}</span>
+        </div>
+        <div class="activity-subject">${act.subject || '—'}</div>
+        ${act.notes ? `<div class="activity-notes">${act.notes}</div>` : ''}
+      </li>
+    `).join('');
+
+    document.getElementById('activities-list').innerHTML = html;
+  } catch (err) {
+    console.error('Error loading activities:', err);
+  }
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+  event.target.classList.add('active');
+  document.getElementById(`${tabName}-tab`).classList.add('active');
+}
+
+async function saveChanges() {
+  const updates = {
+    name: document.getElementById('input-name').value,
+    value: parseFloat(document.getElementById('input-value').value) || 0,
+    expected_close_date: document.getElementById('input-close-date').value || null
+  };
+
+  try {
+    await window.CRMv2.updateOpportunity(oppId, updates);
+    alert('Opportunity updated!');
+    await loadOpportunity();
+  } catch (err) {
+    console.error('Error updating opportunity:', err);
+    alert('Failed to update opportunity');
+  }
+}
+
+async function saveMEDDPICC() {
+  const updates = {
+    medd_metrics: document.getElementById('medd-metrics').value,
+    medd_economic_buyer: document.getElementById('medd-economic').value,
+    medd_decision_criteria: document.getElementById('medd-criteria').value,
+    medd_decision_process: document.getElementById('medd-process').value,
+    medd_paper_process: document.getElementById('medd-paper').value,
+    medd_identify_pain: document.getElementById('medd-pain').value,
+    medd_champion: document.getElementById('medd-champion').value,
+    medd_competition: document.getElementById('medd-competition').value
+  };
+
+  try {
+    await window.CRMv2.updateOpportunity(oppId, updates);
+    alert('MEDDPICC saved!');
+  } catch (err) {
+    console.error('Error saving MEDDPICC:', err);
+    alert('Failed to save MEDDPICC');
+  }
+}
+
+async function saveMilestones() {
+  const milestones = {};
+
+  for (let stage = 1; stage <= 6; stage++) {
+    const key = `stage_${stage}`;
+    milestones[key] = [];
+
+    document.querySelectorAll(`.checklist input[data-stage="${stage}"]`).forEach((cb, idx) => {
+      milestones[key][idx] = cb.checked;
+    });
+  }
+
+  try {
+    await window.CRMv2.updateMilestones(oppId, milestones);
+    alert('Milestones saved!');
+  } catch (err) {
+    console.error('Error saving milestones:', err);
+    alert('Failed to save milestones');
+  }
+}
+
+async function saveNotes() {
+  const notes = document.getElementById('input-notes').value;
+
+  try {
+    await window.CRMv2.updateOpportunity(oppId, { notes });
+    alert('Notes saved!');
+  } catch (err) {
+    console.error('Error saving notes:', err);
+    alert('Failed to save notes');
+  }
+}
+
+// Milestone checkbox handling
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.checklist input[type="checkbox"]')) {
+    if (e.target.checked) {
+      e.target.closest('li').classList.add('checked');
+    } else {
+      e.target.closest('li').classList.remove('checked');
+    }
+  }
+});
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value || 0);
+}
+</script>
+
+</body>
+</html>

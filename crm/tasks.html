@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasks — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+.tb-nav a.active{color:var(--amber)}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1)}
+.btn-primary{background:var(--amber);color:#000;padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;text-decoration:none;border:none;cursor:pointer}
+.btn-primary:hover{background:var(--amber2)}
+
+.filters{display:flex;gap:1rem;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap}
+.filter-btn{background:var(--s2);color:var(--t2);padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:600;border:1px solid var(--b1);cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:var(--t2)}
+.filter-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
+
+.task-list{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1rem}
+.task-item{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:1rem;transition:all .2s}
+.task-item:hover{background:var(--b1)}
+.task-checkbox{width:20px;height:20px;border:2px solid var(--t3);border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.task-checkbox:hover{border-color:var(--green)}
+.task-checkbox.checked{background:var(--green);border-color:var(--green)}
+.task-checkbox.checked::after{content:'✓';color:#000;font-size:.8rem;font-weight:700}
+.task-content{flex:1}
+.task-subject{font-size:.9rem;font-weight:600;color:var(--t1);margin-bottom:.25rem}
+.task-meta{font-size:.72rem;color:var(--t3);display:flex;gap:1rem;flex-wrap:wrap}
+.task-meta span{display:flex;align-items:center;gap:.35rem}
+.chip{display:inline-block;padding:.2rem .5rem;border-radius:4px;font-size:.65rem;font-weight:700}
+.chip.urgent{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.chip.high{background:#2D1F00;color:var(--amber);border:1px solid var(--amber)}
+.chip.normal{background:var(--b2);color:var(--t3);border:1px solid var(--t3)}
+.chip.low{background:var(--b2);color:var(--t3);border:1px solid var(--t3);opacity:.7}
+.task-due{font-size:.75rem;font-weight:600;flex-shrink:0}
+.task-due.overdue{color:var(--red)}
+.task-due.today{color:var(--amber)}
+.task-due.upcoming{color:var(--t3)}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--s1);border:1px solid var(--b1);border-radius:12px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:1.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800}
+.modal-close{background:none;border:none;color:var(--t3);font-size:1.5rem;cursor:pointer;padding:.25rem .5rem}
+.modal-close:hover{color:var(--t1)}
+.modal-body{padding:1.5rem}
+.form-group{margin-bottom:1.25rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:.65rem;color:var(--t1);font-size:.85rem;font-family:inherit}
+.form-input:focus{outline:none;border-color:var(--amber)}
+textarea.form-input{min-height:100px;resize:vertical}
+.modal-footer{padding:1.5rem;border-top:1px solid var(--b1);display:flex;gap:1rem;justify-content:flex-end}
+.btn-secondary{background:var(--s2);color:var(--t2);padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;border:none;cursor:pointer}
+.btn-secondary:hover{background:var(--b1)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <nav class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./leads.html">Leads</a>
+    <a href="./opportunities.html">Opportunities</a>
+    <a href="./tasks.html" class="active">Tasks</a>
+    <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <h1 class="page-title">Tasks</h1>
+    <button class="btn-primary" onclick="openCreateModal()">+ New Task</button>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all" onclick="filterTasks('all')">All Tasks</button>
+    <button class="filter-btn" data-filter="overdue" onclick="filterTasks('overdue')">Overdue</button>
+    <button class="filter-btn" data-filter="today" onclick="filterTasks('today')">Due Today</button>
+    <button class="filter-btn" data-filter="week" onclick="filterTasks('week')">This Week</button>
+    <button class="filter-btn" data-filter="completed" onclick="filterTasks('completed')">Completed</button>
+  </div>
+
+  <div class="task-list" id="task-list">
+    <div style="text-align:center;padding:2rem;color:var(--t3)">Loading...</div>
+  </div>
+</div>
+
+<!-- Create Task Modal -->
+<div class="modal" id="create-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">New Task</h3>
+      <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="create-form" onsubmit="handleCreateTask(event)">
+        <div class="form-group">
+          <label class="form-label">Task Subject *</label>
+          <input type="text" class="form-input" name="subject" required placeholder="e.g., Follow up with prospect">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input" name="description" placeholder="Additional details..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-input" name="priority">
+            <option value="low">Low</option>
+            <option value="normal" selected>Normal</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Due Date</label>
+          <input type="datetime-local" class="form-input" name="due_date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reminder Date</label>
+          <input type="datetime-local" class="form-input" name="reminder_date">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn-primary" onclick="document.getElementById('create-form').requestSubmit()">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script src="./crm-client.js"></script>
+<script src="./activity-logger.js"></script>
+
+<script>
+let allTasks = [];
+let currentFilter = 'all';
+
+document.addEventListener('ia:ready', async (event) => {
+  if (!event.detail.online) {
+    window.location.href = '../app/auth.html';
+    return;
+  }
+
+  // Show admin link if user is admin
+  if (event.detail.user && event.detail.user.role === 'admin') {
+    document.getElementById('admin-link').style.display = 'inline-block';
+  }
+
+  await loadTasks();
+});
+
+async function loadTasks() {
+  try {
+    allTasks = await CRM.getMyTasks();
+    renderTasks();
+  } catch (err) {
+    console.error('Error loading tasks:', err);
+  }
+}
+
+function renderTasks() {
+  const now = new Date();
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 59, 59, 999);
+  const weekEnd = new Date(now);
+  weekEnd.setDate(now.getDate() + 7);
+
+  let filtered = allTasks;
+
+  if (currentFilter === 'overdue') {
+    filtered = allTasks.filter(t => t.due_date && new Date(t.due_date) < now && t.status !== 'completed');
+  } else if (currentFilter === 'today') {
+    filtered = allTasks.filter(t => t.due_date && new Date(t.due_date) <= todayEnd && new Date(t.due_date) >= now && t.status !== 'completed');
+  } else if (currentFilter === 'week') {
+    filtered = allTasks.filter(t => t.due_date && new Date(t.due_date) <= weekEnd && new Date(t.due_date) > todayEnd && t.status !== 'completed');
+  } else if (currentFilter === 'completed') {
+    filtered = allTasks.filter(t => t.status === 'completed');
+  } else if (currentFilter === 'all') {
+    filtered = allTasks.filter(t => t.status !== 'completed');
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('task-list').innerHTML = `
+      <div style="text-align:center;padding:2rem;color:var(--t3)">No tasks found</div>
+    `;
+    return;
+  }
+
+  const html = filtered.map(task => {
+    const isCompleted = task.status === 'completed';
+    const dueDate = task.due_date ? new Date(task.due_date) : null;
+    let dueClass = 'upcoming';
+    let dueText = dueDate ? formatDueDate(dueDate) : 'No due date';
+
+    if (dueDate && !isCompleted) {
+      if (dueDate < now) {
+        dueClass = 'overdue';
+        dueText = '🔴 ' + dueText;
+      } else if (dueDate <= todayEnd) {
+        dueClass = 'today';
+        dueText = '🟡 ' + dueText;
+      }
+    }
+
+    const relatedTo = task.leads?.name || task.deals?.prospect || 'General';
+
+    return `
+      <div class="task-item">
+        <div class="task-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleTask('${task.id}', ${!isCompleted})"></div>
+        <div class="task-content">
+          <div class="task-subject">${task.subject}</div>
+          <div class="task-meta">
+            <span>📋 ${relatedTo}</span>
+            <span><span class="chip ${task.priority}">${task.priority.toUpperCase()}</span></span>
+            ${task.description ? `<span>💬 ${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</span>` : ''}
+          </div>
+        </div>
+        <div class="task-due ${dueClass}">${dueText}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('task-list').innerHTML = html;
+}
+
+function filterTasks(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+  renderTasks();
+}
+
+async function toggleTask(taskId, complete) {
+  try {
+    const updates = {
+      status: complete ? 'completed' : 'pending',
+      completed_at: complete ? new Date().toISOString() : null,
+    };
+
+    await CRM.updateTask(taskId, updates);
+
+    // Log completion if task is being completed
+    if (complete) {
+      const task = allTasks.find(t => t.id === taskId);
+      if (task && window.ActivityLogger) {
+        await ActivityLogger.logTaskCompletion(task, window.IAdb.currentUser.id);
+      }
+    }
+
+    await loadTasks();
+  } catch (err) {
+    console.error('Error toggling task:', err);
+  }
+}
+
+function openCreateModal() {
+  document.getElementById('create-modal').classList.add('active');
+}
+
+function closeCreateModal() {
+  document.getElementById('create-modal').classList.remove('active');
+  document.getElementById('create-form').reset();
+}
+
+async function handleCreateTask(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const task = {
+    subject: formData.get('subject'),
+    description: formData.get('description') || null,
+    priority: formData.get('priority'),
+    due_date: formData.get('due_date') || null,
+    reminder_date: formData.get('reminder_date') || null,
+  };
+
+  try {
+    await CRM.createTask(task);
+    closeCreateModal();
+    await loadTasks();
+    alert('Task created successfully!');
+  } catch (err) {
+    console.error('Error creating task:', err);
+    alert('Failed to create task');
+  }
+}
+
+function formatDueDate(date) {
+  const now = new Date();
+  const diff = date - now;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days === -1) return 'Yesterday';
+  if (days < -1) return `${Math.abs(days)} days ago`;
+  if (days > 1 && days <= 7) return `In ${days} days`;
+
+  return date.toLocaleDateString();
+}
+</script>
+
+</body>
+</html>

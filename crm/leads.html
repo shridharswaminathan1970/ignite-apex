@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leads — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+.tb-nav a.active{color:var(--amber)}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1)}
+.btn-primary{background:var(--amber);color:#000;padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--amber2)}
+
+.filters{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.filter-btn{background:var(--s2);color:var(--t2);padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:600;border:1px solid var(--b1);cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:var(--amber);color:var(--t1)}
+.filter-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
+
+.table-container{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2);border-bottom:1px solid var(--b1)}
+th{padding:.75rem 1rem;text-align:left;font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)}
+td{padding:.85rem 1rem;border-bottom:1px solid var(--b1);font-size:.8rem;color:var(--t2)}
+tr:last-child td{border-bottom:none}
+tr:hover{background:var(--s2)}
+
+.status-badge{display:inline-block;padding:.25rem .6rem;border-radius:5px;font-size:.7rem;font-weight:700}
+.status-badge.new{background:#2D1F00;color:var(--amber);border:1px solid var(--amber)}
+.status-badge.contacted{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+.status-badge.in_diagnostic{background:#160A2E;color:var(--purple);border:1px solid var(--purple)}
+.status-badge.mql{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.status-badge.disqualified{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.status-badge.converted{background:var(--b2);color:var(--t3);border:1px solid var(--t3)}
+
+.score-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-weight:800;font-size:.85rem}
+.score-0,.score-1,.score-2{background:#1F0202;color:var(--red);border:2px solid var(--red)}
+.score-3{background:#2D1F00;color:var(--amber);border:2px solid var(--amber)}
+.score-4,.score-5{background:#021F12;color:var(--green);border:2px solid var(--green)}
+.score-6{background:#021F12;color:var(--green);border:2px solid var(--green);box-shadow:0 0 12px var(--green)}
+
+.btn-icon{background:none;border:none;color:var(--t3);cursor:pointer;padding:.25rem .5rem;font-size:.85rem;transition:color .2s}
+.btn-icon:hover{color:var(--amber)}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--s1);border:1px solid var(--b1);border-radius:12px;width:90%;max-width:800px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:1.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800}
+.modal-close{background:none;border:none;color:var(--t3);font-size:1.5rem;cursor:pointer;padding:.25rem .5rem}
+.modal-close:hover{color:var(--t1)}
+.modal-body{padding:1.5rem}
+.form-group{margin-bottom:1.25rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:.65rem;color:var(--t1);font-size:.85rem;font-family:inherit}
+.form-input:focus{outline:none;border-color:var(--amber)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.modal-footer{padding:1.5rem;border-top:1px solid var(--b1);display:flex;gap:1rem;justify-content:flex-end}
+.btn-secondary{background:var(--s2);color:var(--t2);padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;border:none;cursor:pointer}
+.btn-secondary:hover{background:var(--b1)}
+
+.ignite-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin:1.5rem 0}
+.ignite-question{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1.25rem}
+.q-label{font-size:.85rem;font-weight:600;color:var(--t1);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.q-letter{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--amber);width:32px;height:32px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.q-options{display:flex;gap:.75rem}
+.q-option{flex:1;padding:.6rem;background:var(--bg);border:2px solid var(--b1);border-radius:6px;text-align:center;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s}
+.q-option:hover{border-color:var(--amber)}
+.q-option.selected.yes{background:#021F12;border-color:var(--green);color:var(--green)}
+.q-option.selected.no{background:#1F0202;border-color:var(--red);color:var(--red)}
+.q-option.selected.partial{background:#2D1F00;border-color:var(--amber);color:var(--amber)}
+
+.score-display{text-align:center;padding:1.5rem;background:var(--s2);border-radius:8px;margin:1.5rem 0}
+.score-number{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--green)}
+.score-label{font-size:.85rem;color:var(--t3);margin-top:.5rem}
+.mql-badge{display:inline-block;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:6px;font-size:.85rem;font-weight:700;margin-top:1rem}
+</style>
+<!-- Trial Banner Component -->
+<script src="../components/trial-banner.js"></script>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <nav class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./leads.html" class="active">Leads</a>
+    <a href="./pipeline.html">Pipeline</a>
+    <a href="./accounts.html">Accounts</a>
+    <a href="./contacts.html">Contacts</a>
+    <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Lead Queue</h1>
+      <p style="font-size:.85rem;color:var(--t3);margin-top:.5rem">IGNITE diagnostic → MQL conversion</p>
+    </div>
+    <button class="btn-primary" onclick="openCreateModal()">+ New Lead</button>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterLeads('all')">All Leads</button>
+    <button class="filter-btn" onclick="filterLeads('new')">New</button>
+    <button class="filter-btn" onclick="filterLeads('contacted')">Contacted</button>
+    <button class="filter-btn" onclick="filterLeads('in_diagnostic')">In Diagnostic</button>
+    <button class="filter-btn" onclick="filterLeads('mql')">MQL</button>
+    <button class="filter-btn" onclick="filterLeads('disqualified')">Disqualified</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Company</th>
+          <th>Title</th>
+          <th>Source</th>
+          <th>Status</th>
+          <th>IGNITE Score</th>
+          <th>Owner</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="leads-table-body">
+        <tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--t3)">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Lead Modal -->
+<div class="modal" id="create-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">New Lead</h3>
+      <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="create-form" onsubmit="handleCreateLead(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input type="text" class="form-input" name="first_name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" class="form-input" name="last_name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" name="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-input" name="phone">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company</label>
+          <input type="text" class="form-input" name="company">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" name="title">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Industry</label>
+            <input type="text" class="form-input" name="industry">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Source</label>
+            <select class="form-input" name="source">
+              <option value="">Select source...</option>
+              <option value="Referral">Referral</option>
+              <option value="Webinar">Webinar</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="Cold Outreach">Cold Outreach</option>
+              <option value="Event">Event</option>
+              <option value="Inbound">Inbound</option>
+              <option value="Partner">Partner</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-input" name="country">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn-primary" onclick="document.getElementById('create-form').requestSubmit()">Create Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- IGNITE Diagnostic Modal -->
+<div class="modal" id="ignite-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">IGNITE Diagnostic</h3>
+      <button class="modal-close" onclick="closeIgniteModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.85rem;color:var(--t2);margin-bottom:1.5rem">Score 4/6 or higher to qualify as MQL</p>
+
+      <div class="ignite-grid">
+        <div class="ignite-question">
+          <div class="q-label"><span class="q-letter">I</span> Identified Problem?</div>
+          <div class="q-options">
+            <div class="q-option" data-field="ignite_i1" data-value="yes" onclick="selectOption(this)">YES</div>
+            <div class="q-option" data-field="ignite_i1" data-value="partial" onclick="selectOption(this)">PARTIAL</div>
+            <div class="q-option" data-field="ignite_i1" data-value="no" onclick="selectOption(this)">NO</div>
+          </div>
+        </div>
+
+        <div class="ignite-question">
+          <div class="q-label"><span class="q-letter">G</span> Gap Confirmed?</div>
+          <div class="q-options">
+            <div class="q-option" data-field="ignite_g" data-value="yes" onclick="selectOption(this)">YES</div>
+            <div class="q-option" data-field="ignite_g" data-value="partial" onclick="selectOption(this)">PARTIAL</div>
+            <div class="q-option" data-field="ignite_g" data-value="no" onclick="selectOption(this)">NO</div>
+          </div>
+        </div>
+
+        <div class="ignite-question">
+          <div class="q-label"><span class="q-letter">N</span> Need + Urgency?</div>
+          <div class="q-options">
+            <div class="q-option" data-field="ignite_n" data-value="yes" onclick="selectOption(this)">YES</div>
+            <div class="q-option" data-field="ignite_n" data-value="partial" onclick="selectOption(this)">PARTIAL</div>
+            <div class="q-option" data-field="ignite_n" data-value="no" onclick="selectOption(this)">NO</div>
+          </div>
+        </div>
+
+        <div class="ignite-question">
+          <div class="q-label"><span class="q-letter">I</span> ICP Fit?</div>
+          <div class="q-options">
+            <div class="q-option" data-field="ignite_i2" data-value="yes" onclick="selectOption(this)">YES</div>
+            <div class="q-option" data-field="ignite_i2" data-value="partial" onclick="selectOption(this)">PARTIAL</div>
+            <div class="q-option" data-field="ignite_i2" data-value="no" onclick="selectOption(this)">NO</div>
+          </div>
+        </div>
+
+        <div class="ignite-question">
+          <div class="q-label"><span class="q-letter">T</span> Trigger Event?</div>
+          <div class="q-options">
+            <div class="q-option" data-field="ignite_t" data-value="yes" onclick="selectOption(this)">YES</div>
+            <div class="q-option" data-field="ignite_t" data-value="partial" onclick="selectOption(this)">PARTIAL</div>
+            <div class="q-option" data-field="ignite_t" data-value="no" onclick="selectOption(this)">NO</div>
+          </div>
+        </div>
+
+        <div class="ignite-question">
+          <div class="q-label"><span class="q-letter">E</span> Economic Buyer Access?</div>
+          <div class="q-options">
+            <div class="q-option" data-field="ignite_e" data-value="yes" onclick="selectOption(this)">YES</div>
+            <div class="q-option" data-field="ignite_e" data-value="partial" onclick="selectOption(this)">PARTIAL</div>
+            <div class="q-option" data-field="ignite_e" data-value="no" onclick="selectOption(this)">NO</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-display">
+        <div class="score-number" id="ignite-score-display">0</div>
+        <div class="score-label">/ 6</div>
+        <div id="mql-indicator" style="display:none" class="mql-badge">✓ QUALIFIED AS MQL</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeIgniteModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveIgniteScore()">Save Score</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="./crm-init.js"></script>
+<script src="./crm-v2-client.js"></script>
+
+<script>
+let allLeads = [];
+let currentFilter = 'all';
+let currentLeadForIgnite = null;
+let igniteAnswers = {};
+
+// Wait for Supabase client
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) {
+      resolve(window.supabaseClient);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) {
+        clearInterval(interval);
+        resolve(window.supabaseClient);
+      }
+    }, 50);
+  });
+}
+
+// Initialize auth and load data
+(async function init() {
+  try {
+    const sb = await waitForSupabaseClient();
+    console.log('[Leads] Supabase client ready');
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = '../app/auth.html';
+      return;
+    }
+
+    const { data: profile } = await sb
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profile || !profile.crm_enabled) {
+      window.location.href = '../system/index.html';
+      return;
+    }
+
+    // Set global context
+    window.currentUser = profile;
+    window.currentOrgId = profile.org_id;
+    window.IA_CurrentUser = profile;
+    window.IA_OrgId = profile.org_id;
+
+    console.log('[Leads] User loaded:', profile.email);
+
+    if (profile.role === 'admin') {
+      document.getElementById('admin-link').style.display = 'inline-block';
+    }
+
+    await loadLeads();
+  } catch (err) {
+    console.error('[Leads] Init error:', err);
+    window.location.href = '../app/auth.html';
+  }
+})();
+
+async function loadLeads() {
+  try {
+    allLeads = await window.CRMv2.getLeads();
+    renderLeads();
+  } catch (err) {
+    console.error('Error loading leads:', err);
+  }
+}
+
+function renderLeads() {
+  const filtered = currentFilter === 'all'
+    ? allLeads
+    : allLeads.filter(l => l.status === currentFilter);
+
+  if (filtered.length === 0) {
+    document.getElementById('leads-table-body').innerHTML = `
+      <tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--t3)">No leads found</td></tr>
+    `;
+    return;
+  }
+
+  const html = filtered.map(lead => `
+    <tr onclick="window.location.href='./opportunity.html?id=${lead.id}'" style="cursor:pointer">
+      <td><strong>${lead.contact_name || lead.name || lead.company_name}</strong></td>
+      <td>${lead.company_name || lead.name || '—'}</td>
+      <td>${lead.contact_title || '—'}</td>
+      <td>${lead.source || '—'}</td>
+      <td><span class="status-badge ${lead.pipeline_stage}">${lead.pipeline_stage || 'Lead'}</span></td>
+      <td><span class="score-badge score-${lead.probability || 0}">${lead.probability || 0}%</span></td>
+      <td>${currentUser?.name || '—'}</td>
+      <td>${formatDate(lead.created_at)}</td>
+      <td onclick="event.stopPropagation()">
+        <button class="btn-icon" onclick="window.location.href='./opportunity.html?id=${lead.id}'" title="Open Opportunity">📋</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('leads-table-body').innerHTML = html;
+}
+
+function filterLeads(status) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  renderLeads();
+}
+
+function openCreateModal() {
+  document.getElementById('create-modal').classList.add('active');
+}
+
+function closeCreateModal() {
+  document.getElementById('create-modal').classList.remove('active');
+  document.getElementById('create-form').reset();
+}
+
+async function handleCreateLead(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+
+  const lead = {
+    first_name: formData.get('first_name'),
+    last_name: formData.get('last_name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    company: formData.get('company'),
+    title: formData.get('title'),
+    industry: formData.get('industry'),
+    source: formData.get('source'),
+    country: formData.get('country')
+  };
+
+  try {
+    await window.CRMv2.createLead(lead);
+    closeCreateModal();
+    await loadLeads();
+  } catch (err) {
+    console.error('Error creating lead:', err);
+    alert('Failed to create lead');
+  }
+}
+
+function openIgniteModal(leadId) {
+  const lead = allLeads.find(l => l.id === leadId);
+  if (!lead) return;
+
+  currentLeadForIgnite = lead;
+  igniteAnswers = {
+    ignite_i1: lead.ignite_i1 || null,
+    ignite_g: lead.ignite_g || null,
+    ignite_n: lead.ignite_n || null,
+    ignite_i2: lead.ignite_i2 || null,
+    ignite_t: lead.ignite_t || null,
+    ignite_e: lead.ignite_e || null
+  };
+
+  // Reset selections
+  document.querySelectorAll('.q-option').forEach(opt => opt.classList.remove('selected', 'yes', 'no', 'partial'));
+
+  // Restore previous selections
+  Object.keys(igniteAnswers).forEach(field => {
+    const value = igniteAnswers[field];
+    if (value) {
+      const opt = document.querySelector(`.q-option[data-field="${field}"][data-value="${value}"]`);
+      if (opt) {
+        opt.classList.add('selected', value);
+      }
+    }
+  });
+
+  updateScoreDisplay();
+  document.getElementById('ignite-modal').classList.add('active');
+}
+
+function closeIgniteModal() {
+  document.getElementById('ignite-modal').classList.remove('active');
+  currentLeadForIgnite = null;
+  igniteAnswers = {};
+}
+
+function selectOption(element) {
+  const field = element.dataset.field;
+  const value = element.dataset.value;
+
+  // Deselect siblings
+  document.querySelectorAll(`.q-option[data-field="${field}"]`).forEach(opt => {
+    opt.classList.remove('selected', 'yes', 'no', 'partial');
+  });
+
+  // Select this option
+  element.classList.add('selected', value);
+  igniteAnswers[field] = value;
+
+  updateScoreDisplay();
+}
+
+function updateScoreDisplay() {
+  const score = Object.values(igniteAnswers).filter(v => v === 'yes').length;
+  document.getElementById('ignite-score-display').textContent = score;
+
+  const mqlIndicator = document.getElementById('mql-indicator');
+  if (score >= 4) {
+    mqlIndicator.style.display = 'block';
+  } else {
+    mqlIndicator.style.display = 'none';
+  }
+}
+
+async function saveIgniteScore() {
+  if (!currentLeadForIgnite) return;
+
+  try {
+    await window.CRMv2.updateLeadIgnite(currentLeadForIgnite.id, igniteAnswers);
+    closeIgniteModal();
+    await loadLeads();
+  } catch (err) {
+    console.error('Error saving IGNITE score:', err);
+    alert('Failed to save IGNITE score');
+  }
+}
+
+async function convertLead(leadId) {
+  const lead = allLeads.find(l => l.id === leadId);
+  if (!lead) return;
+
+  const oppName = prompt(`Opportunity Name:`, `${lead.company || lead.first_name} - ${new Date().getFullYear()}`);
+  if (!oppName) return;
+
+  const value = prompt(`Estimated Value (USD):`, '0');
+
+  try {
+    await window.CRMv2.convertLead(leadId, {
+      account_name: lead.company,
+      contact_first_name: lead.first_name,
+      contact_last_name: lead.last_name,
+      opportunity_name: oppName,
+      value: parseFloat(value) || 0
+    });
+
+    alert('Lead converted to Opportunity!');
+    await loadLeads();
+  } catch (err) {
+    console.error('Error converting lead:', err);
+    alert('Failed to convert lead');
+  }
+}
+
+function formatStatus(status) {
+  const map = {
+    new: 'New',
+    contacted: 'Contacted',
+    in_diagnostic: 'In Diagnostic',
+    mql: 'MQL',
+    disqualified: 'Disqualified',
+    converted: 'Converted'
+  };
+  return map[status] || status;
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString();
+}
+</script>
+
+</body>
+</html>

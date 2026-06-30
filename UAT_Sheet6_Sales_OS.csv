@@ -1,0 +1,129 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+SOS-001,Sales OS Access,Free access (no trial/subscription),P0,"1. Any user logs in
+2. Go to Sales OS (system/index.html)
+3. Access modules","Access granted:
+- No trial banner
+- No payment required
+- All modules available",,,PASS/FAIL,P0,Always free
+SOS-002,IGNITE Prerequisites,View IGNITE mindset checklist,P0,"1. Go to Sales OS → IGNITE
+2. View prerequisites","Checklist shown:
+- 6 mindset items
+- Each with checkbox
+- Explanatory text",,,PASS/FAIL,P0,
+SOS-003,IGNITE Prerequisites,Check/uncheck prerequisites,P2,"1. Click checkbox on item
+2. Toggle state","Checkbox toggles:
+- Visual feedback
+- State saved (if implemented)",,,PASS/FAIL,P2,
+SOS-004,ATTRACT Module,ICP scoring calculator,P0,"1. Go to ATTRACT
+2. Fill ICP criteria
+3. Calculate score","Score calculated:
+- Formula: (criteria met / total) × 100
+- Shows percentage
+- Pass/fail threshold",,,PASS/FAIL,P0,
+SOS-005,ATTRACT Module,ICP criteria validation,P1,"1. Leave criteria blank
+2. Try to calculate","Validation error:
+All fields required",,,PASS/FAIL,P1,
+SOS-006,ATTRACT Module,Save ICP profile,P2,"1. Fill ICP criteria
+2. Save profile
+3. Reload page","Profile persists:
+- Data saved
+- Can reload later",,,PASS/FAIL,P2,
+SOS-007,PROBE Module,3-layer root cause diagnosis,P0,"1. Go to PROBE
+2. Fill 3 layers:
+   - Surface symptom
+   - Deeper cause
+   - Root cause
+3. View result","Diagnosis shown:
+- All 3 layers visible
+- Root cause highlighted
+- Actionable insight",,,PASS/FAIL,P0,
+SOS-008,PROBE Module,Peel the Onion examples,P1,"1. View PROBE module
+2. Read examples","Examples shown:
+- Symptom → cause → root
+- Multiple scenarios
+- Industry-specific",,,PASS/FAIL,P1,
+SOS-009,PROBE Module,Export diagnosis,P2,"1. Complete diagnosis
+2. Click Export
+3. Download PDF","PDF generated:
+- All 3 layers included
+- Formatted correctly",,,PASS/FAIL,P2,
+SOS-010,EXECUTE Module,20 qualification questions,P0,"1. Go to EXECUTE
+2. View questions","20 questions shown:
+- Grouped by category
+- Each with guidance
+- Answer fields available",,,PASS/FAIL,P0,
+SOS-011,EXECUTE Module,Answer qualification questions,P1,"1. Fill answers to questions
+2. Save","Answers saved:
+- Data persists
+- Can return later",,,PASS/FAIL,P1,
+SOS-012,EXECUTE Module,Calculate qualification score,P0,"1. Answer all 20 questions
+2. Calculate score","Score shown:
+- Weighted by category
+- Pass/fail threshold
+- Recommendations",,,PASS/FAIL,P0,
+SOS-013,EXECUTE Module,Incomplete questions warning,P1,"1. Answer only 10/20 questions
+2. Try to calculate","Warning:
+Complete all questions first",,,PASS/FAIL,P1,
+SOS-014,EXCEL Module,Rep daily system checklist,P0,"1. Go to EXCEL
+2. View daily checklist","Checklist shown:
+- Morning routine
+- Mid-day check
+- Evening wrap-up
+- Each with checkboxes",,,PASS/FAIL,P0,
+SOS-015,EXCEL Module,Check off daily tasks,P1,"1. Click checkboxes
+2. Complete routine","Tasks checked:
+- Visual feedback
+- Progress tracked",,,PASS/FAIL,P1,
+SOS-016,EXCEL Module,Daily habits tracker,P2,"1. View habits tracker
+2. Mark habit complete
+3. View streak","Streak shown:
+- Days in a row
+- Visual progress",,,PASS/FAIL,P2,
+SOS-017,CEMENT Module,Post-sale framework,P0,"1. Go to CEMENT
+2. View 5 layers","5 layers shown:
+- Month 1: Onboard
+- Month 3: Adopt
+- Month 6: Expand
+- Month 12: Renew
+- Month 24+: Advocate",,,PASS/FAIL,P0,
+SOS-018,CEMENT Module,Layer details,P1,"1. Click each layer
+2. Read details","Details shown:
+- Objectives
+- Activities
+- Success metrics",,,PASS/FAIL,P1,
+SOS-019,Deal Briefing,Generate deal briefing PDF,P0,"1. Complete IGNITE gates
+2. Click Generate Briefing
+3. Download PDF","PDF generated:
+- Executive summary
+- 4U validation
+- JTBD
+- Gate status
+- Next steps",,,PASS/FAIL,P0,
+SOS-020,Deal Briefing,PDF includes all data,P1,"1. Generate PDF
+2. Review contents","All sections included:
+- No missing data
+- Formatted correctly
+- Branded layout",,,PASS/FAIL,P1,
+SOS-021,Navigation,Navigate between modules,P0,"1. Click ATTRACT
+2. Click PROBE
+3. Click EXECUTE
+4. Navigate freely","Navigation works:
+- All modules accessible
+- No broken links
+- Fast loading",,,PASS/FAIL,P0,
+SOS-022,Persistence,Data persists across sessions,P1,"1. Fill data in ATTRACT
+2. Log out
+3. Log back in
+4. Return to ATTRACT","Data persists:
+- Saved in database
+- Loads on return",,,PASS/FAIL,P1,
+SOS-023,Help,Help text available,P2,"1. View each module
+2. Read help text","Help shown:
+- Clear instructions
+- Examples provided",,,PASS/FAIL,P2,
+SOS-024,Responsive,Works on mobile,P2,"1. Access on mobile browser
+2. Navigate modules","Mobile responsive:
+- Readable layout
+- Usable on small screen",,,PASS/FAIL,P2,
+SOS-025,Performance,Modules load quickly,P2,"1. Navigate between modules
+2. Time loading","All modules load <2 seconds",,,PASS/FAIL,P2,

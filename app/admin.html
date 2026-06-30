@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Control Panel — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.header{background:var(--s1);border-bottom:1px solid var(--b1);padding:1.5rem;position:relative;z-index:10}
+.header-content{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.header-user{display:flex;align-items:center;gap:1rem}
+.user-badge{background:var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;color:var(--t2)}
+.user-role{color:var(--amber);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:1px}
+.btn-logout{background:var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;border:1px solid var(--b1);cursor:pointer;transition:all .2s}
+.btn-logout:hover{background:var(--red);color:white;border-color:var(--red)}
+
+.container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1);margin-bottom:.5rem}
+.page-subtitle{font-size:.9rem;color:var(--t3);margin-bottom:2rem}
+
+.tabs{display:flex;gap:1rem;margin-bottom:2rem;border-bottom:1px solid var(--b1);padding-bottom:0}
+.tab{background:none;border:none;color:var(--t3);padding:.75rem 1.5rem;font-size:.9rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab:hover{color:var(--t1)}
+
+.tab-content{display:none;animation:fadeIn .3s}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;margin-bottom:1.5rem}
+.card-title{font-size:1.1rem;font-weight:700;color:var(--t1);margin-bottom:1.5rem}
+
+.form-grid{display:grid;gap:1.25rem}
+.form-grid.cols-2{grid-template-columns:1fr 1fr}
+.form-group{display:flex;flex-direction:column}
+.form-label{font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input,.form-select{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.85rem;color:var(--t1);font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--amber)}
+.form-input::placeholder{color:var(--t3)}
+.form-select{cursor:pointer}
+.form-select option{background:var(--s2);color:var(--t1)}
+
+.btn-primary{background:var(--amber);color:#000;padding:.95rem 1.5rem;border-radius:10px;font-size:.9rem;font-weight:700;border:none;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--amber2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.alert{padding:1rem;border-radius:8px;margin-bottom:1.5rem;font-size:.85rem;display:none}
+.alert.show{display:block;animation:slideDown .3s}
+.alert.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.alert.error{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.alert.info{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+@keyframes slideDown{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.credentials-box{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1.5rem;margin-top:1rem}
+.credentials-box h4{font-size:.9rem;font-weight:700;color:var(--amber);margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px}
+.credentials-row{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--b1)}
+.credentials-row:last-child{border-bottom:none}
+.credentials-label{font-size:.75rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.credentials-value{font-size:.9rem;color:var(--t1);font-family:'Courier New',monospace;font-weight:600}
+.btn-copy{background:var(--b2);color:var(--t2);padding:.4rem .8rem;border-radius:6px;font-size:.75rem;border:1px solid var(--b1);cursor:pointer;margin-left:1rem}
+.btn-copy:hover{background:var(--amber);color:#000;border-color:var(--amber)}
+
+.access-denied{text-align:center;padding:4rem 2rem}
+.access-denied h1{font-size:3rem;color:var(--red);margin-bottom:1rem}
+.access-denied p{font-size:1.1rem;color:var(--t2);margin-bottom:2rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-logo">IGNITE_APEX</div>
+    <div class="header-user">
+      <div class="user-badge">
+        <div id="userName" style="color:var(--t1);font-weight:600;margin-bottom:.25rem">Loading...</div>
+        <div class="user-role" id="userRole">...</div>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="appContainer">
+  <!-- Loading state -->
+  <div id="loadingState" style="text-align:center;padding:4rem">
+    <div style="font-size:1.5rem;color:var(--t2)">Loading...</div>
+  </div>
+
+  <!-- Access denied state (if not super_duper_admin or super_admin) -->
+  <div id="accessDenied" style="display:none">
+    <div class="access-denied">
+      <h1>Access Denied</h1>
+      <p>You don't have permission to access this admin panel.</p>
+      <button class="btn-primary" onclick="location.href='/app'">Go to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Main admin content -->
+  <div id="adminContent" style="display:none">
+    <h1 class="page-title">Admin Control Panel</h1>
+    <p class="page-subtitle">Manage users and organisations</p>
+
+    <div class="tabs">
+      <button class="tab" id="tab-registrations" onclick="switchTab('pendingRegistrations')" style="display:none">Pending Registrations</button>
+      <button class="tab" id="tab-provision" onclick="switchTab('createSuperAdmin')">Provision Company</button>
+      <button class="tab active" id="tab-manage" onclick="switchTab('manageTeam')">Manage Team</button>
+      <button class="tab" onclick="switchTab('createUser')">Invite User</button>
+    </div>
+
+    <!-- Pending Registrations Tab (super_duper_admin only) -->
+    <div id="pendingRegistrationsTab" class="tab-content">
+      <div class="card">
+        <h2 class="card-title">📋 Individual Registration Requests (Company = NA)</h2>
+        <div id="individual-requests-loading" style="text-align:center;padding:2rem;color:var(--t2)">Loading requests...</div>
+        <div id="individual-requests-list" style="display:none"></div>
+      </div>
+
+      <div class="card" style="margin-top:2rem">
+        <h2 class="card-title">🏢 Enterprise Company Registration Requests</h2>
+        <div id="company-requests-loading" style="text-align:center;padding:2rem;color:var(--t2)">Loading requests...</div>
+        <div id="company-requests-list" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Manage Team Tab -->
+    <div id="manageTeamTab" class="tab-content active">
+      <div id="team-loading" style="text-align:center;padding:2rem;color:var(--t2)">Loading team...</div>
+      <div id="team-content" style="display:none">
+        <div class="card">
+          <h2 class="card-title">Your Team</h2>
+          <div id="team-stats" style="display:flex;gap:1rem;margin-bottom:1.5rem;font-size:.85rem"></div>
+          <ul id="team-list" style="list-style:none"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Super Admin Tab (super_duper_admin only) -->
+    <div id="createSuperAdminTab" class="tab-content">
+      <div class="alert" id="alertSuperAdmin"></div>
+      <div class="card">
+        <h2 class="card-title">Provision New Company</h2>
+        <form id="formSuperAdmin" onsubmit="createSuperAdmin(event)">
+          <div class="form-grid cols-2">
+            <div class="form-group">
+              <label class="form-label">Organisation Name</label>
+              <input type="text" class="form-input" id="orgName" placeholder="e.g., Acme Corporation" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Organisation Slug</label>
+              <input type="text" class="form-input" id="orgSlug" placeholder="e.g., acme-corp" pattern="[a-z0-9\-]+" required>
+              <small style="color:var(--t3);font-size:.75rem;margin-top:.25rem">Lowercase letters, numbers, and hyphens only</small>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Company Address</label>
+              <input type="text" class="form-input" id="orgAddress" placeholder="e.g., 123 Main St, City, Country" required>
+            </div>
+          </div>
+          <div class="form-grid cols-2">
+            <div class="form-group">
+              <label class="form-label">Company Contact Email</label>
+              <input type="email" class="form-input" id="orgContactEmail" placeholder="e.g., contact@acme.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Contact Phone</label>
+              <input type="tel" class="form-input" id="orgContactPhone" placeholder="e.g., +1 234 567 8900" required>
+            </div>
+          </div>
+          <div class="form-grid cols-2">
+            <div class="form-group">
+              <label class="form-label">Super Admin Name</label>
+              <input type="text" class="form-input" id="superAdminName" placeholder="e.g., John Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Super Admin Email</label>
+              <input type="email" class="form-input" id="superAdminEmail" placeholder="e.g., john@acme.com" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:1.5rem">Provision Company & Invite Super Admin</button>
+        </form>
+        <div id="credentialsSuperAdmin" class="credentials-box" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Create User Tab -->
+    <div id="createUserTab" class="tab-content">
+      <div class="alert" id="alertUser"></div>
+      <div class="card">
+        <h2 class="card-title">Invite Team Member</h2>
+        <form id="formUser" onsubmit="createUser(event)">
+          <div class="form-grid cols-2">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-input" id="userName" placeholder="e.g., Jane Smith" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="userEmail" placeholder="e.g., jane@company.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select class="form-select" id="userRole" required>
+                <option value="">Select role...</option>
+                <option value="admin">Admin (Sales Manager)</option>
+                <option value="admin_m">Admin Management (View-Only)</option>
+                <option value="sdr">SDR</option>
+                <option value="account_executive">Account Executive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CRM Enabled</label>
+              <select class="form-select" id="crmEnabled">
+                <option value="true">Yes</option>
+                <option value="false">No (Sales OS only)</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:1.5rem">Invite User</button>
+        </form>
+        <div id="credentialsUser" class="credentials-box" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-client.js"></script>
+<script>
+const SUPABASE_URL = 'https://gokslnrvxqledagcwghq.supabase.co'
+let sb = null // Will be set after client loads
+
+let currentUser = null
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) {
+      resolve(window.supabaseClient);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) {
+        clearInterval(interval);
+        resolve(window.supabaseClient);
+      }
+    }, 50);
+  });
+}
+
+// Initialize
+async function init() {
+  try {
+    console.log('[Admin] === Starting initialization ===')
+
+    // Check if coming from master console
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromMaster = urlParams.get('from') === 'master';
+    console.log('[Admin] Coming from master console:', fromMaster);
+
+    // Wait for Supabase client to be ready
+    sb = await waitForSupabaseClient();
+    console.log('[Admin] ✓ Supabase client ready');
+
+    // Check auth session
+    const { data: { session }, error: sessionError } = await sb.auth.getSession()
+    console.log('[Admin] Session check:', session ? '✓ Found' : '✗ None', sessionError ? 'Error: ' + sessionError.message : '')
+
+    if (!session) {
+      console.log('[Admin] No session, redirecting to auth')
+      window.location.replace('./auth.html')
+      return
+    }
+
+    console.log('[Admin] Session user ID:', session.user.id)
+    console.log('[Admin] Fetching user profile...')
+
+    // Get user info
+    const { data: user, error } = await sb
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    console.log('[Admin] User query result:')
+    console.log('[Admin] - Data:', user)
+    console.log('[Admin] - Error:', error)
+
+    if (error) {
+      console.error('[Admin] Database error:', error)
+      document.getElementById('loadingState').innerHTML = `
+        <div style="color:var(--red);font-size:1.2rem">Error Loading Admin Panel</div>
+        <div style="color:var(--t3);margin-top:1rem">${error.message}</div>
+        <button class="btn-primary" onclick="location.href='${fromMaster ? './master-console.html' : './launcher.html'}'" style="margin-top:2rem">
+          Go back to ${fromMaster ? 'Master Console' : 'Dashboard'}
+        </button>
+      `;
+      return
+    }
+
+    if (!user) {
+      console.error('[Admin] User profile not found')
+      document.getElementById('loadingState').innerHTML = `
+        <div style="color:var(--red);font-size:1.2rem">User Profile Not Found</div>
+        <button class="btn-primary" onclick="location.href='${fromMaster ? './master-console.html' : './launcher.html'}'" style="margin-top:2rem">
+          Go back to ${fromMaster ? 'Master Console' : 'Dashboard'}
+        </button>
+      `;
+      return
+    }
+
+    currentUser = user
+    console.log('[Admin] ✓ User profile loaded:', user.email, 'Role:', user.role)
+
+    // Normalize role (handle spaces, underscores, case)
+    const normalizedRole = user.role ? user.role.replace(/\s+/g, '_').toLowerCase() : '';
+    console.log('[Admin] Role normalized:', user.role, '→', normalizedRole);
+
+    // Update header
+    document.getElementById('userName').textContent = user.name || user.email || 'Admin User'
+    document.getElementById('userRole').textContent = user.role ? user.role.replace(/_/g, ' ').toUpperCase() : 'USER'
+
+    // Check access - allow team managers: super_duper_admin, super_admin, admin, sdr
+    const allowedRoles = ['super_duper_admin', 'super_admin', 'admin', 'sdr']
+    if (!allowedRoles.includes(normalizedRole)) {
+      console.warn('[Admin] Access denied for role:', normalizedRole)
+      document.getElementById('loadingState').style.display = 'none'
+      document.getElementById('accessDenied').style.display = 'block'
+      document.getElementById('accessDenied').innerHTML = `
+        <div class="access-denied">
+          <h1>⛔ Access Denied</h1>
+          <p>You don't have permission to access this admin panel.</p>
+          <p style="color:var(--t3);font-size:0.9rem">Role: ${user.role}</p>
+          <button class="btn-primary" onclick="location.href='${fromMaster ? './master-console.html' : './launcher.html'}'" style="margin-top:2rem">
+            Go back to ${fromMaster ? 'Master Console' : 'Dashboard'}
+          </button>
+        </div>
+      `;
+      return
+    }
+
+    console.log('[Admin] ✓ Access granted for role:', normalizedRole)
+
+    // Show admin content
+    document.getElementById('loadingState').style.display = 'none'
+    document.getElementById('adminContent').style.display = 'block'
+
+    // Role-based tab visibility
+    if (user.role === 'super_duper_admin') {
+      // Show all tabs for Super Duper Admin
+      document.getElementById('tab-registrations').style.display = 'block'
+      document.getElementById('tab-provision').style.display = 'block'
+      // Default to Pending Registrations
+      switchTab('pendingRegistrations')
+      loadPendingRegistrations()
+    } else {
+      // Hide Super Duper Admin tabs
+      document.getElementById('tab-registrations').style.display = 'none'
+      document.getElementById('tab-provision').style.display = 'none'
+      switchTab('manageTeam')
+    }
+
+  } catch (err) {
+    console.error('[Admin] Init error:', err)
+    // If error is RLS related (no user data), redirect to launcher
+    if (err.message && err.message.includes('Failed to load user info')) {
+      console.log('[Admin] RLS error, redirecting to launcher')
+      window.location.href = './launcher.html?stay=1'
+      return
+    }
+    // Otherwise show error
+    document.getElementById('loadingState').style.display = 'none'
+    document.getElementById('accessDenied').style.display = 'block'
+    document.querySelector('.access-denied h1').textContent = 'Error Loading Admin Panel'
+    document.querySelector('.access-denied p').textContent = err.message || 'An error occurred. Please check the console for details.'
+  }
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
+
+  if (tabName === 'createSuperAdmin') {
+    document.querySelector('[onclick*="createSuperAdmin"]').classList.add('active')
+    document.getElementById('createSuperAdminTab').classList.add('active')
+  } else {
+    document.querySelector('[onclick*="createUser"]').classList.add('active')
+    document.getElementById('createUserTab').classList.add('active')
+  }
+}
+
+async function createSuperAdmin(event) {
+  event.preventDefault()
+  const btn = event.target.querySelector('button[type="submit"]')
+  btn.disabled = true
+  btn.textContent = 'Sending Invitation...'
+
+  try {
+    const orgName = document.getElementById('orgName').value
+    const orgSlug = document.getElementById('orgSlug').value
+    const orgAddress = document.getElementById('orgAddress').value
+    const orgContactEmail = document.getElementById('orgContactEmail').value
+    const orgContactPhone = document.getElementById('orgContactPhone').value
+    const superAdminName = document.getElementById('superAdminName').value
+    const superAdminEmail = document.getElementById('superAdminEmail').value
+
+    const { data: { session } } = await sb.auth.getSession()
+
+    if (!session) {
+      throw new Error('No active session found. Please log in again.')
+    }
+
+    console.log('[Admin] Calling provision-company with session:', {
+      userId: session.user?.id,
+      hasAccessToken: !!session.access_token
+    })
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/provision-company`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        orgName,
+        orgSlug,
+        address: orgAddress,
+        contactEmail: orgContactEmail,
+        contactPhone: orgContactPhone,
+        superAdminName,
+        superAdminEmail
+      })
+    })
+
+    console.log('[Admin] Provision response status:', response.status);
+    console.log('[Admin] Response headers:', response.headers.get('content-type'));
+
+    // Get response text first to see what we actually got
+    const responseText = await response.text();
+    console.log('[Admin] Raw response:', responseText);
+
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error('[Admin] Failed to parse JSON:', e);
+      throw new Error(`Server returned invalid response: ${responseText.substring(0, 200)}`);
+    }
+
+    if (!response.ok) {
+      console.error('[Admin] Provision company failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: result.error,
+        resolvedRole: result.resolvedRole,
+        userId: result.userId,
+        details: result.details
+      })
+      throw new Error(result.error || 'Failed to provision company')
+    }
+
+    showAlert('alertSuperAdmin', 'success', result.message || 'Company provisioned successfully!')
+    displayInviteStatus('credentialsSuperAdmin', {
+      email: superAdminEmail,
+      orgName: result.organisation.name,
+      note: result.note,
+      inviteLink: result.setupLink || result.inviteLink,
+      tempPassword: result.tempPassword
+    })
+    event.target.reset()
+
+  } catch (err) {
+    console.error('[Admin] Provision error:', err)
+    showAlert('alertSuperAdmin', 'error', err.message)
+  } finally {
+    btn.disabled = false
+    btn.textContent = 'Provision Company & Invite Super Admin'
+  }
+}
+
+async function createUser(event) {
+  event.preventDefault()
+  const btn = event.target.querySelector('button[type="submit"]')
+  btn.disabled = true
+  btn.textContent = 'Sending Invitation...'
+
+  try {
+    const name = document.getElementById('userName').value
+    const email = document.getElementById('userEmail').value
+    const role = document.getElementById('userRole').value
+    const crmEnabled = document.getElementById('crmEnabled').value === 'true'
+
+    const { data: { session } } = await sb.auth.getSession()
+
+    if (!session) {
+      throw new Error('No active session found. Please log in again.')
+    }
+
+    console.log('[Admin] Calling invite-user with session:', {
+      userId: session.user?.id,
+      hasAccessToken: !!session.access_token
+    })
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-invite-link`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        role,
+        crmEnabled
+      })
+    })
+
+    console.log('[Admin] generate-invite-link response status:', response.status);
+
+    const responseText = await response.text();
+    console.log('[Admin] Raw generate-invite-link response:', responseText);
+
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error('[Admin] Failed to parse JSON:', e);
+      throw new Error(`Server returned invalid response: ${responseText.substring(0, 200)}`);
+    }
+
+    if (!response.ok) {
+      console.error('[Admin] Invite user failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: result.error,
+        resolvedRole: result.resolvedRole,
+        userId: result.userId,
+        details: result.details
+      })
+      throw new Error(result.error || 'Failed to send invitation')
+    }
+
+    showAlert('alertUser', 'success', '✓ User created! Copy the setup link below and send it to the user.')
+    displayInviteStatus('credentialsUser', {
+      email: email,
+      role: role,
+      note: 'Copy the setup link and send it to the user via WhatsApp, email, or any messaging app. They will use it to set their password.',
+      inviteLink: result.setupLink,
+      tempPassword: result.tempPassword
+    })
+    event.target.reset()
+
+  } catch (err) {
+    showAlert('alertUser', 'error', err.message)
+  } finally {
+    btn.disabled = false
+    btn.textContent = 'Invite User'
+  }
+}
+
+function showAlert(id, type, message) {
+  const alert = document.getElementById(id)
+  alert.className = `alert ${type} show`
+  alert.textContent = message
+  setTimeout(() => {
+    alert.classList.remove('show')
+  }, 5000)
+}
+
+function displayInviteStatus(containerId, info) {
+  const container = document.getElementById(containerId)
+  container.innerHTML = `
+    <h4>✓ Invitation Sent</h4>
+    <div class="credentials-row">
+      <div>
+        <div class="credentials-label">Email</div>
+        <div class="credentials-value">${info.email}</div>
+      </div>
+      <button class="btn-copy" onclick="copyText('${info.email}')">Copy</button>
+    </div>
+    ${info.orgName ? `
+    <div class="credentials-row">
+      <div>
+        <div class="credentials-label">Organisation</div>
+        <div class="credentials-value">${info.orgName}</div>
+      </div>
+    </div>
+    ` : ''}
+    ${info.role ? `
+    <div class="credentials-row">
+      <div>
+        <div class="credentials-label">Role</div>
+        <div class="credentials-value">${info.role.replace(/_/g, ' ')}</div>
+      </div>
+    </div>
+    ` : ''}
+    ${info.tempPassword ? `
+    <div class="credentials-row" style="margin-top:1rem;">
+      <div style="flex:1;">
+        <div class="credentials-label">🔑 Temporary Password (for reference only)</div>
+        <div class="credentials-value" style="font-size:.75rem;font-family:monospace;color:var(--t3);">${info.tempPassword}</div>
+      </div>
+      <button class="btn-copy" onclick="copyText('${info.tempPassword}')">Copy</button>
+    </div>
+    ` : ''}
+    ${info.inviteLink ? `
+    <div class="credentials-row" style="margin-top:1rem;">
+      <div style="flex:1;">
+        <div class="credentials-label">🔗 Password Setup Link (Send this to the user)</div>
+        <div class="credentials-value" style="font-size:.75rem;word-break:break-all;color:var(--blue);">${info.inviteLink}</div>
+      </div>
+      <button class="btn-copy" onclick="copyText('${info.inviteLink.replace(/'/g, "\\'")}')">Copy Link</button>
+    </div>
+    ` : ''}
+    <div style="margin-top:1rem;padding:1rem;background:rgba(245,158,11,.1);border:1px solid var(--amber);border-radius:6px;font-size:.8rem;color:var(--t2)">
+      <strong style="color:var(--amber)">📋 Next Step: Send Setup Link</strong><br>
+      ${info.note || 'Copy the password setup link above and send it to the user via email, WhatsApp, or any secure channel. The link expires in 24 hours.'}
+    </div>
+  `
+  container.style.display = 'block'
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text)
+  // Show feedback (optional)
+  event.target.textContent = 'Copied!'
+  setTimeout(() => {
+    event.target.textContent = 'Copy'
+  }, 2000)
+}
+
+// Load pending registration requests (Super Duper Admin only)
+async function loadPendingRegistrations() {
+  try {
+    // Load individual requests
+    const { data: individualRequests, error: individualError } = await sb
+      .from('registration_requests')
+      .select('*')
+      .eq('status', 'pending')
+      .order('requested_at', { ascending: false })
+
+    if (individualError) throw individualError
+
+    document.getElementById('individual-requests-loading').style.display = 'none'
+    const listEl = document.getElementById('individual-requests-list')
+    listEl.style.display = 'block'
+
+    if (individualRequests.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--t3)">No pending individual registration requests</div>'
+    } else {
+      listEl.innerHTML = individualRequests.map(req => `
+        <div style="background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1.5rem;margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem">
+            <div>
+              <div style="font-size:1.1rem;font-weight:700;color:var(--t1);margin-bottom:.5rem">${req.full_name}</div>
+              <div style="font-size:.85rem;color:var(--t3)">${req.email}</div>
+            </div>
+            <div style="font-size:.75rem;color:var(--t3)">${new Date(req.requested_at).toLocaleDateString()}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1rem;font-size:.85rem">
+            <div><span style="color:var(--t3)">Phone:</span> ${req.phone}</div>
+            <div><span style="color:var(--t3)">Country:</span> ${req.country}</div>
+            <div><span style="color:var(--t3)">Company:</span> ${req.company || 'NA'}</div>
+          </div>
+          <div style="display:flex;gap:1rem">
+            <button onclick="approveIndividualRequest('${req.id}')" style="background:var(--green);color:#fff;border:none;padding:.75rem 1.5rem;border-radius:6px;font-weight:600;cursor:pointer">✓ Approve & Send Password Link</button>
+            <button onclick="rejectRequest('${req.id}', 'individual')" style="background:var(--red);color:#fff;border:none;padding:.75rem 1.5rem;border-radius:6px;font-weight:600;cursor:pointer">✗ Reject</button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    // Load company requests
+    const { data: companyRequests, error: companyError } = await sb
+      .from('company_registration_requests')
+      .select('*')
+      .eq('status', 'pending')
+      .order('requested_at', { ascending: false })
+
+    if (companyError) throw companyError
+
+    document.getElementById('company-requests-loading').style.display = 'none'
+    const companyListEl = document.getElementById('company-requests-list')
+    companyListEl.style.display = 'block'
+
+    if (companyRequests.length === 0) {
+      companyListEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--t3)">No pending company registration requests</div>'
+    } else {
+      companyListEl.innerHTML = companyRequests.map(req => `
+        <div style="background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1.5rem;margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem">
+            <div>
+              <div style="font-size:1.2rem;font-weight:700;color:var(--amber);margin-bottom:.5rem">${req.company_name}</div>
+              <div style="font-size:.85rem;color:var(--t3)">${req.company_address}</div>
+            </div>
+            <div style="font-size:.75rem;color:var(--t3)">${new Date(req.requested_at).toLocaleDateString()}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1rem;padding:1rem;background:var(--s1);border-radius:6px">
+            <div>
+              <div style="font-size:.7rem;color:var(--t3);text-transform:uppercase;margin-bottom:.25rem">Senior Manager</div>
+              <div style="font-weight:600">${req.senior_manager_name}</div>
+              <div style="font-size:.85rem;color:var(--t2)">${req.senior_manager_designation}</div>
+              <div style="font-size:.85rem;color:var(--t3)">${req.senior_manager_email}</div>
+            </div>
+            <div>
+              <div style="font-size:.7rem;color:var(--t3);text-transform:uppercase;margin-bottom:.25rem">Company Super Admin</div>
+              <div style="font-weight:600">${req.super_admin_name}</div>
+              <div style="font-size:.85rem;color:var(--t3)">${req.super_admin_email}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:1rem;font-size:.85rem;margin-bottom:1rem">
+            <div style="padding:.5rem 1rem;background:var(--b1);border-radius:6px">
+              <span style="color:var(--t3)">Users:</span> <strong>${req.users ? JSON.parse(req.users).length : 0}</strong>
+            </div>
+            <div style="padding:.5rem 1rem;background:var(--b1);border-radius:6px">
+              <span style="color:var(--t3)">Teams:</span> <strong>${req.teams ? JSON.parse(req.teams).length : 0}</strong>
+            </div>
+          </div>
+          <div style="display:flex;gap:1rem">
+            <button onclick="window.location.href='#createSuperAdmin'; switchTab('createSuperAdmin')" style="background:var(--green);color:#fff;border:none;padding:.75rem 1.5rem;border-radius:6px;font-weight:600;cursor:pointer">✓ Approve & Create Company</button>
+            <button onclick="rejectRequest('${req.id}', 'company')" style="background:var(--red);color:#fff;border:none;padding:.75rem 1.5rem;border-radius:6px;font-weight:600;cursor:pointer">✗ Reject</button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+  } catch (err) {
+    console.error('[Admin] Error loading registrations:', err)
+    document.getElementById('individual-requests-loading').innerHTML = '<div style="color:var(--red)">Error loading requests: ' + err.message + '</div>'
+  }
+}
+
+// Approve individual registration
+async function approveIndividualRequest(requestId) {
+  if (!confirm('Approve this registration and send password-set link to user?')) return
+
+  try {
+    // Call Supabase function to approve (creates org, subscription)
+    const { data, error } = await sb.rpc('approve_individual_registration', {
+      request_id: requestId
+    })
+
+    if (error) throw error
+
+    alert(`✓ Registration approved!\n\nOrganization created (Company = NA)\n99-day CRM trial activated\n\nNow send password-set email to: ${data.email}`)
+
+    // TODO: Trigger password-set email via Supabase Auth Admin API
+    // For now, Super Duper Admin must manually create auth user in Supabase Dashboard
+
+    // Reload list
+    loadPendingRegistrations()
+
+  } catch (err) {
+    console.error('[Admin] Error approving registration:', err)
+    alert('Error: ' + err.message)
+  }
+}
+
+// Reject registration request
+async function rejectRequest(requestId, type) {
+  const reason = prompt('Rejection reason (optional):')
+  if (reason === null) return // User cancelled
+
+  try {
+    const table = type === 'individual' ? 'registration_requests' : 'company_registration_requests'
+
+    const { error } = await sb
+      .from(table)
+      .update({
+        status: 'rejected',
+        rejection_reason: reason || 'Request declined',
+        approved_at: new Date().toISOString(),
+        approved_by: currentUser.id
+      })
+      .eq('id', requestId)
+
+    if (error) throw error
+
+    alert('✓ Registration request rejected')
+    loadPendingRegistrations()
+
+  } catch (err) {
+    console.error('[Admin] Error rejecting request:', err)
+    alert('Error: ' + err.message)
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut()
+  window.location.href = '/app/auth.html'
+}
+
+init()
+</script>
+
+</body>
+</html>

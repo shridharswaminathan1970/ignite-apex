@@ -1,0 +1,145 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+LEAD-001,Leads,Create new lead,P0,"1. Go to CRM → Leads
+2. Click New Lead
+3. Fill: name, email, company, source
+4. Save","Lead created:
+- Record in opportunities table
+- Stage = Lead
+- Shows in leads list",,,PASS/FAIL,P0,
+LEAD-002,Leads,Lead name is required,P1,"1. Try to create lead without name
+2. Submit",Validation error: Name required,,,PASS/FAIL,P1,
+LEAD-003,Leads,Lead email validation,P1,"1. Enter invalid email (no @)
+2. Try to save",Validation error: Invalid email,,,PASS/FAIL,P1,
+LEAD-004,Leads,View lead details,P0,"1. Click on lead from list
+2. View detail page","Lead details shown:
+- Name, email, company
+- Source, created date
+- Activities log",,,PASS/FAIL,P0,
+LEAD-005,Leads,Edit lead details,P1,"1. Open lead
+2. Click Edit
+3. Change fields
+4. Save",Changes saved and reflected,,,PASS/FAIL,P1,
+LEAD-006,Leads,Delete lead,P1,"1. Select lead
+2. Click Delete
+3. Confirm","Lead deleted:
+- Removed from database
+- No longer in list",,,PASS/FAIL,P1,
+LEAD-007,Leads,Convert lead to opportunity,P0,"1. Open lead
+2. Click Convert to Opportunity
+3. Choose methodology
+4. Set stage
+5. Save","Lead converted:
+- Stage changed from Lead
+- Methodology set
+- Qualification tab available",,,PASS/FAIL,P0,
+LEAD-008,Leads,Filter leads by source,P2,"1. Go to leads list
+2. Filter by source (e.g., Website)
+3. View results",Only leads from that source shown,,,PASS/FAIL,P2,
+LEAD-009,Leads,Search leads by name,P1,"1. Enter name in search box
+2. Press Enter",Matching leads shown,,,PASS/FAIL,P1,
+LEAD-010,Leads,Sort leads by date,P2,"1. Click column header (Created Date)
+2. Toggle ascending/descending",Leads sorted correctly,,,PASS/FAIL,P2,
+OPP-001,Opportunities,Create new opportunity,P0,"1. Go to CRM → Opportunities
+2. Click New Opportunity
+3. Fill: name, account, amount, close date
+4. Choose methodology
+5. Save","Opportunity created:
+- Record in opportunities table
+- Stage = Qualification (10%)
+- Methodology set",,,PASS/FAIL,P0,
+OPP-002,Opportunities,Opportunity name is required,P1,"1. Try to create opp without name
+2. Submit",Validation error: Name required,,,PASS/FAIL,P1,
+OPP-003,Opportunities,Opportunity amount validation,P1,"1. Enter negative amount
+2. Try to save",Validation error: Amount must be positive,,,PASS/FAIL,P1,
+OPP-004,Opportunities,Choose IGNITE-APEX methodology,P0,"1. Create opportunity
+2. Select methodology: IGNITE-APEX
+3. Save","Methodology saved:
+- methodology = 'ignite_apex'
+- Qualification tab shows roadmap
+- Gates available",,,PASS/FAIL,P0,
+OPP-005,Opportunities,Choose Standard CRM methodology,P1,"1. Create opportunity
+2. Select methodology: Standard
+3. Save","Methodology saved:
+- methodology = 'standard'
+- Qualification tab shows BANT",,,PASS/FAIL,P1,
+OPP-006,Opportunities,View opportunity detail,P0,"1. Click opportunity from list
+2. View detail page","Details shown:
+- Overview tab
+- Qualification tab
+- Activities tab
+- Tasks tab",,,PASS/FAIL,P0,
+OPP-007,Opportunities,Edit opportunity amount,P1,"1. Open opportunity
+2. Edit amount
+3. Save",Amount updated in database,,,PASS/FAIL,P1,
+OPP-008,Opportunities,Edit opportunity close date,P1,"1. Open opportunity
+2. Change close date
+3. Save",Close date updated,,,PASS/FAIL,P1,
+OPP-009,Opportunities,Move opportunity to next stage,P0,"1. Open opportunity at Qualification 10%
+2. Meet all gates
+3. System auto-advances to Discovery 30%","Stage advanced:
+- pipeline_stage = Discovery
+- Forecast % = 30%
+- Stage badge updated",,,PASS/FAIL,P0,
+OPP-010,Opportunities,Cannot advance without meeting gates,P0,"1. Opportunity at Qualification 10%
+2. Gates not met
+3. Try to manually change stage","Stage blocked:
+- Stays at Qualification
+- Toast: Must meet gates first",,,PASS/FAIL,P0,Critical - enforces qualification
+OPP-011,Opportunities,Delete opportunity,P1,"1. Select opportunity
+2. Click Delete
+3. Confirm","Opportunity deleted:
+- Removed from database
+- Related activities deleted
+- No longer in pipeline",,,PASS/FAIL,P1,
+OPP-012,Opportunities,Filter by stage,P1,"1. Go to pipeline view
+2. Filter by stage (Discovery)
+3. View results",Only Discovery stage opps shown,,,PASS/FAIL,P1,
+OPP-013,Opportunities,Filter by methodology,P2,"1. Filter by IGNITE-APEX
+2. View results",Only IGNITE-APEX opps shown,,,PASS/FAIL,P2,
+OPP-014,Opportunities,Search opportunities,P1,"1. Enter search term
+2. Press Enter",Matching opportunities shown,,,PASS/FAIL,P1,
+OPP-015,Opportunities,Sort by amount,P2,"1. Click Amount column header
+2. Toggle sort",Opportunities sorted by $ amount,,,PASS/FAIL,P2,
+OPP-016,Pipeline,View pipeline visualization,P0,"1. Go to CRM → Pipeline
+2. View kanban board","Kanban board shown:
+- Columns for each stage
+- Opportunity cards
+- Drag-and-drop enabled",,,PASS/FAIL,P0,
+OPP-017,Pipeline,Drag opportunity to next stage,P1,"1. Drag opp from Qualification to Discovery
+2. Drop","If gates met: stage changes
+If gates not met: rejected with error",,,PASS/FAIL,P1,
+OPP-018,Pipeline,Pipeline shows weighted forecast,P0,"1. View pipeline
+2. Check total forecast","Total forecast shown:
+- Sum of (amount × stage %)
+- Accurate calculation",,,PASS/FAIL,P0,
+OPP-019,Forecast,Forecast board shows summary,P0,"1. Go to Forecast Board
+2. View by stage","Forecast shown:
+- Total by stage
+- Count of opportunities
+- Weighted $ amount",,,PASS/FAIL,P0,
+OPP-020,Forecast,Forecast filters by user,P1,"1. Filter forecast by user
+2. View results",Only that user's opportunities shown,,,PASS/FAIL,P1,
+OPP-021,Forecast,Forecast filters by team,P1,"1. Filter forecast by team
+2. View results",Only that team's opportunities shown,,,PASS/FAIL,P1,
+OPP-022,Forecast,Forecast filters by close date,P2,"1. Filter by This Quarter
+2. View results",Only Q opps shown,,,PASS/FAIL,P2,
+OPP-023,Won Deals,Mark opportunity as Closed Won,P0,"1. Move opp to Closed Won 100%
+2. System prompts for close date
+3. Confirm","Opportunity closed won:
+- Stage = Closed Won
+- Close date saved
+- Removed from active pipeline
+- Counted in revenue",,,PASS/FAIL,P0,
+OPP-024,Lost Deals,Mark opportunity as Closed Lost,P1,"1. Select opportunity
+2. Click Mark as Lost
+3. Enter reason
+4. Save","Opportunity closed lost:
+- Stage = Closed Lost
+- Reason saved
+- Removed from pipeline
+- Tracked in reports",,,PASS/FAIL,P1,
+OPP-025,Reopening,Reopen closed opportunity,P2,"1. Open closed opp
+2. Click Reopen
+3. Confirm","Opportunity reopened:
+- Stage = previous stage
+- Back in active pipeline",,,PASS/FAIL,P2,

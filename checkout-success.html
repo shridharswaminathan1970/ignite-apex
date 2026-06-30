@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Activated — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--green:#10B981;--blue:#3B82F6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1);display:flex;align-items:center;justify-content:center}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.success-container{position:relative;z-index:1;max-width:600px;text-align:center;padding:3rem 2rem}
+.success-icon{font-size:5rem;margin-bottom:2rem;animation:scaleIn .5s ease}
+.success-title{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--green);margin-bottom:1rem}
+.success-message{font-size:1.1rem;color:var(--t2);line-height:1.7;margin-bottom:2rem}
+
+.info-box{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;margin-bottom:2rem;text-align:left}
+.info-title{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:1rem}
+.info-row{display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--b1);font-size:.9rem}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--t3)}
+.info-value{color:var(--t1);font-weight:600}
+
+.btn-primary{background:var(--amber);color:#000;border:none;padding:1rem 2rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;margin:.5rem}
+.btn-primary:hover{background:#FCD34D;transform:translateY(-2px)}
+
+.btn-secondary{background:var(--s2);color:var(--t1);border:1px solid var(--b1);padding:1rem 2rem;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;margin:.5rem}
+.btn-secondary:hover{border-color:var(--amber)}
+
+@keyframes scaleIn{
+  from{transform:scale(0);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+</style>
+</head>
+<body>
+
+<div class="success-container">
+  <div class="success-icon">✅</div>
+  <h1 class="success-title">Subscription Activated!</h1>
+  <p class="success-message">
+    Welcome to IGNITE_APEX CRM. Your subscription is now active and your team can access all features.
+  </p>
+
+  <div class="info-box">
+    <div class="info-title">Subscription Details</div>
+    <div class="info-row">
+      <span class="info-label">Plan</span>
+      <span class="info-value" id="plan-name">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Billing Cycle</span>
+      <span class="info-value" id="billing-cycle">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">User Limit</span>
+      <span class="info-value" id="user-limit">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Checkout ID</span>
+      <span class="info-value" id="checkout-id" style="font-family:monospace;font-size:.8rem">—</span>
+    </div>
+  </div>
+
+  <div>
+    <a href="./crm/index.html" class="btn-primary">Go to CRM Dashboard</a>
+    <a href="./pricing.html" class="btn-secondary">Manage Subscription</a>
+  </div>
+
+  <p style="font-size:.85rem;color:var(--t3);margin-top:2rem">
+    A confirmation email has been sent to your inbox with your receipt and subscription details.
+  </p>
+</div>
+
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const checkoutId = params.get('checkout_id');
+
+  if (checkoutId) {
+    document.getElementById('checkout-id').textContent = checkoutId;
+  }
+
+  // You can fetch subscription details from Supabase here if needed
+  // For now, just show the checkout ID
+})();
+</script>
+
+</body>
+</html>

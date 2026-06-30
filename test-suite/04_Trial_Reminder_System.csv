@@ -1,0 +1,91 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+TRIAL-001,Trial Reminders Column Exists,Database,Access to database,"1. Run: SELECT column_name, data_type FROM information_schema.columns WHERE table_name='org_subscriptions' AND column_name='trial_reminders_sent'","Column exists:
+- Name: trial_reminders_sent
+- Type: jsonb
+- Default: '{}'",,Pending,Critical,Schema check
+TRIAL-002,Day 90 Popup - Trigger Condition,Functional,User with CRM trial 9 days from expiry,"1. Set: trial_ends_at = now() + interval '9 days', status='trial', crm_enabled=true
+2. Login as user
+3. Navigate to /crm/index.html","1. Popup appears immediately
+2. Title: 'Trial Ending Soon!'
+3. Shows '9 Days Remaining'
+4. Reminder schedule displayed
+5. Two buttons: Subscribe Now / Remind Me Later",,Pending,Critical,Day 90 popup trigger
+TRIAL-003,Day 90 Popup - Content Verification,UI,TRIAL-002 popup visible,"1. Review popup content","Popup contains:
+- ⏰ icon
+- Days remaining (large text)
+- Reminder schedule (120/130/140)
+- Warning about deactivation
+- Subscribe Now → /pricing.html
+- Remind Me Later (closes popup)",,Pending,High,Content verification
+TRIAL-004,Day 90 Popup - Subscribe CTA,Functional,Popup visible,"1. Click 'Subscribe Now' button","Redirected to /pricing.html
+Can view subscription plans",,Pending,High,CTA functionality
+TRIAL-005,Day 90 Popup - Remind Later,Functional,Popup visible,"1. Click 'Remind Me Later'","Popup closes
+Can continue using CRM
+Popup won't show again (marked in DB)",,Pending,Medium,Dismiss functionality
+TRIAL-006,Day 90 Popup - Only Shows Once,Functional,TRIAL-002 passed,"1. Close popup (Remind Later)
+2. Refresh page
+3. Navigate to different CRM page","Popup does NOT appear again
+trial_reminders_sent.day90 has timestamp in database",,Pending,Critical,Tests duplicate prevention
+TRIAL-007,Day 90 Popup - Does Not Show if Already Sent,Negative,trial_reminders_sent.day90 exists,"1. Login as user
+2. Navigate to CRM","Popup does NOT show
+Script checks DB and skips display",,Pending,High,Tests DB check logic
+TRIAL-008,Day 90 Popup - Does Not Show After Trial Expired,Negative,Trial expired (trial_ends_at < now()),"1. Set trial to expired
+2. Login
+3. Try to access CRM","1. Redirected to pricing (CRM locked)
+2. Popup does NOT show
+3. CRM access denied",,Pending,High,Tests expiry logic
+TRIAL-009,Cron Function - Day 120 Detection,Functional,Trial expired 21 days ago,"1. Set: trial_ends_at = now() - interval '21 days', status='expired', crm_enabled=false
+2. Ensure trial_reminders_sent.day120 is NULL
+3. Call: POST /functions/v1/trial-reminder-cron","1. Function returns: day120_email = 1
+2. Email sent to user
+3. trial_reminders_sent.day120 = current timestamp",,Pending,Critical,Day 120 detection
+TRIAL-010,Cron Function - Day 130 Detection,Functional,Trial expired 31 days ago,"1. Set: trial_ends_at = now() - interval '31 days', status='expired'
+2. Ensure trial_reminders_sent.day130 is NULL
+3. Call cron function","1. Function returns: day130_email = 1
+2. Email sent
+3. trial_reminders_sent.day130 = timestamp",,Pending,Critical,Day 130 detection
+TRIAL-011,Cron Function - Day 140 Detection,Functional,Trial expired 41 days ago,"1. Set: trial_ends_at = now() - interval '41 days', status='expired'
+2. Ensure trial_reminders_sent.day140 is NULL
+3. Call cron function","1. Function returns: day140_email = 1
+2. Final warning email sent
+3. trial_reminders_sent.day140 = timestamp",,Pending,Critical,Day 140 final warning
+TRIAL-012,Cron Function - No Duplicate Sends,Functional,Day 120 already sent,"1. Set trial_reminders_sent.day120 = past timestamp
+2. Call cron function","Function returns: day120_email = 0
+No email sent (duplicate prevented)",,Pending,Critical,Duplicate prevention
+TRIAL-013,Cron Function - Multiple Users,Functional,3 users at different reminder days,"1. Create User A: Day 90
+2. Create User B: Day 120
+3. Create User C: Day 130
+4. Call cron function","Function processes all:
+day90_popup = 1
+day120_email = 1
+day130_email = 1
+All marked in database",,Pending,High,Batch processing
+TRIAL-014,Cron Function - No Eligible Users,Functional,No users need reminders,"1. Ensure no users match criteria
+2. Call cron function","Function returns:
+day90_popup = 0
+day120_email = 0
+day130_email = 0
+day140_email = 0
+Success response",,Pending,Medium,Empty result test
+TRIAL-015,Cron Function - Error Handling,Negative,Email service unavailable,"1. Temporarily break email sending (wrong API key)
+2. Call cron function with eligible user","Function logs error
+Continues processing other users
+Returns partial success
+Does NOT mark as sent if email failed",,Pending,High,Error handling
+TRIAL-016,Cron Job Scheduled,Configuration,Access to database,"1. Check: SELECT * FROM cron.job WHERE jobname='trial-reminders-daily'","Cron job exists:
+- Schedule: '0 9 * * *' (daily 9 AM UTC)
+- Command calls trial-reminder-cron function
+- Active: true",,Pending,Critical,Cron schedule check
+TRIAL-017,Day 120 Email Content,Email,Day 120 email sent,"1. Trigger Day 120 email
+2. Check inbox","Email received:
+- Subject: '⏰ Your IGNITE-APEX CRM Trial Expired - Reactivate Now'
+- Friendly tone
+- CTA to pricing
+- Mentions 21 days expired",,Pending,High,Email content check
+TRIAL-018,Day 140 Email Content,Email,Day 140 email sent,"1. Trigger Day 140 email
+2. Check inbox","Email received:
+- Subject: '🚨 FINAL WARNING: ...'
+- Critical tone
+- Red theme
+- Large CTA
+- States 'last email'",,Pending,High,Final warning check

@@ -1,0 +1,82 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+REG-001,Individual User Registration - Valid Data,Functional,None,"1. Navigate to /app/register.html
+2. Fill in: Name='Test User', Email='test+001@yourdomain.com', Phone='+1234567890', Country='USA'
+3. Click 'Request Account'","1. Success message displayed
+2. Record inserted into registration_requests table
+3. Status = 'pending'
+4. Company = 'NA'
+5. Email sent to Super Duper Admin",,Pending,Critical,Use + alias emails for testing
+REG-002,Individual Registration - Duplicate Email,Negative,REG-001 passed,"1. Navigate to /app/register.html
+2. Use same email as REG-001
+3. Click 'Request Account'","Error: 'Email already exists' or similar
+User not allowed to register again",,Pending,High,Tests unique email constraint
+REG-003,Individual Registration - Missing Required Field,Negative,None,"1. Navigate to /app/register.html
+2. Fill in Name and Email only
+3. Leave Phone and Country blank
+4. Click 'Request Account'","Form validation error
+Submit button disabled or error message shown",,Pending,Medium,Tests client-side validation
+REG-004,Individual Registration - Invalid Email Format,Negative,None,"1. Navigate to /app/register.html
+2. Enter Email='notanemail'
+3. Fill other fields
+4. Click 'Request Account'","Email validation error
+'Please enter a valid email' message",,Pending,Medium,Tests email format validation
+REG-005,Company Registration - Valid Data,Functional,None,"1. Navigate to /app/register-company.html
+2. Fill all company details
+3. Fill Senior Manager details
+4. Fill Super Admin details (different person)
+5. Add 2 users
+6. Add 1 team
+7. Click 'Submit Registration Request'","1. Success message displayed
+2. Record inserted into company_registration_requests
+3. Status = 'pending'
+4. JSON data for users and teams stored correctly
+5. Email sent to Super Duper Admin",,Pending,Critical,Test with complete data
+REG-006,Company Registration - Same as Senior Manager,Functional,None,"1. Navigate to /app/register-company.html
+2. Fill Senior Manager details
+3. Check 'Same as Senior Manager' checkbox for Super Admin
+4. Verify fields auto-filled and disabled
+5. Submit","1. Super Admin fields match Senior Manager
+2. Form submits successfully
+3. Data saved correctly with same person",,Pending,High,Tests UX feature
+REG-007,Company Registration - Missing Company Info,Negative,None,"1. Navigate to /app/register-company.html
+2. Leave Company Name blank
+3. Fill other required fields
+4. Submit","Form validation error
+Cannot submit without company name",,Pending,Medium,Tests required field validation
+REG-008,Super Duper Admin Approves Individual Request,Functional,REG-001 passed,"1. Login as muhammad.shaamel@gmail.com (Super Duper Admin)
+2. Navigate to /app/admin.html
+3. Click 'Pending Registrations' tab
+4. Find test user from REG-001
+5. Click 'Approve'","1. Modal/confirmation shown
+2. User record created in users table
+3. Org created with name='NA'
+4. Subscription created: status='free', crm_enabled=false, b2b0_enabled=false
+5. Password reset email sent to user
+6. Registration request status → 'approved'",,Pending,Critical,Core approval workflow
+REG-009,Super Duper Admin Rejects Individual Request,Functional,New registration request,"1. Login as Super Duper Admin
+2. Go to Pending Registrations
+3. Click 'Reject' on a request
+4. Enter rejection reason
+5. Confirm","1. Request status → 'rejected'
+2. Rejection reason saved
+3. User NOT created
+4. No email sent",,Pending,High,Tests rejection path
+REG-010,User Sets Password After Approval,Functional,REG-008 passed,"1. Click password reset link from email (REG-008)
+2. Enter new password (meets requirements)
+3. Confirm password
+4. Click 'Set Password'","1. Password set successfully
+2. Redirected to login page
+3. Can login with new password
+4. Redirected to launcher",,Pending,Critical,End-to-end user journey
+REG-011,Password Reset Link Expiry,Negative,Password link generated,"1. Wait 25 hours after email sent
+2. Click password reset link
+3. Try to set password","Error: 'Link expired' or similar
+Cannot set password
+Redirected to request new link",,Pending,Medium,Tests 24-hour expiry
+REG-012,Registration Flow for Enterprise User,Functional,Company approved by admin,"1. Super Admin of approved company adds user
+2. User receives invitation email
+3. User sets password
+4. User logs in","1. User created with correct company/org
+2. User inherits company subscription
+3. CRM access based on company plan
+4. Can access Sales OS immediately",,Pending,High,Tests company user flow

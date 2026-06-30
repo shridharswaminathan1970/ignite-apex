@@ -1,0 +1,96 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+ADM-001,User Management,Create new user,P0,"1. Admin goes to company dashboard
+2. Click Create User
+3. Fill: name, email, role
+4. Save","User created:
+- Record in users table
+- Email sent (if configured)
+- Shows in user list",,,PASS/FAIL,P0,
+ADM-002,User Management,User email is required,P1,"1. Try to create user without email
+2. Submit",Validation error: Email required,,,PASS/FAIL,P1,
+ADM-003,User Management,Duplicate email blocked,P1,"1. Try to create user with existing email
+2. Submit","Error: Email already exists",,,PASS/FAIL,P1,
+ADM-004,User Management,Edit user details,P1,"1. Select user
+2. Click Edit
+3. Change fields
+4. Save",Changes saved and reflected,,,PASS/FAIL,P1,
+ADM-005,User Management,Change user role,P0,"1. Select user
+2. Change role (SDR → Account Executive)
+3. Save","Role updated:
+- Permissions change
+- User sees role in profile",,,PASS/FAIL,P0,
+ADM-006,User Management,Deactivate user,P1,"1. Select active user
+2. Click Deactivate
+3. Confirm","User deactivated:
+- Cannot log in
+- Still in database
+- Can reactivate",,,PASS/FAIL,P1,
+ADM-007,User Management,Delete user,P1,"1. Select user with no data
+2. Click Delete
+3. Confirm","User deleted:
+- Removed from database",,,PASS/FAIL,P1,
+ADM-008,User Management,Cannot delete user with data,P0,"1. Try to delete user with opportunities
+2. Attempt deletion","Error: Cannot delete
+Message: User owns X opportunities
+Prompt: Reassign first",,,PASS/FAIL,P0,Prevents data orphaning
+ADM-009,User Management,Reassign user data,P1,"1. Select user with data
+2. Click Reassign
+3. Choose new owner
+4. Confirm","Data reassigned:
+- Opportunities transferred
+- Activities transferred
+- Old user can be deleted",,,PASS/FAIL,P1,
+ADM-010,User Management,View user activity log,P2,"1. Select user
+2. View activity log","Log shown:
+- Login history
+- Actions taken
+- Timestamps",,,PASS/FAIL,P2,
+ADM-011,Role Permissions,Super admin can access everything,P0,"1. Login as super_duper_admin
+2. Navigate all pages","Full access:
+- All organizations
+- All admin functions
+- All modules",,,PASS/FAIL,P0,
+ADM-012,Role Permissions,Admin limited to own org,P0,"1. Login as admin (not super)
+2. Try to access other org","Cannot access other orgs:
+- Only own org visible
+- No cross-org data",,,PASS/FAIL,P0,
+ADM-013,Role Permissions,SDR limited permissions,P1,"1. Login as SDR
+2. Try to access admin dashboard","Access denied:
+- Cannot manage users
+- Cannot see settings",,,PASS/FAIL,P1,
+ADM-014,Role Permissions,Account Executive permissions,P1,"1. Login as account_executive
+2. Check access","Can:
+- Manage own opportunities
+- View team data
+- Log activities
+Cannot:
+- Manage users
+- Delete data",,,PASS/FAIL,P1,
+ADM-015,Settings,Update organization settings,P1,"1. Admin opens settings
+2. Change org name, domain
+3. Save",Settings updated and reflected,,,PASS/FAIL,P1,
+ADM-016,Settings,Toggle CRM access,P0,"1. Admin toggles crm_enabled OFF
+2. User tries to access CRM","CRM blocked:
+- Redirected to Sales OS
+- Message: CRM not enabled",,,PASS/FAIL,P0,
+ADM-017,Settings,Set user limit,P1,"1. Admin sets max_users = 5
+2. Try to add 6th user","6th user blocked:
+Error: User limit reached",,,PASS/FAIL,P1,
+ADM-018,Invite Codes,Generate invite code,P1,"1. Admin clicks Generate Code
+2. Code created
+3. Copy code","Code generated:
+- Unique code
+- Linked to org_id
+- Expiry date set",,,PASS/FAIL,P1,
+ADM-019,Invite Codes,Use invite code for signup,P0,"1. New user goes to signup
+2. Enters invite code
+3. Registers","Signup successful:
+- User created
+- Linked to org
+- Code marked as used",,,PASS/FAIL,P0,
+ADM-020,Audit Log,View audit trail,P2,"1. Admin views audit log
+2. Check entries","Log shown:
+- User actions
+- Data changes
+- Timestamps
+- IP addresses",,,PASS/FAIL,P2,

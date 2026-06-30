@@ -1,0 +1,11 @@
+Sheet Number,Sheet Name,Test Category,Total Tests,Priority,Dependencies
+01,Registration Workflows,User Onboarding,12,Critical,None
+02,Authentication & Authorization,Security,10,Critical,Sheet 01
+03,B2B0 Module Integration,Feature,15,High,Sheet 02
+04,Trial Reminder System,Automation,18,High,Sheet 02
+05,Paddle Checkout Flow,Payment,20,Critical,Sheet 02
+06,Email Service,Communication,14,High,Sheet 04 & 05
+07,Launcher & Module Gates,UI/Access Control,16,High,Sheet 02
+08,CRM Access & Trial Activation,Feature,14,Critical,Sheet 02
+09,Admin Panel Functions,Administration,16,Critical,Sheet 02
+10,Database Integrity,Data,12,Critical,All sheets

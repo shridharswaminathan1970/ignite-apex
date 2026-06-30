@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity Templates — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:1400px;margin:0 auto;padding:2rem}
+.page-title{font-size:2rem;font-weight:700;margin-bottom:2rem}
+
+.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:1.5rem;margin-bottom:3rem}
+.template-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;transition:all .2s}
+.template-card:hover{border-color:var(--amber)}
+.template-type{display:inline-block;background:var(--s2);color:var(--amber);padding:.3rem .75rem;border-radius:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;margin-bottom:.75rem}
+.template-name{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+.template-desc{font-size:.85rem;color:var(--t2);margin-bottom:1rem}
+.btn{background:var(--amber);color:#000;border:none;padding:.6rem 1.2rem;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn:hover{background:var(--amber2)}
+.btn-secondary{background:var(--s2);color:var(--t1);border:1px solid var(--b1)}
+
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.section-title{font-size:1.5rem;font-weight:700}
+
+.loading{text-align:center;padding:3rem;color:var(--t3)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <div class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./pipeline.html">Pipeline</a>
+    <a href="./activity-templates.html">Templates</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="section-header">
+    <div class="page-title">📋 Activity & Task Templates</div>
+  </div>
+
+  <!-- Activity Templates -->
+  <div class="section-header">
+    <div class="section-title">Activity Templates</div>
+  </div>
+  <div class="template-grid" id="activity-templates">
+    <div class="loading">Loading activity templates...</div>
+  </div>
+
+  <!-- Task Auto-Creation Templates -->
+  <div class="section-header">
+    <div class="section-title">Auto-Task Templates</div>
+    <div style="font-size:.85rem;color:var(--t3)">Auto-create tasks when opportunity enters a stage</div>
+  </div>
+  <div class="template-grid" id="task-templates">
+    <div class="loading">Loading task templates...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+
+<script>
+let currentUser = null;
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) { resolve(window.supabaseClient); return; }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) { clearInterval(interval); resolve(window.supabaseClient); }
+    }, 50);
+  });
+}
+
+(async function init() {
+  try {
+    const sb = await waitForSupabaseClient();
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '../app/auth.html'; return; }
+
+    const { data: profile } = await sb.from('users').select('*').eq('id', session.user.id).single();
+    if (!profile || !profile.crm_enabled) { window.location.href = '../system/index.html'; return; }
+
+    window.currentUser = profile;
+    currentUser = profile;
+
+    await Promise.all([loadActivityTemplates(), loadTaskTemplates()]);
+  } catch (err) {
+    console.error('[Templates] Init error:', err);
+  }
+})();
+
+async function loadActivityTemplates() {
+  try {
+    const { data: templates, error } = await window.supabaseClient
+      .from('activity_templates')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .order('type', { ascending: true });
+
+    if (error) throw error;
+
+    const typeIcons = { call: '📞', email: '📧', meeting: '🤝', note: '📝' };
+
+    const html = templates.map(t => `
+      <div class="template-card">
+        <div class="template-type">${typeIcons[t.type] || ''} ${t.type}</div>
+        <div class="template-name">${t.name}</div>
+        <div class="template-desc">${t.description || t.subject_template}</div>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn" onclick="useTemplate('${t.id}')">Use Template</button>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('activity-templates').innerHTML = html || '<div style="padding:2rem;text-align:center;color:var(--t3)">No activity templates</div>';
+  } catch (err) {
+    console.error('[Templates] Load error:', err);
+    document.getElementById('activity-templates').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--red)">Error loading templates</div>';
+  }
+}
+
+async function loadTaskTemplates() {
+  try {
+    const { data: templates, error } = await window.supabaseClient
+      .from('task_templates')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .eq('is_active', true)
+      .order('trigger_stage', { ascending: true });
+
+    if (error) throw error;
+
+    const stageColors = {
+      'Qualification': 'var(--red)',
+      'Discovery': 'var(--amber)',
+      'Demo': 'var(--blue)',
+      'Proposal': 'var(--green)',
+      'Negotiation': 'var(--purple)',
+      'Closed Won': 'var(--green)'
+    };
+
+    const html = templates.map(t => `
+      <div class="template-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+          <div class="template-type" style="background:${stageColors[t.trigger_stage] || 'var(--s2)'}">
+            ${t.trigger_stage}
+          </div>
+          <div style="font-size:.75rem;color:var(--t3)">+${t.due_days_offset}d</div>
+        </div>
+        <div class="template-name">${t.name}</div>
+        <div class="template-desc">${t.description_template || t.subject_template}</div>
+        <div style="font-size:.75rem;color:var(--t3);margin-top:.75rem">
+          Priority: ${t.priority} • Reminder: ${t.reminder_minutes}min before
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('task-templates').innerHTML = html || '<div style="padding:2rem;text-align:center;color:var(--t3)">No task templates</div>';
+  } catch (err) {
+    console.error('[Templates] Load error:', err);
+    document.getElementById('task-templates').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--red)">Error loading templates</div>';
+  }
+}
+
+function useTemplate(templateId) {
+  alert('Template usage coming soon - will pre-fill activity form');
+}
+</script>
+
+</body>
+</html>

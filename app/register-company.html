@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Registration — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--red:#EF4444;--blue:#3B82F6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.auth-container{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem}
+.auth-logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--amber);letter-spacing:2px;margin-bottom:2rem}
+.auth-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:2.5rem;box-shadow:0 8px 32px rgba(0,0,0,.4);max-width:900px;width:100%}
+.auth-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--t1);margin-bottom:.5rem;text-align:center}
+.auth-subtitle{font-size:.85rem;color:var(--t3);text-align:center;margin-bottom:2rem}
+
+.section-title{font-size:1.1rem;font-weight:700;color:var(--amber);margin:2rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--b1)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:768px){.form-grid{grid-template-columns:1fr}}
+
+.form-group{margin-bottom:1.5rem}
+.form-group.full{grid-column:1/-1}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.85rem;color:var(--t1);font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.form-input:focus{outline:none;border-color:var(--amber)}
+.form-input::placeholder{color:var(--t3)}
+.form-hint{font-size:.75rem;color:var(--t3);margin-top:.5rem}
+textarea.form-input{min-height:100px;resize:vertical}
+
+.btn-primary{width:100%;background:var(--amber);color:#000;padding:.95rem;border-radius:10px;font-size:.9rem;font-weight:700;border:none;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.btn-primary:hover{background:var(--amber2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.alert{padding:1rem;border-radius:8px;margin-bottom:1.5rem;font-size:.85rem;display:none}
+.alert.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.alert.error{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.alert.info{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+
+.success-message{display:none;text-align:center;padding:2rem}
+.success-message h3{color:var(--green);margin-bottom:1rem;font-size:1.3rem}
+.success-message p{color:var(--t2);line-height:1.6;margin-bottom:1rem}
+.success-icon{font-size:4rem;margin-bottom:1rem}
+
+.link-section{text-align:center;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--b1)}
+.link-text{font-size:.85rem;color:var(--t3)}
+.link-text a{color:var(--amber);text-decoration:none;font-weight:600}
+.link-text a:hover{text-decoration:underline}
+
+.dynamic-list{margin-top:1rem}
+.dynamic-item{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1rem;margin-bottom:1rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center}
+.dynamic-item-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem}
+.dynamic-item-field{font-size:.85rem}
+.dynamic-item-label{color:var(--t3);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}
+.dynamic-item-value{color:var(--t1)}
+.btn-remove{background:var(--red);color:#fff;border:none;padding:.5rem 1rem;border-radius:6px;font-size:.8rem;cursor:pointer}
+.btn-add{background:var(--blue);color:#fff;border:none;padding:.75rem 1.5rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<div class="auth-container">
+  <div class="auth-logo">IGNITE_APEX</div>
+
+  <div class="auth-card">
+    <h1 class="auth-title">Enterprise Registration</h1>
+    <p class="auth-subtitle">Request company account setup</p>
+
+    <div id="alert" class="alert"></div>
+
+    <form id="company-form" onsubmit="submitCompanyRegistration(event); return false;">
+
+      <!-- Company Information -->
+      <div class="section-title">Company Information</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Company Name</label>
+          <input type="text" class="form-input" id="company_name" required placeholder="Acme Corporation">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Company Address</label>
+          <textarea class="form-input" id="company_address" required placeholder="123 Business St, City, State, ZIP"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company URL</label>
+          <input type="url" class="form-input" id="company_url" placeholder="https://acmecorp.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company Phone</label>
+          <input type="tel" class="form-input" id="company_phone" required placeholder="+1 234 567 8900">
+        </div>
+      </div>
+
+      <!-- Senior Manager -->
+      <div class="section-title">Senior Manager</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="sm_name" required placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Designation</label>
+          <input type="text" class="form-input" id="sm_designation" required placeholder="VP of Sales">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="sm_email" required placeholder="john@acmecorp.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-input" id="sm_phone" required placeholder="+1 234 567 8901">
+        </div>
+      </div>
+
+      <!-- Super Admin -->
+      <div class="section-title">Company Super Admin</div>
+      <div style="margin-bottom:1rem">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.9rem;color:var(--t2)">
+          <input type="checkbox" id="same-as-senior" onchange="toggleSameAsSenior()" style="width:auto;cursor:pointer">
+          Same as Senior Manager (above)
+        </label>
+      </div>
+      <div class="form-grid" id="super-admin-fields">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="sa_name" required placeholder="Jane Doe">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="sa_email" required placeholder="jane@acmecorp.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-input" id="sa_phone" required placeholder="+1 234 567 8902">
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div class="section-title">Users (Optional)</div>
+      <div class="form-hint" style="margin-bottom:1rem">Add initial users for this company. More can be added later.</div>
+      <div id="users-list" class="dynamic-list"></div>
+      <button type="button" class="btn-add" onclick="addUser()">+ Add User</button>
+
+      <!-- Teams -->
+      <div class="section-title">Teams (Optional)</div>
+      <div class="form-hint" style="margin-bottom:1rem">Define sales teams. Teams can be created later by Super Admin.</div>
+      <div id="teams-list" class="dynamic-list"></div>
+      <button type="button" class="btn-add" onclick="addTeam()">+ Add Team</button>
+
+      <button type="submit" class="btn-primary" id="submit-btn" style="margin-top:2rem">Submit Registration Request</button>
+    </form>
+
+    <div id="success-message" class="success-message">
+      <div class="success-icon">✓</div>
+      <h3>Request Submitted!</h3>
+      <p>Your enterprise registration request has been sent to our team.</p>
+      <p>We'll review your request and contact you within 24-48 hours to set up your company account.</p>
+      <p style="font-size:.8rem;color:var(--t3);margin-top:1rem">Questions? Contact: muhammad.shaamel@gmail.com</p>
+    </div>
+
+    <div class="link-section">
+      <p class="link-text">Individual user? <a href="./register.html">Register as individual</a> · <a href="./auth.html">Sign In</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script>
+let users = [];
+let teams = [];
+
+function showAlert(type, message) {
+  const alert = document.getElementById('alert');
+  alert.className = `alert ${type}`;
+  alert.textContent = message;
+  alert.style.display = 'block';
+}
+
+function toggleSameAsSenior() {
+  const checkbox = document.getElementById('same-as-senior');
+  const fields = document.getElementById('super-admin-fields');
+  const saName = document.getElementById('sa_name');
+  const saEmail = document.getElementById('sa_email');
+  const saPhone = document.getElementById('sa_phone');
+
+  if (checkbox.checked) {
+    // Copy Senior Manager details to Super Admin
+    saName.value = document.getElementById('sm_name').value;
+    saEmail.value = document.getElementById('sm_email').value;
+    saPhone.value = document.getElementById('sm_phone').value;
+
+    // Disable fields (read-only)
+    saName.disabled = true;
+    saEmail.disabled = true;
+    saPhone.disabled = true;
+
+    // Visual feedback
+    fields.style.opacity = '0.6';
+    fields.style.pointerEvents = 'none';
+  } else {
+    // Re-enable fields
+    saName.disabled = false;
+    saEmail.disabled = false;
+    saPhone.disabled = false;
+
+    // Clear values
+    saName.value = '';
+    saEmail.value = '';
+    saPhone.value = '';
+
+    // Restore visual
+    fields.style.opacity = '1';
+    fields.style.pointerEvents = 'auto';
+  }
+}
+
+function addUser() {
+  const userName = prompt('User Name:');
+  const userRole = prompt('User Role (admin/manager/user):');
+  const reportsTo = prompt('Reports To:');
+  const team = prompt('Team:');
+
+  if (userName && userRole) {
+    users.push({ name: userName, role: userRole, reports_to: reportsTo || 'N/A', team: team || 'N/A' });
+    renderUsers();
+  }
+}
+
+function removeUser(index) {
+  users.splice(index, 1);
+  renderUsers();
+}
+
+function renderUsers() {
+  const list = document.getElementById('users-list');
+  list.innerHTML = users.map((user, index) => `
+    <div class="dynamic-item">
+      <div class="dynamic-item-fields">
+        <div class="dynamic-item-field">
+          <div class="dynamic-item-label">Name</div>
+          <div class="dynamic-item-value">${user.name}</div>
+        </div>
+        <div class="dynamic-item-field">
+          <div class="dynamic-item-label">Role</div>
+          <div class="dynamic-item-value">${user.role}</div>
+        </div>
+        <div class="dynamic-item-field">
+          <div class="dynamic-item-label">Reports To</div>
+          <div class="dynamic-item-value">${user.reports_to}</div>
+        </div>
+        <div class="dynamic-item-field">
+          <div class="dynamic-item-label">Team</div>
+          <div class="dynamic-item-value">${user.team}</div>
+        </div>
+      </div>
+      <button type="button" class="btn-remove" onclick="removeUser(${index})">Remove</button>
+    </div>
+  `).join('');
+}
+
+function addTeam() {
+  const teamName = prompt('Team Name:');
+  const teamManager = prompt('Team Manager:');
+
+  if (teamName) {
+    teams.push({ team_name: teamName, team_manager: teamManager || 'N/A' });
+    renderTeams();
+  }
+}
+
+function removeTeam(index) {
+  teams.splice(index, 1);
+  renderTeams();
+}
+
+function renderTeams() {
+  const list = document.getElementById('teams-list');
+  list.innerHTML = teams.map((team, index) => `
+    <div class="dynamic-item">
+      <div class="dynamic-item-fields">
+        <div class="dynamic-item-field">
+          <div class="dynamic-item-label">Team Name</div>
+          <div class="dynamic-item-value">${team.team_name}</div>
+        </div>
+        <div class="dynamic-item-field">
+          <div class="dynamic-item-label">Team Manager</div>
+          <div class="dynamic-item-value">${team.team_manager}</div>
+        </div>
+      </div>
+      <button type="button" class="btn-remove" onclick="removeTeam(${index})">Remove</button>
+    </div>
+  `).join('');
+}
+
+async function submitCompanyRegistration(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  document.getElementById('alert').style.display = 'none';
+
+  try {
+    const requestData = {
+      company_name: document.getElementById('company_name').value.trim(),
+      company_address: document.getElementById('company_address').value.trim(),
+      company_url: document.getElementById('company_url').value.trim(),
+      company_phone: document.getElementById('company_phone').value.trim(),
+      senior_manager_name: document.getElementById('sm_name').value.trim(),
+      senior_manager_designation: document.getElementById('sm_designation').value.trim(),
+      senior_manager_email: document.getElementById('sm_email').value.trim(),
+      senior_manager_phone: document.getElementById('sm_phone').value.trim(),
+      super_admin_name: document.getElementById('sa_name').value.trim(),
+      super_admin_email: document.getElementById('sa_email').value.trim(),
+      super_admin_phone: document.getElementById('sa_phone').value.trim(),
+      users: JSON.stringify(users),
+      teams: JSON.stringify(teams),
+      status: 'pending',
+      requested_at: new Date().toISOString()
+    };
+
+    // Insert company registration request
+    const { data, error } = await window.supabaseClient
+      .from('company_registration_requests')
+      .insert([requestData])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    console.log('[Company Register] Success:', data);
+
+    // Show success message
+    document.getElementById('company-form').style.display = 'none';
+    document.getElementById('success-message').style.display = 'block';
+
+  } catch (err) {
+    console.error('[Company Register] Error:', err);
+    showAlert('error', err.message || 'Registration failed. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Submit Registration Request';
+  }
+}
+</script>
+
+</body>
+</html>

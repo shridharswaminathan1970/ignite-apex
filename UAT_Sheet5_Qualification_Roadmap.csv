@@ -1,0 +1,150 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+QUAL-001,Roadmap Rail,Roadmap rail displays all 8 stages,P0,"1. Open any opportunity
+2. Click Qualification tab","Horizontal rail shows:
+- Raw Lead (0%)
+- IGNITE Entry Gate (5%)
+- Qualification (10%)
+- Discovery (30%)
+- Demo (50%)
+- Proposal (70%)
+- Negotiation (90%)
+- Closed Won (100%)
+- CEMENT (post-sale)",,,PASS/FAIL,P0,
+QUAL-002,Roadmap Rail,Current stage is highlighted with YOU ARE HERE,P1,"1. Open opportunity in Qualification stage
+2. View roadmap","Qualification node has:
+- Different color (amber)
+- ▼ YOU ARE HERE marker
+- Highlighted border",,,PASS/FAIL,P1,
+QUAL-003,Roadmap Rail,Completed stages show as done,P2,"1. Opportunity that passed IGNITE gate
+2. View roadmap","Stages before current:
+- Green color
+- Checkmark or completed styling",,,PASS/FAIL,P2,
+QUAL-004,Roadmap Rail,Clicking stage shows that stage detail,P1,"1. Click any stage node in rail","Stage detail panel updates:
+- Shows clicked stage icon & name
+- Shows why-layer for that stage
+- Shows gates for that stage",,,PASS/FAIL,P1,
+QUAL-005,Why Layer,Each stage shows Why this matters,P1,"1. Select any APEX stage
+2. Scroll to why-layer box","Box displays:
+- Why this gate exists (title)
+- What you're proving (text)
+- Cost of faking it (text)",,,PASS/FAIL,P1,
+QUAL-006,Why Layer,IGNITE gate shows brutal gate warning,P1,"1. Click IGNITE Entry Gate node
+2. View why-layer","Red/orange themed box
+Title: The Brutal Gate — Why it exists
+Warning about forecast protection",,,PASS/FAIL,P1,
+QUAL-007,4U Framework,All 4 U's display with questions,P0,"1. Open IGNITE gate
+2. Scroll through gates","See 4 gates:
+U1 - Unworkable
+U2 - Urgent
+U3 - Unavoidable
+U4 - Underserved
+Each with guiding questions",,,PASS/FAIL,P0,
+QUAL-008,4U Framework,Each U has Peel the Onion 3 layers,P1,"1. View each U gate","Each U shows blue box:
+🧅 Peel the Onion
+- Layer 1: Surface symptom
+- Layer 2: Deeper cause
+- Layer 3: Root cause",,,PASS/FAIL,P1,Must show for ALL 4 U's not just U1
+QUAL-009,4U Framework,Each U has STRONG vs WEAK examples,P1,"1. View each U gate","Each U shows comparison:
+✅ STRONG ANSWER (green)
+❌ WEAK ANSWER (red)
+With specific examples",,,PASS/FAIL,P1,
+QUAL-010,4U Framework,Can save notes for each U,P1,"1. Click U1 checkbox
+2. Type in textarea
+3. Wait 2 seconds (auto-save)
+4. Refresh page","Notes persist
+Checkbox state persists",,,PASS/FAIL,P1,
+QUAL-011,JTBD Capture,JTBD section appears after 4U,P1,"1. Scroll below 4U gates","Blue box appears:
+🎯 Jobs-To-Be-Done (JTBD)
+⚠️ PROVISIONAL DRAFT badge
+6 input fields",,,PASS/FAIL,P1,
+QUAL-012,JTBD Capture,JTBD has all 6 fields,P1,1. View JTBD section,"Fields present:
+1. When [situation]
+2. I want to [motivation]
+3. So I can [outcome]
+4. Functional job
+5. Emotional job
+6. Social job",,,PASS/FAIL,P1,
+QUAL-013,JTBD Capture,JTBD shows example from content bank,P2,1. View JTBD section,"Yellow example box shows:
+- When: ops team re-keys...
+- I want: automate sync...
+- So I can: redeploy 12 hours...",,,PASS/FAIL,P2,
+QUAL-014,JTBD Capture,JTBD fields save to database,P1,"1. Fill in JTBD fields
+2. Move to different tab
+3. Come back to Qualification tab",All JTBD fields retained,,,PASS/FAIL,P1,
+QUAL-015,6 IGNITE Diagnostics,Diagnostics section shows after JTBD,P0,"1. Scroll below JTBD","Section appears:
+🔥 6 IGNITE Diagnostic Checks
+⚠️ PROVISIONAL DRAFT
+Score: X/6 (need 4+ to pass)",,,PASS/FAIL,P0,
+QUAL-016,6 IGNITE Diagnostics,All 6 checks display correctly,P0,1. View diagnostics section,"6 cards show:
+I - Identify
+G - Go Deep
+N - Nurture
+I - Iterate
+T - Trigger
+E - Escalate
+Each with question & hint",,,PASS/FAIL,P0,
+QUAL-017,6 IGNITE Diagnostics,Checking 4+ shows PASSED,P1,"1. Check off 4 diagnostics
+2. View score","Score shows: 4/6
+Message: ✅ IGNITE diagnostic PASSED
+Green styling",,,PASS/FAIL,P1,
+QUAL-018,6 IGNITE Diagnostics,Checking <4 shows FAILED,P1,"1. Check only 3 diagnostics
+2. View score","Score shows: 3/6
+Message: ❌ Need 1 more to pass
+Red styling",,,PASS/FAIL,P1,
+QUAL-019,6 IGNITE Diagnostics,Diagnostic state persists,P1,"1. Check 4 diagnostics
+2. Refresh page",Still shows 4/6 checked,,,PASS/FAIL,P1,
+QUAL-020,Stage 1 Qualification,Shows 4 gates correctly,P0,"1. Click Qualification stage node","Gates display:
+1. Account record exists
+2. Contact record exists
+3. Prospect engaged
+4. Pain is quantified",,,PASS/FAIL,P0,
+QUAL-021,Stage 1 Qualification,Account/Contact gates auto-validate,P1,"1. Opportunity linked to account & contact
+2. View Qualification stage","Gates 1 & 2 show:
+✅ Mark (green)
+Auto-checked",,,PASS/FAIL,P1,
+QUAL-022,Stage 1 Qualification,Guiding questions show under gates,P1,"1. View gate 3 (Prospect engaged)","Shows:
+🎯 Questions to Ask the Prospect
+- Have you had a live conversation?
+- Did they ask follow-up questions?
+- Did they introduce you to anyone?",,,PASS/FAIL,P1,
+QUAL-023,Stage 2 Discovery,Shows MEDDPICC elements,P1,"1. Click Discovery stage node","Gates include:
+- Economic Buyer identified
+- Metrics quantified
+- Champion emerging
+- Pain tied to business outcome",,,PASS/FAIL,P1,
+QUAL-024,Stage 2 Discovery,Economic Buyer has detailed questions,P1,1. View Economic Buyer gate,"Questions shown:
+- Who has budget authority?
+- What's their title?
+- Have you met them?
+- What's their role in decision?",,,PASS/FAIL,P1,
+QUAL-025,Stage 3 Demo,Shows Decision Process gates,P1,"1. Click Demo stage node","Gates include:
+- Tailored demo/POC delivered
+- Prospect confirms solution fit
+- Decision Criteria documented
+- Decision Process documented",,,PASS/FAIL,P1,
+QUAL-026,Stage 4 Proposal,MEDDPICC complete gate shown,P1,"1. Click Proposal stage node
+2. Scroll to last gate","Gate: MEDDPICC substantially complete
+Shows checklist of all MEDD elements",,,PASS/FAIL,P1,
+QUAL-027,Stage 5 Negotiation,Shows competition neutralized gate,P1,"1. Click Negotiation stage node","Gate: Competition neutralized
+Questions about alternatives evaluated",,,PASS/FAIL,P1,
+QUAL-028,Stage 6 Closed Won,Shows contract signed gate,P0,"1. Click Closed Won stage node","Gate: Signed contract received
+Simple checkbox + evidence field",,,PASS/FAIL,P0,
+QUAL-029,CEMENT,CEMENT stage accessible,P1,"1. Click CEMENT node in roadmap","Shows:
+Post-Sale — Why CEMENT exists
+5 Layers (Month 1-36+)",,,PASS/FAIL,P1,
+QUAL-030,AI Coaching,AI Coaching button appears on gates,P2,"1. View any gate in current stage","Button shows: 🤖 Get AI Coaching
+Blue styling",,,PASS/FAIL,P2,Feature exists but Edge Function not deployed yet
+QUAL-031,AI Coaching,Clicking AI Coaching shows thinking state,P2,"1. Click Get AI Coaching button","Button changes:
+⏳ Thinking...
+Button disabled",,,PASS/FAIL,P2,
+QUAL-032,Gate Completion,Checking gate persists after save,P0,"1. Check any gate checkbox
+2. Refresh page",Checkbox remains checked,,,PASS/FAIL,P0,
+QUAL-033,Gate Completion,Gate notes save correctly,P1,"1. Type notes in gate textarea
+2. Wait 2 seconds
+3. Refresh page",Notes text persists,,,PASS/FAIL,P1,
+QUAL-034,Navigation,Can switch between stages freely,P1,"1. Click different stage nodes
+2. View different stage details",Stage detail panel updates each time,,,PASS/FAIL,P1,
+QUAL-035,Standard Methodology,Standard/BANT also works,P2,"1. Create opportunity with methodology='standard'
+2. View Qualification tab","Shows simplified gates:
+- BANT fields
+- Lighter checklist",,,PASS/FAIL,P2,Verify non-IGNITE path works too

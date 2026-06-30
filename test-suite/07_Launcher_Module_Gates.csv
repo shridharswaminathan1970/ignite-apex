@@ -1,0 +1,80 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+LAUNCH-001,Launcher Loads for Regular User,Functional,Logged in as regular user (not admin),"1. Login as user with role='admin' or 'sdr'
+2. Navigate to /app/launcher.html","1. Page loads successfully
+2. Welcome message with user name
+3. Three module cards visible
+4. User menu in topbar
+5. No redirect to admin panels",,Pending,Critical,Basic launcher test
+LAUNCH-002,Launcher - User Info Display,UI,User logged in,"1. View launcher
+2. Check topbar user menu","Displays:
+- User first name in greeting
+- Full name in dropdown
+- Email address
+- Role (formatted, e.g., 'Account Executive')
+- Organisation name (if applicable)",,Pending,Medium,User info display
+LAUNCH-003,Sales OS Card - Always Unlocked,Functional,Any user logged in,"1. Login as any user
+2. View launcher","Sales OS card:
+- NOT locked
+- No lock icon
+- Badge: 'Always Free'
+- Clickable
+- No lock note visible",,Pending,Critical,Sales OS access
+LAUNCH-004,Sales OS Card - Click Opens System,Functional,LAUNCH-003,"1. Click Sales OS card","Redirected to /system/index.html
+Sales OS application loads",,Pending,High,Sales OS routing
+LAUNCH-005,CRM Card - Locked When crm_enabled=false,Functional,User with crm_enabled=false,"1. Login as user without CRM
+2. View launcher","CRM card:
+- Shows lock overlay
+- Lock icon visible
+- Lock note displayed: 'CRM Locked - Contact administrator'
+- Card has .locked CSS class",,Pending,Critical,CRM lock state
+LAUNCH-006,CRM Card - Unlocked When crm_enabled=true,Functional,User with crm_enabled=true,"1. Set crm_enabled=true for user
+2. Login and view launcher","CRM card:
+- NOT locked
+- No lock overlay
+- Clickable
+- Lock note hidden",,Pending,Critical,CRM unlock state
+LAUNCH-007,CRM Card - Click When Locked,Functional,CRM locked,"1. Click on locked CRM card","Alert shown:
+'CRM access is locked. Contact your administrator...'
+No redirect
+Stays on launcher",,Pending,High,Locked click behavior
+LAUNCH-008,CRM Card - Click When Unlocked,Functional,CRM unlocked,"1. Click unlocked CRM card","Redirected to /crm/index.html
+CRM application loads successfully",,Pending,Critical,CRM access flow
+LAUNCH-009,B2B0 Card - Locked by Default,Functional,User with b2b0_enabled=false,"1. Login as user without B2B0
+2. View launcher","B2B0 card:
+- Locked
+- Purple badge: '💎 Paid Add-On (7-Day Trial)'
+- Lock note: 'Independent module. Works with or without CRM'
+- Link to pricing",,Pending,Critical,B2B0 default lock
+LAUNCH-010,B2B0 Card - Unlocked When Enabled,Functional,User with b2b0_enabled=true,"1. Set b2b0_enabled=true
+2. Login and view launcher","B2B0 card:
+- Unlocked
+- Clickable
+- Lock note hidden
+- Purple badge still visible",,Pending,Critical,B2B0 unlock
+LAUNCH-011,B2B0 Card - Click When Locked,Functional,B2B0 locked,"1. Click locked B2B0 card","Alert: 'B2B0 access is locked...'
+Redirected to /pricing.html
+Can view B2B0 pricing plans",,Pending,High,B2B0 locked click
+LAUNCH-012,B2B0 Card - Click When Unlocked,Functional,B2B0 unlocked,"1. Click unlocked B2B0 card","Redirected to /outreach/index.html
+Gate page loads",,Pending,High,B2B0 access routing
+LAUNCH-013,Module Independence - Sales OS + B2B0 Only,Functional,crm_enabled=false, b2b0_enabled=true,"1. Set user entitlements as above
+2. Login and view launcher","Module states:
+- Sales OS: Unlocked
+- CRM: Locked
+- B2B0: Unlocked
+Proves B2B0 works without CRM",,Pending,Critical,Independence test
+LAUNCH-014,User Menu Dropdown,UI,User logged in,"1. Click user name in topbar
+2. Verify dropdown content","Dropdown shows:
+- User profile info
+- 'My Profile' option
+- 'Reset Password' option
+- 'Sign Out' option
+- Options clickable",,Pending,Medium,User menu
+LAUNCH-015,User Menu - Sign Out,Functional,Dropdown open,"1. Click 'Sign Out'","1. Session destroyed
+2. Redirected to /app/auth.html
+3. Cannot access launcher without re-login",,Pending,High,Logout from menu
+LAUNCH-016,Launcher Subscription Query Performance,Performance,User logged in,"1. Open DevTools Network tab
+2. Load launcher
+3. Check API calls","1. Subscription query executes
+2. Response time < 500ms
+3. Single query (not multiple)
+4. Includes all needed fields (crm_enabled, b2b0_enabled)",,Pending,Medium,Performance check

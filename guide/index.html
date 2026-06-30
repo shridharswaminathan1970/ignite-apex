@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNITE_APEX — New User Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--ad:#2D1F00;
+  --green:#10B981;--gd:#021F12;
+  --blue:#3B82F6;--bd:#020F2A;
+  --red:#EF4444;--rd:#1F0202;
+  --purple:#8B5CF6;
+}
+html,body{background:var(--bg);font-family:'Outfit',sans-serif;color:var(--t1);line-height:1.7}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.012)1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012)1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:3rem 2rem 6rem}
+
+/* COVER */
+.cover{text-align:center;padding:4rem 0 3rem;margin-bottom:3rem}
+.cover-eye{font-size:.58rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--amber);margin-bottom:1rem;display:block}
+.cover-logo{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,7vw,4.5rem);font-weight:800;color:var(--t1);line-height:1;margin-bottom:.4rem}
+.cover-logo em{color:var(--amber);font-style:normal}
+.cover-sub{font-size:.78rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3);margin-bottom:1.5rem}
+.cover-intro{font-size:1rem;color:var(--t2);max-width:600px;margin:0 auto 2rem;line-height:1.75}
+.cover-promise{background:linear-gradient(135deg,#1A1000,#0D0800);border:1px solid var(--amber);border-radius:12px;padding:1.25rem 1.5rem;max-width:600px;margin:0 auto;font-size:.85rem;color:var(--amber2);line-height:1.7;font-style:italic}
+
+/* TOC */
+.toc{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:1.75rem 2rem;margin-bottom:3rem}
+.toc-label{font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:1rem}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.3rem}
+@media(max-width:580px){.toc-grid{grid-template-columns:1fr}}
+.toc-row{display:flex;align-items:center;gap:.65rem;padding:.4rem .6rem;border-radius:6px;text-decoration:none;border:none;background:transparent;cursor:pointer;width:100%;text-align:left}
+.toc-row:hover{background:var(--s2)}
+.toc-n{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);width:30px;flex-shrink:0}
+.toc-t{font-size:.8rem;color:var(--t2)}
+
+/* CHAPTER */
+.chapter{margin-bottom:3.5rem;scroll-margin-top:2rem}
+.chap-header{margin-bottom:2rem}
+.chap-flag{font-size:.58rem;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem}
+.chap-title{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--t1);line-height:1.15;margin-bottom:.6rem}
+.chap-title em{color:var(--amber);font-style:normal}
+.chap-intro{font-size:.9rem;color:var(--t2);line-height:1.75;max-width:700px}
+.chap-divider{height:2px;background:var(--amber);width:40px;margin-top:1rem;border-radius:2px}
+
+/* WHY BOX */
+.why{background:linear-gradient(135deg,#1A1000,#0D0800);border:1px solid var(--amber);border-left:3px solid var(--amber);border-radius:0 10px 10px 0;padding:1rem 1.25rem;margin:1.25rem 0}
+.why-label{font-size:.58rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.35rem}
+.why-text{font-size:.82rem;color:var(--amber2);line-height:1.7}
+
+/* DO THIS BOX */
+.do{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:1rem 1.25rem;margin:1rem 0}
+.do-label{font-size:.58rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--green);margin-bottom:.5rem}
+.do-steps{display:flex;flex-direction:column;gap:.6rem}
+.do-step{display:flex;gap:.75rem;align-items:flex-start}
+.do-num{font-family:'DM Mono',monospace;font-size:.68rem;font-weight:700;width:24px;height:24px;border-radius:5px;background:var(--gd);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.15rem}
+.do-step-text{font-size:.83rem;color:var(--t2);line-height:1.6}
+.do-step-text strong{color:var(--t1)}
+
+/* IF RED BOX */
+.if-red{background:var(--rd);border:1px solid var(--red);border-radius:10px;padding:.9rem 1.1rem;margin:1rem 0}
+.if-red-label{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:.35rem}
+.if-red-text{font-size:.8rem;color:#FCA5A5;line-height:1.65}
+
+/* WHAT SYSTEM DOES */
+.system-does{background:var(--bd);border:1px solid var(--blue);border-radius:10px;padding:.9rem 1.1rem;margin:1rem 0}
+.system-does-label{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#93C5FD;margin-bottom:.35rem}
+.system-does-text{font-size:.8rem;color:var(--t2);line-height:1.65}
+
+/* EXPERT TIP */
+.tip{background:var(--s2);border:1px dashed var(--b2);border-radius:10px;padding:.9rem 1.1rem;margin:1rem 0;display:flex;gap:.75rem;align-items:flex-start}
+.tip-icon{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+.tip-text{font-size:.78rem;color:var(--t3);line-height:1.65}
+.tip-text strong{color:var(--t2)}
+
+/* BADGE ROW */
+.badge-row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0}
+.badge{font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:20px;border:1px solid}
+.badge-amber{background:var(--ad);color:var(--amber2);border-color:var(--amber)}
+.badge-green{background:var(--gd);color:#6EE7B7;border-color:var(--green)}
+.badge-blue{background:var(--bd);color:#93C5FD;border-color:var(--blue)}
+.badge-red{background:var(--rd);color:#FCA5A5;border-color:var(--red)}
+.badge-grey{background:var(--s2);color:var(--t3);border-color:var(--b2)}
+
+/* FLOW */
+.flow-bar{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;padding:.85rem 1rem;background:var(--s1);border:1px solid var(--b1);border-radius:10px;margin:1rem 0}
+.flow-node{font-size:.7rem;font-weight:700;padding:.28rem .65rem;border-radius:5px;white-space:nowrap}
+.flow-arrow{color:var(--t3);font-size:.85rem;flex-shrink:0}
+
+/* VERDICT TABLE */
+.v-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.8rem}
+.v-table th{padding:.55rem .85rem;text-align:left;font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b2)}
+.v-table td{padding:.6rem .85rem;border-bottom:1px solid var(--b1);vertical-align:top;line-height:1.55}
+.v-table tr:last-child td{border-bottom:none}
+
+/* Q TABLE */
+.q-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.78rem}
+.q-table th{padding:.5rem .75rem;text-align:left;font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b2)}
+.q-table td{padding:.55rem .75rem;border-bottom:1px solid var(--b1);vertical-align:top;line-height:1.6;color:var(--t2)}
+.q-table tr:last-child td{border-bottom:none}
+.qn{font-family:'DM Mono',monospace;font-weight:700;color:var(--amber);white-space:nowrap}
+
+/* CODE */
+code{font-family:'DM Mono',monospace;font-size:.77rem;background:var(--s2);border:1px solid var(--b2);padding:.1rem .38rem;border-radius:4px;color:var(--amber)}
+
+/* DIVIDER */
+.div{height:1px;background:linear-gradient(90deg,transparent,var(--b2),transparent);margin:3rem 0}
+
+/* STAGE HEADER */
+.stage-hdr{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;padding:.85rem 1.1rem;border-radius:10px}
+.stage-letter{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;line-height:1;width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stage-info .stage-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--t1);margin-bottom:.15rem}
+.stage-info .stage-desc{font-size:.72rem;color:var(--t3)}
+
+p{font-size:.88rem;color:var(--t2);margin-bottom:.85rem;line-height:1.75}
+h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--t1);margin:1.5rem 0 .6rem}
+</style>
+<style>
+@media print {
+  div[style*="position:sticky"] { display:none!important }
+  body::before { display:none }
+}
+</style>
+</head>
+<body>
+<div style="background:#0F1117;border-bottom:1px solid #1E2333;padding:.6rem 1.75rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+  <div style="font-family:'Syne',sans-serif;font-size:.8rem;font-weight:800;color:#F59E0B;letter-spacing:1px">IGNITE_APEX · New User Guide</div>
+  <div style="display:flex;gap:.65rem;align-items:center">
+    <a href="../" style="font-size:.68rem;font-weight:700;color:#4A5268;text-decoration:none;letter-spacing:.5px">← Back to site</a>
+    <button onclick="window.print()" style="background:#F59E0B;color:#000;border:none;padding:.4rem 1rem;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;letter-spacing:.5px">⬇ Download PDF</button>
+  </div>
+</div>
+<div class="wrap">
+
+<!-- COVER -->
+<div class="cover">
+  <span class="cover-eye">New User Guide · IGNITE_APEX Sales OS</span>
+  <div class="cover-logo">You have a system now.<br><em>Here is how to use it.</em></div>
+  <div class="cover-sub">Sales Operating System · Complete Walkthrough</div>
+  <p class="cover-intro">This guide walks you through every screen, every question, every button — and more importantly, <em>why</em> each one exists. By the end, you will not just know how to use IGNITE_APEX. You will understand why the sequence is designed the way it is, and you will be a better salesperson because of it.</p>
+  <div class="cover-promise">"Most sales processes fail because reps skip the diagnosis and jump to the pitch. This system makes skipping impossible — and that is not a constraint. It is the competitive advantage."</div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-label">In this guide</div>
+  <div class="toc-grid">
+    <a class="toc-row" href="#s0"><span class="toc-n">0</span><span class="toc-t">Getting Started — Register &amp; First Login</span></a>
+    <a class="toc-row" href="#s-overview"><span class="toc-n">→</span><span class="toc-t">The Big Picture — Why This Sequence Exists</span></a>
+    <a class="toc-row" href="#s1"><span class="toc-n">1</span><span class="toc-t">IGNITE — 6 Stages Before You Contact Anyone</span></a>
+    <a class="toc-row" href="#s2"><span class="toc-n">2</span><span class="toc-t">ATTRACT — Qualify or Walk Away</span></a>
+    <a class="toc-row" href="#s3"><span class="toc-n">3</span><span class="toc-t">PROBE — 70% of the Sale Happens Here</span></a>
+    <a class="toc-row" href="#s4"><span class="toc-n">4</span><span class="toc-t">EXECUTE — 20 Questions That Protect Your Forecast</span></a>
+    <a class="toc-row" href="#s5"><span class="toc-n">5</span><span class="toc-t">EXCEL — The Daily Rep System</span></a>
+    <a class="toc-row" href="#s6"><span class="toc-n">6</span><span class="toc-t">CEMENT — The Post-Sale Architecture</span></a>
+    <a class="toc-row" href="#s7"><span class="toc-n">7</span><span class="toc-t">The Report — Your Deal Briefing PDF</span></a>
+    <a class="toc-row" href="#s8"><span class="toc-n">8</span><span class="toc-t">Understanding Your Verdict — What Each Result Means</span></a>
+    <a class="toc-row" href="#s9"><span class="toc-n">9</span><span class="toc-t">Rules of the System — What You Must Never Do</span></a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 0. GETTING STARTED -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s0" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Before You Begin</div>
+    <div class="chap-title">Getting Started — Register &amp; First Login</div>
+    <p class="chap-intro">You access the system at <code>shaamelz.com/app</code>. Before you can use it, you need to register. Registration takes 60 seconds and requires an invite code from your admin.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="do">
+    <div class="do-label">What to do</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text">Go to <code>shaamelz.com/app</code> and click the <strong>Register tab</strong></div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text">Enter your <strong>Full Name</strong>, <strong>Email</strong>, and a <strong>Password</strong> (minimum 6 characters). You will use these to sign in every time.</div></div>
+      <div class="do-step"><div class="do-num">3</div><div class="do-step-text">Enter your <strong>Invite Code</strong> — this is provided by your admin. It looks like <code>APEX7K3X2Q</code>. Enter it exactly as given.</div></div>
+      <div class="do-step"><div class="do-num">4</div><div class="do-step-text">Click <strong>Create Account &amp; Start Free Trial</strong>. You are in. Your 30-day free trial starts now.</div></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why there is an invite code</div>
+    <div class="why-text">This is not a public tool. Each user receives a personalised invite code. This ensures that every person using the system is a known, vetted user — and that your sales intelligence stays within your organisation.</div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-icon">💡</div>
+    <div class="tip-text"><strong>Your data lives in your browser.</strong> Everything you type into the system is saved locally — it persists between sessions on the same device and browser. Do not clear your browser storage or switch devices mid-deal if you want your data to remain intact. Use the same browser, same device, consistently.</div>
+  </div>
+
+  <div class="system-does">
+    <div class="system-does-label">After your 30-day trial</div>
+    <div class="system-does-text">The system will lock and ask for a <strong>Licence Key</strong>. Contact your admin to subscribe (USD 4.50/user/month). They will issue you a key like <code>IA-2026-YOURNAME-XXXX</code>. Enter it once — the app unlocks permanently for your account.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- OVERVIEW -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s-overview" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">The Big Picture</div>
+    <div class="chap-title">Why This Sequence Exists — and Why You Cannot Skip It</div>
+    <p class="chap-intro">Before you open a single deal, you need to understand why IGNITE_APEX is built the way it is. Most sales reps fail not because they lack skill — they fail because they apply skill in the wrong order, on the wrong prospects, with the wrong foundation. This system fixes all three.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="flow-bar">
+    <div class="flow-node" style="background:var(--ad);color:var(--amber2)">IGNITE</div><div class="flow-arrow">→</div>
+    <div class="flow-node" style="background:var(--ad);color:var(--amber2)">ATTRACT</div><div class="flow-arrow">→</div>
+    <div class="flow-node" style="background:var(--bd);color:#93C5FD">PROBE</div><div class="flow-arrow">→</div>
+    <div class="flow-node" style="background:var(--gd);color:#6EE7B7">EXECUTE</div><div class="flow-arrow">→</div>
+    <div class="flow-node" style="background:#160A2E;color:#A78BFA">EXCEL</div><div class="flow-arrow">→</div>
+    <div class="flow-node" style="background:var(--rd);color:#FCA5A5">CEMENT</div><div class="flow-arrow">→</div>
+    <div class="flow-node" style="background:var(--gd);color:#6EE7B7">REPORT</div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">The core principle you must internalise</div>
+    <div class="why-text">In a demand generation market — where prospects do not yet know they need your solution — demand must be <em>created</em> before anything can be <em>sold</em>. If you try to qualify before demand exists, you waste time. If you try to close before the root cause is diagnosed, you lose the deal. If you forecast before the qualification gates are passed, you inflate your pipeline and lose your manager's trust. The sequence is not bureaucracy. It is the architecture that prevents all three failure modes simultaneously.</div>
+  </div>
+
+  <h3>What each stage actually does</h3>
+  <table class="v-table">
+    <thead><tr><th>Stage</th><th>What it creates</th><th>What happens without it</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--amber2);font-weight:700">IGNITE</td><td>The conditions for a real conversation — trigger, research, opener, outreach, nurture, escalation</td><td>You contact the wrong person at the wrong time with a generic message. You get ignored or permanently blacklisted.</td></tr>
+      <tr><td style="color:var(--amber2);font-weight:700">ATTRACT</td><td>Confirmation that demand exists and the prospect fits your ICP</td><td>You invest 3 months on a prospect who was never going to buy. You call it a loss. It was a disqualification failure.</td></tr>
+      <tr><td style="color:#93C5FD;font-weight:700">PROBE</td><td>The root cause diagnosis — the moment the deal is effectively closed</td><td>You pitch features. The prospect nods politely. They buy nothing or buy a competitor who understood their problem better than you did.</td></tr>
+      <tr><td style="color:#6EE7B7;font-weight:700">EXECUTE</td><td>A forecast you can actually defend — 20 questions that strip out wishful thinking</td><td>You commit deals that slip. Your pipeline is phantom. Your forecast credibility collapses. Your manager stops trusting your numbers.</td></tr>
+      <tr><td style="color:#A78BFA;font-weight:700">EXCEL</td><td>The mental and physical operating system of a high-performance rep</td><td>Skills without mindset produce inconsistent results. You close well when you feel good. You miss when you are under pressure. The system becomes unreliable.</td></tr>
+      <tr><td style="color:#FCA5A5;font-weight:700">CEMENT</td><td>5-year client stickiness — expansion revenue at 5–7× lower cost than new logos</td><td>You close the deal and disappear. The relationship is vendor-level. They churn at renewal. Or a competitor displaces you in year 2 because you never became strategic.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip">
+    <div class="tip-icon">⚡</div>
+    <div class="tip-text"><strong>One deal at a time.</strong> The system is designed for one specific deal with one specific prospect. Every time you start a new deal, enter the prospect name in the top bar and work through the stages fresh. Your configuration (product, ICP, 4U framework) is set once and powers every deal — the discovery questions, scripts, and competitive battlecard all adapt to your specific product automatically.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 1. IGNITE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s1" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Stage 1 of 6 · S1 through S7</div>
+    <div class="chap-title"><em>IGNITE</em> — Six Stages Before You Contact Anyone</div>
+    <p class="chap-intro">IGNITE is not a mindset warm-up. It is a 6-stage operating system that builds the foundation for every interaction with a prospect. You complete these stages <em>before</em> you make contact — not during. Think of it as your preparation architecture.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why IGNITE exists and why it comes first</div>
+    <div class="why-text">In most sales processes, reps contact prospects as soon as they have a name and a phone number. This is the single biggest destroyer of pipeline quality. An untimely, generic contact does not just fail — it permanently closes the door. Prospects who receive a poorly timed or poorly researched outreach categorise you as irrelevant, and that label is almost impossible to remove. IGNITE forces you to earn the right to make contact before you make it.</div>
+  </div>
+
+  <div class="stage-hdr" style="background:linear-gradient(135deg,var(--ad),#0D0800)">
+    <div class="stage-letter" style="background:var(--amber);color:#000">I</div>
+    <div class="stage-info"><div class="stage-name">Stage I·1 — Identify: Right Prospect, Right Moment</div><div class="stage-desc">S1–S2 · The trigger test</div></div>
+  </div>
+
+  <p>Before you write a single word to a prospect, you must answer one question: <strong>why now?</strong> Not why this prospect — why this prospect, <em>at this specific moment in time.</em> A trigger event is something that has changed in their world that makes your solution relevant today in a way it was not 3 months ago.</p>
+
+  <div class="do">
+    <div class="do-label">What to do</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text">Tick both mindset checkboxes: <strong>Missionary over Mercenary</strong> and <strong>ICP Confirmed Before First Contact</strong>. These are not formalities — read them carefully. If you cannot honestly tick them, you are not ready.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text">In the trigger field, write the specific event that makes right now the right moment. Minimum 30 characters — a keyword is not enough. Examples: "Government mandated compliance deadline Q1 2026," "New CEO announced digitisation as strategic priority in annual report," "Key competitor just launched a competing product." Be specific.</div></div>
+      <div class="do-step"><div class="do-num">3</div><div class="do-step-text">Click <strong>✓ Clear trigger identified — timing is justified</strong> to confirm this stage.</div></div>
+    </div>
+  </div>
+
+  <div class="if-red">
+    <div class="if-red-label">If you click the red button (No trigger yet)</div>
+    <div class="if-red-text">The system blocks your progress and shows a warning. This is intentional. You should not contact this prospect until a trigger exists. Set a reminder. Watch for one of these: leadership change, competitor announcement, regulatory update, budget cycle opening, public strategic pivot, failed initiative announcement. When a trigger occurs, return and confirm this stage. Contacting without a trigger wastes your access to this prospect — permanently.</div>
+  </div>
+
+  <div class="system-does">
+    <div class="system-does-label">What the system does when you confirm</div>
+    <div class="system-does-text">The badge in the stage header changes from "Not started" to "✓ Complete" in green. The master gate at the top of the page updates to show you are on Stage G. The page automatically scrolls to Stage G after 700ms.</div>
+  </div>
+
+  <div class="stage-hdr" style="background:linear-gradient(135deg,var(--ad),#0D0800);margin-top:1.75rem">
+    <div class="stage-letter" style="background:var(--amber);color:#000">G</div>
+    <div class="stage-info"><div class="stage-name">Stage G — Go Deep: Know Their World Before You Enter It</div><div class="stage-desc">S3 · Research before contact</div></div>
+  </div>
+
+  <p>You have 15 minutes before any first contact. In those 15 minutes, you must be able to answer four questions without notes. If you cannot, you are not ready. Generic outreach does not just fail — it permanently destroys future access by signalling that you do not respect the prospect's time.</p>
+
+  <div class="do">
+    <div class="do-label">What to fill in</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text"><strong>Their strategic priorities:</strong> What is this organisation trying to achieve in the next 12–18 months? Read their annual report, CEO statements, LinkedIn posts from leadership, recent press releases. Write it in your own words.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text"><strong>The individual you are contacting:</strong> What is their mandate? What are their likely KPIs? What would their professional life look like if they solved the problem you solve? What have they written or said publicly?</div></div>
+      <div class="do-step"><div class="do-num">3</div><div class="do-step-text"><strong>Competitive pressure on them:</strong> What has a competitor done recently that is putting pressure on this organisation? Market shifts, new entrants, technology changes? This context makes your outreach feel like you understand their world — not just your product.</div></div>
+      <div class="do-step"><div class="do-num">4</div><div class="do-step-text"><strong>Peer reference / after-state:</strong> What does a similar organisation look like after solving the problem you solve? A specific case study, a named example, a measurable outcome. This becomes your most powerful social proof.</div></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why research before contact matters this much</div>
+    <div class="why-text">The first message you send creates a permanent category in the prospect's mind. Either: "this person understands my world" — or "this is a sales call." The first category earns a response. The second earns a block. Research is what creates the first category. It takes 15 minutes. It determines whether you get access at all.</div>
+  </div>
+
+  <div class="stage-hdr" style="background:linear-gradient(135deg,var(--ad),#0D0800);margin-top:1.75rem">
+    <div class="stage-letter" style="background:var(--amber);color:#000">N</div>
+    <div class="stage-info"><div class="stage-name">Stage N — Nail the Insight: The Reframe Opener</div><div class="stage-desc">S4 · The first sentence that earns the conversation</div></div>
+  </div>
+
+  <p>Your opener is the first thing your prospect reads. It must do one thing: make them think "I hadn't considered that." It must do this <em>without mentioning your product.</em> The test: could they guess what you sell from your opener? If yes — rewrite it.</p>
+
+  <div class="do">
+    <div class="do-label">What to do</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text">Tick <strong>"Education as Primary Weapon."</strong> Confirm you can explain the value of your category in 90 seconds without naming your product. This is a real skill check — not a checkbox.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text">Write your <strong>Reframe Opener</strong> (minimum 40 characters — must be a complete sentence). Write about their world, not your product. Lead with a non-obvious insight: a consequence they have not fully mapped, a trend they are underestimating, a risk their competitor is exploiting that they are not.</div></div>
+      <div class="do-step"><div class="do-num">3</div><div class="do-step-text">Choose your <strong>Entry Point</strong> from the 5 options shown on screen and explain why it fits this specific prospect's context. The 5 options are: Insight-Led Opening, Peer Reference Trigger, 24-Month Consequence, Low-Commitment Entry, Warm Signal Response.</div></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why 5 entry points — not just one</div>
+    <div class="why-text">Different prospects are in different stages of awareness. Some need a peer reference because they trust social proof over insight. Some are ready for a consequence picture because they have been sitting with the pain for years. Some need a low-commitment entry because they are risk-averse. Choosing the right entry point for this specific prospect is what separates a response from a non-response. Read the descriptions of each one carefully. The choice matters.</div>
+  </div>
+
+  <div class="stage-hdr" style="background:linear-gradient(135deg,var(--ad),#0D0800);margin-top:1.75rem">
+    <div class="stage-letter" style="background:var(--amber);color:#000">I</div>
+    <div class="stage-info"><div class="stage-name">Stage I·2 — Initiate: The 9-Day Outreach Sequence</div><div class="stage-desc">S5 · Structured, not spammy</div></div>
+  </div>
+
+  <p>The 9-day sequence shown on screen is not arbitrary. It is built on the principle that demand generation selling requires multiple touches, each delivering value, each slightly more specific than the last — before any commercial ask. Follow it exactly.</p>
+
+  <div class="do">
+    <div class="do-label">The sequence</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">D1</div><div class="do-step-text"><strong>LinkedIn connection + your reframe opener.</strong> One sentence. Their world. No product. No pitch. No "I'd love to connect."</div></div>
+      <div class="do-step"><div class="do-num">D3</div><div class="do-step-text"><strong>Value touch — no ask.</strong> Share something useful: an article, a framework, a relevant insight. Comment on something they posted. This is a credibility deposit. Zero commercial intent.</div></div>
+      <div class="do-step"><div class="do-num">D5</div><div class="do-step-text"><strong>Peer reference email.</strong> "I was just working with [similar org] and they discovered something about [consequence] that I think applies to your situation. Would a 15-minute call be worth exploring?"</div></div>
+      <div class="do-step"><div class="do-num">D7</div><div class="do-step-text"><strong>Consequence picture.</strong> One short paragraph showing the 24-month trajectory if nothing changes. No product mention. End with: "I am happy to share what others in your position have found useful — no commitment."</div></div>
+      <div class="do-step"><div class="do-num">D9</div><div class="do-step-text"><strong>The permission close.</strong> "I have reached out a few times. If this is not relevant, please say so and I will stop. If there is any chance it could be, 15 minutes is all I am asking for." Then stop. Silence is your last message.</div></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why stop after Day 9?</div>
+    <div class="why-text">A prospect who has not responded after 5 structured touches has not rejected you — they have not yet reached the conviction threshold. Continuing to push after Day 9 crosses from persistent to pestering. Move them to a 30-day nurture cadence (one value touch per month). They will re-engage when their context changes. Your job is to still be visible and credible when that happens.</div>
+  </div>
+
+  <div class="stage-hdr" style="background:linear-gradient(135deg,var(--ad),#0D0800);margin-top:1.75rem">
+    <div class="stage-letter" style="background:var(--amber);color:#000">T</div>
+    <div class="stage-info"><div class="stage-name">Stage T — Track &amp; Nurture: The Relationship Phase</div><div class="stage-desc">S6 · Watching for the conviction signal</div></div>
+  </div>
+
+  <p>Most prospects in a demand generation market are not ready to buy when you first contact them. They become ready over time — as their context shifts and your credibility builds. Track that process. Log every signal. Give unconditional value. Wait for the threshold.</p>
+
+  <div class="do">
+    <div class="do-label">What to log in Stage T</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text"><strong>Buying signals observed:</strong> Any unprompted engagement — they liked your post, replied to your email with a question, mentioned your name to a colleague, attended your webinar. Log every one with the date and exact context.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text"><strong>Value given with no commercial ask:</strong> Articles shared, introductions made, frameworks sent, events invited to. For every commercial conversation you want, you must have made at least 3 deposits first. Log them.</div></div>
+    </div>
+  </div>
+
+  <p>On screen you will see <strong>6 Conviction Threshold Indicators.</strong> These are the signals that tell you it is time to escalate. Watch for them. They include: they reference your content in conversation, they ask a commercial question unprompted, they forward your message to a colleague, they contact you without a prompt. When one fires, move to Stage E <em>within 48 hours.</em></p>
+
+  <div class="stage-hdr" style="background:linear-gradient(135deg,var(--ad),#0D0800);margin-top:1.75rem">
+    <div class="stage-letter" style="background:var(--amber);color:#000">E</div>
+    <div class="stage-info"><div class="stage-name">Stage E — Escalate: From Education to Active Engagement</div><div class="stage-desc">S7 · The final IGNITE gate</div></div>
+  </div>
+
+  <p>You have earned the right to make a commercial ask. Not a sales meeting. A <em>diagnostic conversation</em>. The framing matters enormously. Read the escalation script on screen — it is designed to lower the perceived risk of saying yes.</p>
+
+  <div class="do">
+    <div class="do-label">What to fill in and confirm</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text">In the escalation status field, write: which conviction signal you observed (exact words, date), the escalation ask you made (exact wording), and the prospect's response.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text">Click <strong>✓ Conviction signal observed — escalation made — ready for ATTRACT</strong> to complete all 6 IGNITE stages. The master gate turns green. You may now advance to ATTRACT.</div></div>
+    </div>
+  </div>
+
+  <div class="if-red">
+    <div class="if-red-label">If you click red (Still in nurture phase)</div>
+    <div class="if-red-text">No conviction signal has been observed yet. Do not escalate. Escalating without a signal resets the relationship to cold — you introduce commercial intent before the prospect has mentally crossed the threshold, and they disengage. Return to Stage T. Continue the nurture cadence. One signal is enough. Wait for it.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 2. ATTRACT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s2" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Stage 2 · Gate 1</div>
+    <div class="chap-title"><em>ATTRACT</em> — Qualify or Walk Away</div>
+    <p class="chap-intro">ATTRACT has two layers. First you check whether real demand exists (Tier 1 Gate). Then you score the fit (ICP Matrix). Both must pass before you invest another hour of your time.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why qualify this early — and this hard?</div>
+    <div class="why-text">The most expensive thing in sales is not the lost deal — it is the time spent on the wrong prospect. A rep who spends 3 months on a prospect who was never going to buy has not just lost one deal. They have lost the 3 months of pipeline they could have built on real opportunities. ATTRACT exists to make that choice at hour 2, not month 3.</div>
+  </div>
+
+  <h3>Layer 1: Tier 1 Demand Gate — 5 questions, minimum 4/5 to proceed</h3>
+
+  <p>These 5 questions are personalised to your product. Every question uses your specific ICP, your specific problem statement, and your specific competitive context — not generic language. Answer each one with verifiable evidence.</p>
+
+  <table class="q-table">
+    <thead><tr><th>Q</th><th>What you are testing</th><th>What counts as evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="qn">T1·1</td><td><strong>Conviction vs complaint.</strong> Have they expressed that the current situation fundamentally cannot continue — not just that it is painful?</td><td>A direct quote from the prospect saying something equivalent to "this cannot go on" — not just "yes, we have that problem."</td></tr>
+      <tr><td class="qn">T1·2</td><td><strong>24-month consequence cascade.</strong> Map 3 layers: operational damage, strategic exposure, competitive loss.</td><td>Layer 3 must be a competitive consequence — what a rival gains from the gap they are creating. If you cannot name the rival and the gain, you have not gone deep enough.</td></tr>
+      <tr><td class="qn">T1·3</td><td><strong>Prior attempt audit.</strong> What did they try before, and why did it specifically fail?</td><td>Name the tool, vendor, or initiative — and the real reason it did not stick. "Too expensive" is not a real reason. "Wrong stakeholder sponsored it" is a real reason.</td></tr>
+      <tr><td class="qn">T1·4</td><td><strong>Unprompted commercial signals.</strong> List every commercial signal they gave you without you introducing the topic first.</td><td>They asked about pricing, timelines, contract terms, or deployment without you prompting. One real signal is worth more than ten enthusiastic meetings.</td></tr>
+      <tr><td class="qn">T1·5</td><td><strong>Personal stake.</strong> Name the individual whose personal targets, credibility, or career is damaged if this problem stays unsolved.</td><td>A name, a role, and a specific personal consequence. "The IT department" is not an answer. "James, VP Operations, whose digital transformation KPI is at risk" is an answer.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="if-red">
+    <div class="if-red-label">If the Demand Gate fails (below 4/5)</div>
+    <div class="if-red-text">The system shows "DEMAND GATE FAILED." This prospect is not yet a qualified opportunity. The demand conditions that make buying possible are not in place. Do not advance to ICP scoring. Return to IGNITE and identify which conditions are missing. Usually it is T1·1 (complaint, not conviction) or T1·4 (no organic commercial signals). Build toward those before returning.</div>
+  </div>
+
+  <h3>Layer 2: ICP Scoring Matrix — minimum 70/100 to proceed</h3>
+
+  <p>Five criteria, each scored 0–20. Use the dropdown selectors on screen. The score updates live. Be honest — this is not a box-ticking exercise. A score below 70 means you should walk away from this prospect and invest your time in one with higher fit.</p>
+
+  <div class="badge-row">
+    <div class="badge badge-amber">Budget Authority</div>
+    <div class="badge badge-amber">Pain Intensity</div>
+    <div class="badge badge-amber">Strategic Fit</div>
+    <div class="badge badge-amber">Timeline to Decision</div>
+    <div class="badge badge-amber">Competitor Exposure</div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-icon">💡</div>
+    <div class="tip-text"><strong>Score 70 is the floor, not the target.</strong> A score of 70–79 means proceed with caution — you have a qualified prospect but not an ideal one. A score of 90+ means you have found exactly who this solution is built for. Your highest-probability deals come from prospects scoring 85+. Prioritise accordingly.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 3. PROBE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s3" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Stage 3 · Gate 2 · The Most Important Stage</div>
+    <div class="chap-title"><em>PROBE</em> — 70% of the Sale Happens Here</div>
+    <p class="chap-intro">If IGNITE built the conditions and ATTRACT confirmed the fit, PROBE is where you actually win the deal — before you present anything. The deal is effectively closed the moment your prospect names the root cause in their own words at Layer 3. Everything after that is execution.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why 70% of the sale happens in diagnosis</div>
+    <div class="why-text">Most reps rush through discovery to get to the pitch. This is backwards. Prospects do not buy solutions — they buy the feeling that someone finally understood their problem accurately. A prospect who says "that is exactly what I have been trying to explain" is a prospect who has mentally already decided to buy. That moment happens in PROBE. Not in the proposal. Not in the demo. In the diagnosis.</div>
+  </div>
+
+  <h3>Part 1 — The 3-Layer Root Cause Diagnostic</h3>
+  <p>Three text fields. Work through them during your discovery conversation — in real time or immediately after. The quality of what you write here determines the quality of everything downstream: the proposal, the scripts, the report.</p>
+
+  <div class="do">
+    <div class="do-label">What to capture in each layer</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">L1</div><div class="do-step-text"><strong>Layer 1 — Symptom (their exact words).</strong> What do they describe as the problem? Do not summarise. Do not interpret. Copy their exact language. The words they use are your proposal language. "Our teams are spending 3 hours a day on manual data entry" is Layer 1. Write it exactly as they said it.</div></div>
+      <div class="do-step"><div class="do-num">L2</div><div class="do-step-text"><strong>Layer 2 — Structural Cause.</strong> What process, system, or organisational structure is creating the symptom? Ask: "And what do you think is behind that?" Push past the first answer. The structural cause is usually a broken process or absent capability — not a technology gap.</div></div>
+      <div class="do-step"><div class="do-num">L3</div><div class="do-step-text"><strong>Layer 3 — Root Cause ★ (the most important field in the entire system).</strong> This is the moment when the prospect names, in their own words, the fundamental reason their current approach cannot solve the problem. Ask: "If we trace this back to the root — what do you think is the real reason this has not been solved yet?" When they answer without prompting, write their exact words. This sentence goes into your proposal, your scripts, and your report. It is the anchor of the entire deal.</div></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why Layer 3 must be in their words, not yours</div>
+    <div class="why-text">When a prospect hears their own words reflected back in a proposal, they do not experience it as sales. They experience it as understanding. That difference is the difference between a prospect who defends your proposal internally with conviction and one who forwards it for comment. You do not write Layer 3. You transcribe it.</div>
+  </div>
+
+  <h3>Part 2 — Pain → Impact → ROI Ladder</h3>
+  <p>Three more fields. These are quantification fields — moving from the story to the number.</p>
+
+  <div class="do">
+    <div class="do-label">What to capture</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">Pain</div><div class="do-step-text"><strong>What is broken?</strong> In their exact words. The specific operational problem causing daily friction. This should come directly from Layer 1 or 2.</div></div>
+      <div class="do-step"><div class="do-num">Impact</div><div class="do-step-text"><strong>What does it cost?</strong> Quantified. Time lost, revenue missed, errors incurred, staff hours wasted. Ask: "If you tried to put a number on what this costs you monthly — what would that be?" A rough number they are comfortable defending is more valuable than a precise number they are not sure about. The system uses this number to calculate ROI in your scripts.</div></div>
+      <div class="do-step"><div class="do-num">ROI</div><div class="do-step-text"><strong>What is it worth to fix?</strong> Agreed value in year one. Ask: "If we solve this completely, what would that be worth to you in the first 12 months?" This is the number that goes into your ROI close. It must be a figure they stated — not one you calculated for them.</div></div>
+    </div>
+  </div>
+
+  <h3>Part 3 — Champion vs. Sponsor Test</h3>
+  <p>Two people you must identify in every deal. Confusing them is one of the most common reasons deals stall.</p>
+
+  <div class="do">
+    <div class="do-label">Who to identify and what to capture</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">🏆</div><div class="do-step-text"><strong>Champion (name + role):</strong> The person who will spend their own political capital to get this deal approved. They are not just enthusiastic — they actively do things that cost them something. Test: ask them to arrange an introduction to the economic buyer. A sponsor says "sure, I'll pass along your details." A champion says "let me set up a meeting — what time works for you?" Log the most recent internal meeting they briefed you on, with specific names and reactions from that meeting.</div></div>
+      <div class="do-step"><div class="do-num">⚠</div><div class="do-step-text"><strong>Veto Player (name + role):</strong> The most sceptical stakeholder. They may not be involved yet — but they will be consulted before approval. Log their specific concern and what action you have taken (or planned) to address it directly.</div></div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-icon">💡</div>
+    <div class="tip-text"><strong>The champion test question.</strong> "If I needed 20 minutes with [economic buyer], could you make that happen?" Their response tells you everything. Immediate yes with a specific next step = champion. Vague maybe = sponsor. "I don't really have that access" = you have the wrong person and your deal is at risk.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 4. EXECUTE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s4" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Stage 4 · Gate 3 · 20 Questions</div>
+    <div class="chap-title"><em>EXECUTE</em> — Twenty Questions That Protect Your Forecast</div>
+    <p class="chap-intro">EXECUTE is the most rigorous gate in the system. By the time you reach here, the demand exists, the prospect fits, and the root cause is diagnosed. Now you must answer a harder question: is this deal real enough to belong in your forecast?</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why 20 questions — and why this many?</div>
+    <div class="why-text">The average sales rep has 60–70% forecast accuracy. Meaning roughly 1 in 3 deals they commit, they miss. Almost always, the root cause is the same: they answered questions with optimism rather than evidence. These 20 questions — across 3 tiers — are designed to make that impossible. You cannot confirm a question without writing down verifiable evidence. If you cannot write it, you do not have it. If you do not have it, the deal does not belong in your forecast.</div>
+  </div>
+
+  <p style="margin-bottom:.5rem">Click any question header to expand it. Write your evidence in the text area first. Then click the confirm or fail button. The status badge on the right of each question updates immediately to show Confirmed or Not Confirmed.</p>
+
+  <h3>Tier 2 — Opportunity Qualifier (10 questions)</h3>
+  <p>These 10 questions determine whether this opportunity deserves to exist in your pipeline at all. Answer them in any order, but answer all 10.</p>
+
+  <table class="q-table">
+    <thead><tr><th>Q</th><th>What it tests</th><th>What evidence looks like</th></tr></thead>
+    <tbody>
+      <tr><td class="qn">1</td><td>Economic Buyer named and directly engaged</td><td>Name, role, the date you last spoke directly, what they said. "I heard through my champion" does not count.</td></tr>
+      <tr><td class="qn">2</td><td>Prospect has invested something irrecoverable</td><td>They assembled an eval team, ran a pilot, presented internally, allocated budget. Something that costs them if they walk away.</td></tr>
+      <tr><td class="qn">3</td><td>Hard external forcing event with a specific date</td><td>Regulatory deadline, contract expiry, budget cycle close, board review. The date must be external — not the date you want to close.</td></tr>
+      <tr><td class="qn">4</td><td>Real objection surfaced — not just enthusiasm</td><td>The hesitation they have not fully voiced. A prospect who has never expressed concern is observing, not evaluating. Find the real concern and name it.</td></tr>
+      <tr><td class="qn">5</td><td>Deal survives if champion leaves</td><td>Evidence the business case is institutional — documented, multi-stakeholder endorsed. If it dies with your champion, it is not a company deal yet.</td></tr>
+      <tr><td class="qn">6</td><td>Decision criteria explicitly stated by prospect</td><td>Their exact words on what will make this a yes — in priority order. If you are inferring criteria, you are guessing what winning looks like.</td></tr>
+      <tr><td class="qn">7</td><td>Structural change in last 90 days</td><td>Leadership change, competitor move, failed initiative, strategic pivot. Something that turned urgency from gradual to event-driven.</td></tr>
+      <tr><td class="qn">8</td><td>Full competitive landscape including do-nothing</td><td>Named competitors + the real alternatives: delay, build internally, do nothing. The most common competitor is inaction — map it.</td></tr>
+      <tr><td class="qn">9</td><td>Paper process fully mapped</td><td>Every approval step, every person, every legal or compliance review, and the realistic time from verbal yes to signed PO. Not the best case — the realistic case.</td></tr>
+      <tr><td class="qn">10</td><td>The $10,000 Bet</td><td>Would you stake your own money on this closing in your stated period? Immediate yes = commit candidate. Hesitation = the hesitation is your real answer.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tier 3 — Forecast Commit Gate (5 questions — unlocks when T2 ≥ 5/10)</h3>
+  <p>The Tier 3 section is hidden until you have answered all 10 Tier 2 questions and scored at least 5. When it appears, answer all 5. All 5 must pass for a COMMIT verdict. These are the non-negotiable gates.</p>
+
+  <table class="q-table">
+    <thead><tr><th>Q</th><th>What it tests</th><th>What counts as evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="qn">T3·1</td><td>Unprompted commercial language</td><td>Quote their exact words — pricing, start date, contract length, implementation resources — raised by them, not by you.</td></tr>
+      <tr><td class="qn">T3·2</td><td>Internal meeting intelligence</td><td>Your champion debriefed you with the names of who was in the meeting and their specific reactions. Not a summary — actual names and actual responses.</td></tr>
+      <tr><td class="qn">T3·3</td><td>Multi-stakeholder validation</td><td>Substantive commercial or technical conversation with a minimum of 2 people beyond your primary contact. Named, with dates and subject of conversation.</td></tr>
+      <tr><td class="qn">T3·4</td><td>Kill risk named with mitigation</td><td>The one thing that could still kill this deal — named specifically. And the concrete action already in motion to mitigate it.</td></tr>
+      <tr><td class="qn">T3·5</td><td>Slip cause pre-diagnosed</td><td>If this does not close this month — the real reason. Not the official reason. And the specific action you are taking right now to prevent it.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip">
+    <div class="tip-icon">💡</div>
+    <div class="tip-text"><strong>The Closing Technique and Objection Handler</strong> are also in EXECUTE, above the qualification questions. Before your closing conversation, select the technique that fits the current state of the deal. Before handling an objection, select the objection they raised — the system generates a counter-question script based on the objection type. Use these tools before your next conversation, not during it.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 5. EXCEL -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s5" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Stage 5 · Daily Use · Not Deal-Specific</div>
+    <div class="chap-title"><em>EXCEL</em> — The Daily Rep Operating System</div>
+    <p class="chap-intro">EXCEL is the only stage in the system that is not about a specific deal. It is about you — the rep who runs every deal. Skills get you to average. Mindset multiplies everything. EXCEL is the multiplier.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why a mindset stage exists inside a sales qualification system</div>
+    <div class="why-text">Demand generation selling is psychologically harder than transactional selling. You face more rejections, longer cycles, and more prospects who do not yet know they have a problem. Without a deliberate system for managing that pressure, the best reps become inconsistent — closing well in good weeks, disappearing in bad ones. EXCEL is the system that makes performance consistent regardless of external conditions.</div>
+  </div>
+
+  <div class="do">
+    <div class="do-label">What to do — daily</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text"><strong>Complete the Peak Performance Ritual.</strong> Five checkboxes. Tick each one as you complete it. When all 5 are ticked, EXCEL marks as complete for this session. These are not suggestions — they are the operational prerequisites for consistent performance.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text"><strong>Review the Rejection Resilience Protocol</strong> any time you face a difficult interaction. Read it before a high-stakes call. Read it after a rejection. It reframes the early-stage silence and objections that are structural to demand generation — not personal to you.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 6. CEMENT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s6" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Stage 6 · Post-Sale · Months 1–36+</div>
+    <div class="chap-title"><em>CEMENT</em> — The Post-Sale Architecture</div>
+    <p class="chap-intro">The close is the starting gun, not the finish line. Every action you took before the close was done with a 5-year horizon in mind. CEMENT is where you execute on that horizon. It is also where your next deal inside this account comes from.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why CEMENT is part of the sales system — not the customer success system</div>
+    <div class="why-text">Expansion revenue costs 5–7 times less to generate than new logo revenue. The rep who plans CEMENT from the first discovery call — not after the contract is signed — is the rep who grows accounts. CEMENT is not customer success. Customer success reacts to problems. CEMENT engineers the conditions that make displacement impossible and expansion inevitable. It starts on Day 1 of implementation.</div>
+  </div>
+
+  <h3>The 5 Layers — work through them over time</h3>
+
+  <div class="do">
+    <div class="do-label">Tick each action as you complete it — the CEMENT score updates live</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1–3</div><div class="do-step-text"><strong>Layer 1 — Outcome Ownership (Month 1–3):</strong> Schedule 30/60/90-day check-ins. Build your QBR template around the exact root cause you diagnosed in PROBE — reference their words. Surface one implementation risk before it becomes visible to them. This is the moment you transition from vendor to strategic partner.</div></div>
+      <div class="do-step"><div class="do-num">3–9</div><div class="do-step-text"><strong>Layer 2 — Stakeholder Expansion (Month 3–9):</strong> Identify 3 stakeholders beyond your primary contact — at different levels. Deliver individual value to each. If your primary contact leaves tomorrow, can the deal survive? The answer should be yes.</div></div>
+      <div class="do-step"><div class="do-num">6–18</div><div class="do-step-text"><strong>Layer 3 — Institutional Knowledge (Month 6–18):</strong> Maintain a living document updated after every interaction — their cycles, their politics, their strategic priorities, their prior failures. Reference it in every new conversation. You remember what they forget. That is a moat no new vendor can cross in 6 months.</div></div>
+      <div class="do-step"><div class="do-num">12–24</div><div class="do-step-text"><strong>Layer 4 — Root Cause Chain Expansion (Month 12–24):</strong> Solving the first root cause reveals the next one. Document it. Frame the expansion as a natural next step in <em>their</em> journey — not as a new sales motion. They should feel like they proposed it.</div></div>
+      <div class="do-step"><div class="do-num">18–36+</div><div class="do-step-text"><strong>Layer 5 — Advocacy Engineering (Month 18–36+):</strong> Co-create a case study. Get a peer referral. Do a joint presentation or speaking engagement. When a client has invested their credibility publicly in your solution — they cannot easily leave. This is the deepest form of stickiness available.</div></div>
+    </div>
+  </div>
+
+  <div class="system-does">
+    <div class="system-does-label">The CEMENT score widget</div>
+    <div class="system-does-text">At the bottom of the CEMENT page, a live score widget shows your current percentage (0–100%), the fraction of actions completed (e.g. 7/16), a colour-coded progress bar, and a mini-bar for each of the 5 layers. This score feeds into the report cover and Section 6 of the report. You do not need to reach 100% to generate a report — generate it at any completion level and the report will flag which layers need attention.</div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 7. REPORT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s7" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">System Output</div>
+    <div class="chap-title">The Report — Your Deal Briefing PDF</div>
+    <p class="chap-intro">Click <strong>Download Report Briefing</strong> at the bottom of the CEMENT page. The report opens in a new tab and pulls together everything you captured across all 6 stages into a 9-section printable briefing document.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="why">
+    <div class="why-label">Why the report exists and when to use it</div>
+    <div class="why-text">The report serves three purposes: (1) a self-audit — reading it forces you to confront any gaps in your deal intelligence before they surface in a forecast review; (2) a briefing for your manager or team — everything about the deal in one document, no guessing; (3) a preparation tool for your next conversation — the scripts in Section 8 are generated from your specific inputs and are ready to use.</div>
+  </div>
+
+  <h3>What is in each section</h3>
+  <table class="v-table">
+    <thead><tr><th>Section</th><th>What it contains and why it matters</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">1 — Executive Summary</td><td>4 KPI boxes (IGNITE completion, probe layers, T2 score, CEMENT score) + one-line verdict on forecast status, ICP gate, and root cause capture. Read this first. If it shows gaps, address them before the forecast meeting.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">2 — IGNITE Record</td><td>Table of all 6 IGNITE stages with status and evidence. If any stage shows "Not confirmed," you have incomplete demand creation work that will surface as a problem later.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">3 — ATTRACT ICP</td><td>Your 5-criterion ICP score with per-criterion assessment. A score below 70 that made it to this stage is a flag — review why this prospect was advanced.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">4 — PROBE Diagnosis</td><td>All 3 root cause layers, Pain/Impact/ROI, Champion and Veto intelligence. The quality of this section predicts the quality of your proposal and scripts.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">5 — Qualification System</td><td>All 20 questions (T1+T2+T3) with your answers and evidence. Master verdict at the top. This is the section your manager needs to see to trust your forecast number.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">6 — CEMENT Score</td><td>Layer-by-layer progress with completed and incomplete actions. A low score here is not a failure — it is a roadmap. Use it to plan the next 3 months of account activity.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">7 — Recommendations</td><td>Every missing or weak input generates a specific, stage-labelled recommendation. Read this every time you generate a report. These are the gaps that will cost you the deal if not addressed.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">8 — Next Step Scripts</td><td>10 scripts across 5 situations — 2 per situation. All generated from your captured data. <strong>No [X] or [Y] placeholders.</strong> The system extracts numbers from your impact text, computes annual loss and ROI multiple, and writes complete sentences. These are ready to use verbatim or adapt to your voice.</td></tr>
+      <tr><td style="color:var(--amber2);white-space:nowrap;font-weight:600">9 — PPT Slide Layouts</td><td>6 suggested slides for your next review or client presentation, pre-populated with your deal data. Use as a starting structure for any internal or external presentation.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="do">
+    <div class="do-label">To save as PDF</div>
+    <div class="do-steps">
+      <div class="do-step"><div class="do-num">1</div><div class="do-step-text">In the report tab, click <strong>Print / Save as PDF</strong> at the bottom of the page.</div></div>
+      <div class="do-step"><div class="do-num">2</div><div class="do-step-text">In the print dialog: change the destination to <strong>"Save as PDF"</strong>. The report is formatted for A4/Letter with page breaks between sections.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 8. VERDICTS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s8" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Reference</div>
+    <div class="chap-title">Understanding Your Verdict — What Each Result Means</div>
+    <p class="chap-intro">The system produces verdicts at three levels: the IGNITE Gate, the Tier 1 Demand Gate, and the Master Qualification Verdict. Here is exactly what each one means and what you must do in response.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <h3>IGNITE Gate (top of IGNITE page)</h3>
+  <table class="v-table">
+    <thead><tr><th>What it shows</th><th>What it means</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td style="color:#6EE7B7;font-weight:700">✓ IGNITE Complete</td><td>All 6 stages confirmed. Demand creation work is done.</td><td>Advance to ATTRACT.</td></tr>
+      <tr><td style="color:var(--red);font-weight:700">⛔ Stage [X] Blocked</td><td>A specific stage returned a red answer.</td><td>Read the consequence message for that stage. Address the specific issue it describes. Do not advance until resolved.</td></tr>
+      <tr><td style="color:var(--amber2);font-weight:700">→ Current Stage: [Name]</td><td>You are still working through the stages.</td><td>Complete the named stage and confirm it before moving forward.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tier 1 Demand Gate (ATTRACT page)</h3>
+  <table class="v-table">
+    <thead><tr><th>Result</th><th>Meaning</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td style="color:#6EE7B7;font-weight:700">✓ Gate Passed (4+/5)</td><td>Real demand established. Proceed.</td><td>Complete the ICP Scoring Matrix.</td></tr>
+      <tr><td style="color:var(--red);font-weight:700">✗ Gate Failed (below 4/5)</td><td>Demand conditions are not met. Not a qualified opportunity.</td><td>Return to IGNITE. Identify which of the 5 conditions is missing. Build toward it. Do not advance.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Master Qualification Verdict (bottom of EXECUTE page and in report)</h3>
+  <table class="v-table">
+    <thead><tr><th>Verdict</th><th>Score threshold</th><th>What it means for your forecast</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--red);font-weight:700">DISQUALIFIED</td><td>T1 below 4/5</td><td>Not in pipeline. Do not include in any report. Return to IGNITE and address demand conditions first.</td></tr>
+      <tr><td style="color:var(--amber2);font-weight:700">PIPELINE ONLY</td><td>T2 below 5/10</td><td>Too little evidence. Include as a name on your prospect list only. Do not include in any forecast conversation. Return to PROBE — you need more qualification work.</td></tr>
+      <tr><td style="color:var(--amber2);font-weight:700">PIPELINE+</td><td>T2: 5–6/10</td><td>Qualifies as active pipeline. Not yet best case. Identify which T2 criteria are missing and address them in your next 1–2 interactions.</td></tr>
+      <tr><td style="color:#93C5FD;font-weight:700">BEST CASE</td><td>T2: 7–9/10 or T3 incomplete</td><td>Include in best case forecast. Complete Tier 3 — all 5 questions — for commit eligibility. Do not call this a commit until T3 is fully passed.</td></tr>
+      <tr><td style="color:#6EE7B7;font-weight:700">COMMIT FORECAST</td><td>T1: 4+/5 · T2: 10/10 · T3: 5/5</td><td>This deal has survived every qualification gate. It belongs in your commit number. If you commit something that has not reached this threshold, you are adding phantom pipeline. The system will not stop you — but the missed forecast will.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 9. RULES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="s9" class="chapter">
+  <div class="chap-header">
+    <div class="chap-flag">Critical</div>
+    <div class="chap-title">Rules of the System — What You Must Never Do</div>
+    <p class="chap-intro">The system is built on discipline. These rules are not suggestions. Each one exists because breaking it has a specific, predictable consequence.</p>
+    <div class="chap-divider"></div>
+  </div>
+
+  <div class="if-red" style="margin-bottom:.75rem">
+    <div class="if-red-label">Never contact a prospect before Stage I·1 is confirmed</div>
+    <div class="if-red-text">A prospect contacted without a trigger is a prospect you reached on a random Tuesday. They will file you as irrelevant. You will not get a second chance to be relevant. Wait for the trigger. It will come.</div>
+  </div>
+
+  <div class="if-red" style="margin-bottom:.75rem">
+    <div class="if-red-label">Never advance past Tier 1 Gate failure</div>
+    <div class="if-red-text">A failed Demand Gate means the conditions for buying do not yet exist. Advancing anyway means you are investing qualification time in a prospect who cannot buy — not one who will not. The difference matters. One requires more demand creation work. The other requires disqualification.</div>
+  </div>
+
+  <div class="if-red" style="margin-bottom:.75rem">
+    <div class="if-red-label">Never write Layer 3 in your own words</div>
+    <div class="if-red-text">Layer 3 must be the prospect's exact words. If you paraphrase it, your proposal uses your language, not theirs. A prospect who reads a proposal in your language experiences it as a sales document. A prospect who reads their own words reflected back experiences it as understanding. The difference determines whether they defend your proposal internally or send it "for review."</div>
+  </div>
+
+  <div class="if-red" style="margin-bottom:.75rem">
+    <div class="if-red-label">Never commit a deal that has not passed all 3 Tier 3 gates</div>
+    <div class="if-red-text">A commit that slips is not just a missed number. It erodes your forecast credibility with your manager — and credibility, once lost, takes quarters to rebuild. The 5 Tier 3 gates exist specifically to prevent commits that will slip. Use them.</div>
+  </div>
+
+  <div class="if-red" style="margin-bottom:.75rem">
+    <div class="if-red-label">Never skip CEMENT because the deal is closed</div>
+    <div class="if-red-text">The deal being closed is the reason to start CEMENT — not to skip it. The 5 layers of CEMENT are what turn a closed deal into a 3-year account. Without them, you will spend the same energy re-acquiring this account at year 2 renewal that you spent acquiring it in year 1. CEMENT is the return on that original investment.</div>
+  </div>
+
+  <div class="why" style="margin-top:1.5rem">
+    <div class="why-label">The system works because of its constraints — not in spite of them</div>
+    <div class="why-text">Every validation, every minimum character count, every required field, every gate — they all exist because the data shows what happens when those constraints are removed: reps over-forecast, prospects are contacted too early, deals are lost in qualification gaps that were visible in advance. The discipline is the competitive advantage. Use the system as it is designed. Do not shortcut it. The constraints are the product.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="border-top:1px solid var(--b1);padding-top:2rem;text-align:center;margin-top:3rem">
+  <p style="font-size:.68rem;color:var(--t3);line-height:1.9">
+    <strong style="color:var(--t2)">IGNITE_APEX Sales Operating System</strong> · New User Guide<br>
+    Work one deal at a time. Work each stage in full. Trust the sequence.<br>
+    "Qualifies harder than anyone. Diagnoses deeper than anyone. Reads what is never said. Forecasts with brutal honesty. Closes fast because conviction was already built. Then spends the next five years making themselves impossible to replace."
+  </p>
+</div>
+
+</div>
+</body>
+</html>

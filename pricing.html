@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://*.supabase.co https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paddle.com; img-src 'self' data: https:; frame-src https://cdn.paddle.com https://*.paddle.com;">
+<title>Pricing — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:1200px;margin:0 auto;padding:3rem 1.5rem}
+.hero{text-align:center;margin-bottom:3rem}
+.hero-title{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--t1);margin-bottom:1rem}
+.hero-subtitle{font-size:1.1rem;color:var(--t2);max-width:600px;margin:0 auto 2rem}
+.trial-badge{background:var(--green);color:#000;padding:.5rem 1.5rem;border-radius:8px;font-size:.9rem;font-weight:700;display:inline-block;margin-bottom:2rem}
+
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:3rem}
+.billing-option{background:var(--s2);color:var(--t2);border:2px solid var(--b1);padding:.75rem 2rem;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s}
+.billing-option.active{background:var(--amber);color:#000;border-color:var(--amber)}
+.billing-option:hover{border-color:var(--amber)}
+.save-badge{background:var(--green);color:#000;padding:.25rem .75rem;border-radius:6px;font-size:.7rem;font-weight:700;margin-left:.5rem}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2rem;margin-bottom:3rem}
+.price-card{background:var(--s1);border:3px solid var(--b1);border-radius:12px;padding:2rem;position:relative;transition:all .3s}
+.price-card:hover{transform:translateY(-4px);border-color:var(--amber)}
+.price-card.popular{border-color:var(--amber);background:linear-gradient(135deg,var(--s1),rgba(245,158,11,.05))}
+.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--amber);color:#000;padding:.35rem 1rem;border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.5px}
+
+.plan-name{font-size:1.3rem;font-weight:700;color:var(--t1);margin-bottom:.5rem}
+.plan-users{font-size:.85rem;color:var(--t3);margin-bottom:1.5rem}
+.plan-price{font-size:3rem;font-weight:800;color:var(--amber);margin-bottom:.5rem}
+.plan-price span{font-size:1rem;color:var(--t2);font-weight:600}
+.plan-billing{font-size:.75rem;color:var(--t3);margin-bottom:1.5rem}
+.plan-features{list-style:none;margin-bottom:2rem}
+.plan-features li{padding:.5rem 0;font-size:.85rem;color:var(--t2);display:flex;align-items:center;gap:.5rem}
+.plan-features li::before{content:'✓';color:var(--green);font-weight:700;font-size:1.1rem}
+
+.btn-primary{background:var(--amber);color:#000;border:none;padding:1rem 2rem;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;font-family:'Syne',sans-serif}
+.btn-primary:hover{background:var(--amber2);transform:translateY(-2px)}
+.btn-secondary{background:var(--s2);color:var(--t1);border:2px solid var(--b1);padding:1rem 2rem;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;font-family:'Syne',sans-serif}
+.btn-secondary:hover{border-color:var(--amber)}
+
+.addon-section{background:var(--s1);border:2px solid var(--b1);border-radius:12px;padding:2rem;margin-bottom:3rem}
+.addon-title{font-size:1.5rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem}
+.addon-desc{font-size:.9rem;color:var(--t2);margin-bottom:1.5rem}
+.addon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem}
+.addon-price{background:var(--s2);border:2px solid var(--b1);border-radius:8px;padding:1.5rem;text-align:center}
+.addon-plan-name{font-size:.9rem;color:var(--t3);margin-bottom:.5rem}
+.addon-amount{font-size:2rem;font-weight:800;color:var(--blue);margin-bottom:.25rem}
+.addon-amount span{font-size:.9rem;color:var(--t2);font-weight:600}
+
+.faq-section{margin-bottom:3rem}
+.faq-title{font-size:2rem;font-weight:700;color:var(--t1);text-align:center;margin-bottom:2rem}
+.faq-item{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:1.5rem;margin-bottom:1rem}
+.faq-q{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.75rem}
+.faq-a{font-size:.85rem;color:var(--t2);line-height:1.6}
+
+.contact-section{background:var(--s1);border:2px solid var(--amber);border-radius:12px;padding:2rem;text-align:center}
+.contact-title{font-size:1.5rem;font-weight:700;color:var(--t1);margin-bottom:1rem}
+.contact-text{font-size:.9rem;color:var(--t2);margin-bottom:1.5rem}
+.contact-emails{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.contact-email{background:var(--s2);border:1px solid var(--b1);padding:.75rem 1.5rem;border-radius:8px;color:var(--amber);text-decoration:none;font-weight:600;transition:all .2s}
+.contact-email:hover{border-color:var(--amber);background:rgba(245,158,11,.1)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX</div>
+  <div class="tb-nav">
+    <a href="./index.html">Home</a>
+    <a href="./app/launcher.html">Launch App</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-title">Simple, Transparent Pricing</div>
+    <div class="hero-subtitle">Start free with Sales OS. Add CRM when you're ready. Scale with your team.</div>
+    <div class="trial-badge">🎉 CRM FREE for 99 Days — No Credit Card Required</div>
+  </div>
+
+  <!-- Billing Toggle -->
+  <div class="billing-toggle">
+    <div class="billing-option active" id="monthly-toggle" onclick="switchBilling('monthly')">
+      Monthly
+    </div>
+    <div class="billing-option" id="yearly-toggle" onclick="switchBilling('yearly')">
+      Yearly <span class="save-badge">SAVE 17%</span>
+    </div>
+  </div>
+
+  <!-- Base Plans -->
+  <div class="pricing-grid" id="pricing-grid">
+    <!-- Team Mini -->
+    <div class="price-card">
+      <div class="plan-name">Team Mini</div>
+      <div class="plan-users">Up to 3 users</div>
+      <div class="plan-price" id="mini-price">$9<span>/month</span></div>
+      <div class="plan-billing" id="mini-billing">Billed monthly</div>
+      <ul class="plan-features">
+        <li>Full Sales OS (always free)</li>
+        <li>Complete CRM</li>
+        <li>IGNITE-APEX qualification</li>
+        <li>Pipeline management</li>
+        <li>Reports & analytics</li>
+        <li>Email support</li>
+      </ul>
+      <button class="btn-secondary" onclick="selectPlan('team_mini', 'monthly')">Start 99-Day Trial</button>
+    </div>
+
+    <!-- Team Midi (Popular) -->
+    <div class="price-card popular">
+      <div class="popular-badge">MOST POPULAR</div>
+      <div class="plan-name">Team Midi</div>
+      <div class="plan-users">4-10 users</div>
+      <div class="plan-price" id="midi-price">$15<span>/month</span></div>
+      <div class="plan-billing" id="midi-billing">Billed monthly</div>
+      <ul class="plan-features">
+        <li>Everything in Mini, plus:</li>
+        <li>Team management</li>
+        <li>Advanced reporting</li>
+        <li>Custom fields</li>
+        <li>Priority support</li>
+        <li>SSO (coming soon)</li>
+      </ul>
+      <button class="btn-primary" onclick="selectPlan('team_midi', 'monthly')">Start 99-Day Trial</button>
+    </div>
+
+    <!-- Team Maxi -->
+    <div class="price-card">
+      <div class="plan-name">Team Maxi</div>
+      <div class="plan-users">11-50 users</div>
+      <div class="plan-price" id="maxi-price">$30<span>/month</span></div>
+      <div class="plan-billing" id="maxi-billing">Billed monthly</div>
+      <ul class="plan-features">
+        <li>Everything in Midi, plus:</li>
+        <li>Unlimited users (up to 50)</li>
+        <li>Advanced automations</li>
+        <li>Custom integrations</li>
+        <li>Dedicated account manager</li>
+        <li>SLA & 24/7 support</li>
+      </ul>
+      <button class="btn-secondary" onclick="selectPlan('team_maxi', 'monthly')">Start 99-Day Trial</button>
+    </div>
+  </div>
+
+  <!-- B2B Outreach Add-on -->
+  <div class="addon-section">
+    <div class="addon-title">
+      <span>🚀</span>
+      <span>B2B Outreach Add-on</span>
+    </div>
+    <div class="addon-desc">Supercharge your pipeline with multi-channel outreach: email sequences, LinkedIn automation, and engagement tracking.</div>
+    <div class="addon-grid">
+      <div class="addon-price">
+        <div class="addon-plan-name">Team Mini</div>
+        <div class="addon-amount" id="addon-mini-price">+$6<span>/mo</span></div>
+        <div style="font-size:.75rem;color:var(--t3)">or $160/year</div>
+      </div>
+      <div class="addon-price">
+        <div class="addon-plan-name">Team Midi</div>
+        <div class="addon-amount" id="addon-midi-price">+$9<span>/mo</span></div>
+        <div style="font-size:.75rem;color:var(--t3)">or $250/year</div>
+      </div>
+      <div class="addon-price">
+        <div class="addon-plan-name">Team Maxi</div>
+        <div class="addon-amount" id="addon-maxi-price">+$12<span>/mo</span></div>
+        <div style="font-size:.75rem;color:var(--t3)">or $500/year</div>
+      </div>
+    </div>
+  </div>
+  <!-- Database Isolation Warning -->
+  <div style="background:rgba(239,68,68,.1);border:2px solid #EF4444;border-radius:12px;padding:2rem;margin:2rem 0">
+    <div style="display:flex;align-items:start;gap:1rem">
+      <div style="font-size:2rem">⚠️</div>
+      <div>
+        <div style="font-size:1.2rem;font-weight:700;color:#EF4444;margin-bottom:1rem">Database Isolation Warning</div>
+        <div style="font-size:.9rem;color:var(--t2);line-height:1.7">
+          <p style="margin-bottom:1rem"><strong>Purchasing the B2B Outreach Agent independently without an active CRM subscription places records on an isolated database ecosystem.</strong></p>
+          <p style="margin-bottom:1rem">Retroactively integrating this standalone account with the CRM module down the road requires custom Professional Services. This migration engagement is billed at a fixed rate of <strong>USD $1,000 per man-day</strong> for a mandatory <strong>10-day scope</strong> (Totaling <strong>USD $10,000</strong>).</p>
+          <p><strong>For a seamless data connection, users are strongly advised to select the unified CRM + B2B0 bundle.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <div class="faq-title">Frequently Asked Questions</div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is Sales OS really free forever?</div>
+      <div class="faq-a">Yes! Sales OS (deal qualification, IGNITE framework, pipeline tracking) is 100% free with no user limits. You only pay when you want the full CRM (accounts, contacts, advanced features).</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What happens after the 99-day CRM trial?</div>
+      <div class="faq-a">After 99 days, you'll get reminders to subscribe. You'll have until day 150 to decide. After that, CRM access is locked until you subscribe (Sales OS remains free).</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I pay with a manual invoice instead of card?</div>
+      <div class="faq-a">Yes! <button onclick="contactAdmin('manual_invoice')" style="background:var(--amber);color:#000;border:none;padding:.5rem 1rem;border-radius:6px;font-weight:700;cursor:pointer;font-size:.85rem">Contact Administrator</button> for manual invoicing. We'll send a PDF invoice with payment details. Available for annual plans.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What payment methods do you accept?</div>
+      <div class="faq-a">Credit/debit cards (Visa, Mastercard, Amex), PayPal, and manual bank transfer for annual invoices. All payments processed securely via Paddle.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I switch plans later?</div>
+      <div class="faq-a">Absolutely! Upgrade or downgrade anytime. Changes take effect immediately, and we'll prorate the difference.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do you handle taxes/VAT?</div>
+      <div class="faq-a">Yes! Paddle (our payment processor) handles all global taxes, VAT, and compliance. Prices shown may have local tax added at checkout.</div>
+    </div>
+  </div>
+
+  <!-- Contact Section -->
+  <div class="contact-section">
+    <div class="contact-title">Need a Custom Plan?</div>
+    <div class="contact-text">Enterprise teams (50+ users), custom integrations, or on-premise deployment? Let's talk.</div>
+    <button onclick="contactAdmin('custom_plan')" class="btn-primary" style="margin:0 auto">
+      📧 Contact Administrator
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script src="./supabase-client.js"></script>
+<script>
+// Pricing data
+const pricing = {
+  monthly: {
+    team_mini: { price: 9, display: '$9' },
+    team_midi: { price: 15, display: '$15' },
+    team_maxi: { price: 30, display: '$30' },
+    addon_mini: { price: 6, display: '+$6' },
+    addon_midi: { price: 9, display: '+$9' },
+    addon_maxi: { price: 12, display: '+$12' }
+  },
+  yearly: {
+    team_mini: { price: 100, monthly: 8.33, display: '$8' },
+    team_midi: { price: 195, monthly: 16.25, display: '$16' },
+    team_maxi: { price: 320, monthly: 26.67, display: '$27' },
+    addon_mini: { price: 160, monthly: 13.33, display: '+$13' },
+    addon_midi: { price: 250, monthly: 20.83, display: '+$21' },
+    addon_maxi: { price: 500, monthly: 41.67, display: '+$42' }
+  }
+};
+
+let currentBilling = 'monthly';
+
+function switchBilling(type) {
+  currentBilling = type;
+
+  // Update toggle buttons
+  document.getElementById('monthly-toggle').classList.toggle('active', type === 'monthly');
+  document.getElementById('yearly-toggle').classList.toggle('active', type === 'yearly');
+
+  // Update prices
+  const p = pricing[type];
+
+  if (type === 'monthly') {
+    document.getElementById('mini-price').innerHTML = `${p.team_mini.display}<span>/month</span>`;
+    document.getElementById('midi-price').innerHTML = `${p.team_midi.display}<span>/month</span>`;
+    document.getElementById('maxi-price').innerHTML = `${p.team_maxi.display}<span>/month</span>`;
+
+    document.getElementById('mini-billing').textContent = 'Billed monthly';
+    document.getElementById('midi-billing').textContent = 'Billed monthly';
+    document.getElementById('maxi-billing').textContent = 'Billed monthly';
+
+    document.getElementById('addon-mini-price').innerHTML = `${p.addon_mini.display}<span>/mo</span>`;
+    document.getElementById('addon-midi-price').innerHTML = `${p.addon_midi.display}<span>/mo</span>`;
+    document.getElementById('addon-maxi-price').innerHTML = `${p.addon_maxi.display}<span>/mo</span>`;
+  } else {
+    document.getElementById('mini-price').innerHTML = `${p.team_mini.display}<span>/month</span>`;
+    document.getElementById('midi-price').innerHTML = `${p.team_midi.display}<span>/month</span>`;
+    document.getElementById('maxi-price').innerHTML = `${p.team_maxi.display}<span>/month</span>`;
+
+    document.getElementById('mini-billing').textContent = `$${p.team_mini.price}/year — Save $8`;
+    document.getElementById('midi-billing').textContent = `$${p.team_midi.price}/year — Save $15`;
+    document.getElementById('maxi-billing').textContent = `$${p.team_maxi.price}/year — Save $40`;
+
+    document.getElementById('addon-mini-price').innerHTML = `${p.addon_mini.display}<span>/mo</span>`;
+    document.getElementById('addon-midi-price').innerHTML = `${p.addon_midi.display}<span>/mo</span>`;
+    document.getElementById('addon-maxi-price').innerHTML = `${p.addon_maxi.display}<span>/mo</span>`;
+  }
+}
+
+async function selectPlan(plan, billing) {
+  // Check if user is logged in
+  if (!window.supabaseClient) {
+    alert('Loading... please wait a moment and try again.');
+    return;
+  }
+
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
+
+  if (!session) {
+    // Not logged in - redirect to signup
+    alert('Please sign up or log in first to start your free trial!');
+    window.location.href = './app/auth.html?redirect=pricing&plan=' + plan + '&billing=' + billing;
+    return;
+  }
+
+  // User is logged in - redirect to checkout
+  window.location.href = './checkout.html?plan=' + plan + '&billing=' + currentBilling;
+}
+
+// Initialize Paddle (Sandbox mode for testing - change to live when ready)
+// Get your Paddle client token from: https://vendors.paddle.com/authentication
+// Paddle.Environment.set('sandbox'); // Remove this line for production
+// Paddle.Setup({ vendor: YOUR_VENDOR_ID });
+
+// Contact Administrator function
+function contactAdmin(reason) {
+  const subject = encodeURIComponent('Get back to me - I have questions to clarify');
+
+  const body = encodeURIComponent(`Hi Administrator,
+
+I would like you to clarify the following questions for me as provided below:
+
+[YOUR QUESTIONS HERE]
+
+OR
+
+Can you arrange an eMeeting with me?
+
+I am available on [DATE] from [TIME] to [TIME] AM/PM GMT.
+I live in [COUNTRY] so you know my time zone.
+
+Regards,
+[YOUR NAME]`);
+
+  // Send to both emails (primary and CC)
+  const mailto = `mailto:muhammad.shaamel@gmail.com,muhammad.shaamel@shaamelz.com?subject=${subject}&body=${body}`;
+
+  window.location.href = mailto;
+}
+</script>
+
+</body>
+</html>

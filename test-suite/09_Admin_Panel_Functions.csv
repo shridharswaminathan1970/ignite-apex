@@ -1,0 +1,103 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+ADMIN-001,Super Duper Admin Login,Functional,Account exists for muhammad.shaamel@gmail.com,"1. Login as muhammad.shaamel@gmail.com
+2. Enter password","1. Login successful
+2. Auto-redirected to /app/master-console.html
+3. Role displayed: 'Super Duper Admin'",,Pending,Critical,Admin access
+ADMIN-002,Admin Panel Loads,Functional,Logged in as Super Duper Admin,"1. Navigate to /app/admin.html","1. Admin panel loads
+2. Multiple tabs visible:
+   - Users
+   - Organisations
+   - Subscriptions
+   - Pending Registrations (if exists)
+3. No errors in console",,Pending,Critical,Panel visibility
+ADMIN-003,Pending Registrations Tab Visible,UI,Super Duper Admin in admin panel,"1. Click 'Pending Registrations' tab (or similar)","Tab displays:
+- Individual requests table
+- Company requests table (if separate)
+- Approve/Reject buttons for each
+- Request details (name, email, phone, country)",,Pending,Critical,Registration queue
+ADMIN-004,Approve Individual Request - Complete Flow,Functional,Pending request exists (REG-001),"1. View pending requests
+2. Click 'Approve' for a user
+3. Confirm action","1. approve_individual_registration() called
+2. User created in users table
+3. Org created (name='NA')
+4. Subscription created (status='free', crm_enabled=false)
+5. Password reset email sent
+6. Request status → 'approved'
+7. Request removed from pending list",,Pending,Critical,Approval workflow
+ADMIN-005,Approve Individual Request - Duplicate Email,Negative,Email already exists in users table,"1. Try to approve request with existing email","1. Error shown: 'Email already exists'
+2. Request NOT approved
+3. User NOT created
+4. Admin sees error message",,Pending,High,Duplicate handling
+ADMIN-006,Reject Individual Request,Functional,Pending request exists,"1. Click 'Reject' button
+2. Enter rejection reason: 'Incomplete information'
+3. Confirm","1. Request status → 'rejected'
+2. Rejection reason saved
+3. User NOT created
+4. No email sent
+5. Request removed from pending list (or marked rejected)",,Pending,High,Rejection workflow
+ADMIN-007,Approve Company Request,Functional,Company request pending (REG-005),"1. View company requests
+2. Click 'Approve'
+3. Review company details
+4. Confirm","1. Company/org created
+2. Senior Manager user created
+3. Super Admin created (or same person)
+4. Initial users created (from JSON)
+5. Teams created (from JSON)
+6. Subscription created
+7. Email sent to Super Admin
+8. Request status → 'approved'",,Pending,Critical,Company approval
+ADMIN-008,View All Users,Functional,Admin panel open,"1. Click 'Users' tab
+2. View user list","Table displays:
+- All users across all orgs
+- Columns: Name, Email, Role, Organisation, Status
+- Searchable/filterable
+- Pagination if many users",,Pending,Medium,User list
+ADMIN-009,View User Details,Functional,User list displayed,"1. Click on a user row
+2. View details panel/modal","Shows:
+- Full name, email, phone
+- Role and permissions
+- Organisation name
+- Subscription status
+- Created date
+- Last login",,Pending,Medium,User details
+ADMIN-010,View All Organisations,Functional,Admin panel open,"1. Click 'Organisations' tab","Table displays:
+- All organisations
+- Columns: Name, Users count, Subscription status, Created date
+- Can click to view details",,Pending,Medium,Org list
+ADMIN-011,View Organisation Details,Functional,Org list displayed,"1. Click on an organisation","Shows:
+- Org name, address (if company)
+- List of users in org
+- Subscription details
+- Teams (if any)
+- Created date",,Pending,Medium,Org details
+ADMIN-012,View All Subscriptions,Functional,Admin panel open,"1. Click 'Subscriptions' tab","Table displays:
+- All org subscriptions
+- Columns: Org name, Status, Plan, CRM enabled, B2B0 enabled, Trial ends
+- Filterable by status
+- Search by org name",,Pending,High,Subscription list
+ADMIN-013,Update Subscription Manually,Functional,Subscription selected,"1. Select a subscription
+2. Click 'Edit' or similar
+3. Change: crm_enabled = true
+4. Save","1. Database updated
+2. User gains CRM access immediately
+3. Change logged
+4. Success message shown",,Pending,High,Manual provisioning
+ADMIN-014,Company Super Admin Access,Functional,Logged in as Company Super Admin,"1. Login as company super admin (e.g., shridhar.swaminathan1970@gmail.com)
+2. Navigate to /app/company-dashboard.html","1. Loads company dashboard
+2. Can view only their company's users
+3. Cannot see other companies
+4. Can add/remove users in their company
+5. Cannot access Super Duper Admin functions",,Pending,Critical,Company admin scope
+ADMIN-015,Non-Admin Cannot Access Admin Panel,Security,Logged in as regular user,"1. Login as user with role='sdr' or 'admin'
+2. Navigate to /app/admin.html manually","1. Access denied
+2. Redirected to launcher or error page
+3. RLS policy blocks data
+4. No admin functions visible",,Pending,Critical,Security check
+ADMIN-016,Super Duper Admin - Delete User,Functional,User exists (test account),"1. Go to Users tab
+2. Select user
+3. Click 'Delete' (if exists)
+4. Confirm","1. User deleted from users table
+2. Associated org cleaned up (if orphaned)
+3. Subscription handled
+4. User removed from list
+5. Confirmation shown",,Pending,Medium,User deletion

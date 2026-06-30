@@ -1,0 +1,116 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+ORG-001,Organization Setup,Create new organization,P0,"1. Super admin logs in
+2. Go to admin dashboard
+3. Click Create Organization
+4. Fill: name, domain, settings
+5. Save","Organization created:
+- Record in organisations table
+- org_id generated
+- Default settings applied",,,PASS/FAIL,P0,
+ORG-002,Organization Setup,Organization name is required,P1,"1. Try to create org without name
+2. Submit form",Validation error: Name required,,,PASS/FAIL,P1,
+ORG-003,Organization Setup,Duplicate organization domain blocked,P1,"1. Create org with domain example.com
+2. Try to create another with same domain",Error: Domain already exists,,,PASS/FAIL,P1,
+ORG-004,Organization Setup,Edit organization details,P1,"1. Open existing org
+2. Edit name/domain/settings
+3. Save","Changes saved:
+- Updated in database
+- Reflected in UI",,,PASS/FAIL,P1,
+ORG-005,Organization Setup,Delete organization (with confirmation),P0,"1. Select organization
+2. Click Delete
+3. Confirm deletion","Warning modal appears:
+- Shows count of users/data
+- Requires confirmation
+- Only super admin can delete",,,PASS/FAIL,P0,Critical - prevents accidental deletion
+ORG-006,Team Setup,Create team within organization,P0,"1. Admin logs in
+2. Go to team management
+3. Click Create Team
+4. Fill: name, description
+5. Save","Team created:
+- Record in teams table
+- Linked to org_id
+- No members yet",,,PASS/FAIL,P0,
+ORG-007,Team Setup,Team name is required,P1,"1. Try to create team without name
+2. Submit",Validation error: Name required,,,PASS/FAIL,P1,
+ORG-008,Team Setup,Multiple teams per organization,P1,"1. Create Team A
+2. Create Team B
+3. View team list","Both teams visible:
+- Separate team_id
+- Both under same org",,,PASS/FAIL,P1,
+ORG-009,Team Setup,Edit team details,P2,"1. Select team
+2. Edit name/description
+3. Save",Changes saved and reflected,,,PASS/FAIL,P2,
+ORG-010,Team Setup,Delete team,P1,"1. Select team with no members
+2. Click Delete
+3. Confirm","Team deleted:
+- Removed from database
+- No longer in team list",,,PASS/FAIL,P1,
+ORG-011,Team Setup,Cannot delete team with members,P0,"1. Select team with members
+2. Try to delete","Error: Cannot delete team with members
+Prompt: Remove members first",,,PASS/FAIL,P0,Prevents data orphaning
+ORG-012,Team Assignment,Assign user to team,P0,"1. Select user
+2. Click Assign Team
+3. Choose team
+4. Save","User assigned:
+- team_id updated in users table
+- User sees team name in profile
+- Can access team data",,,PASS/FAIL,P0,
+ORG-013,Team Assignment,User can only be in one team,P1,"1. User already in Team A
+2. Assign to Team B","User moved to Team B:
+- team_id updated
+- No longer in Team A",,,PASS/FAIL,P1,
+ORG-014,Team Assignment,Remove user from team,P1,"1. Select user in team
+2. Click Remove from Team
+3. Confirm","User removed:
+- team_id set to null
+- Still in organization
+- No team access",,,PASS/FAIL,P1,
+ORG-015,Team Lead,Assign team lead,P1,"1. Select team
+2. Choose user as team lead
+3. Save","Team lead assigned:
+- User has team_lead role
+- Can manage team members
+- Sees team data",,,PASS/FAIL,P1,
+ORG-016,Team Lead,Team lead can view team members,P1,"1. Login as team lead
+2. View team dashboard",Can see all team members,,,PASS/FAIL,P1,
+ORG-017,Team Lead,Team lead can assign users to team,P2,"1. Login as team lead
+2. Add user to team
+3. Save",User added to team,,,PASS/FAIL,P2,
+ORG-018,Team Lead,Team lead cannot delete team,P1,"1. Login as team lead
+2. Try to delete team",Error: Only admin can delete,,,PASS/FAIL,P1,
+ORG-019,Team Isolation,User only sees own team's data,P0,"1. User in Team A logs in
+2. View leads/opportunities
+3. Try to access Team B data","Only Team A data visible:
+- Leads filtered by team_id
+- Opportunities filtered
+- Cannot access Team B",,,PASS/FAIL,P0,Critical - data isolation
+ORG-020,Team Isolation,Admin sees all teams' data,P0,"1. Admin logs in
+2. View leads/opportunities","All teams' data visible:
+- Can filter by team
+- Can view across org",,,PASS/FAIL,P0,
+ORG-021,Organization Settings,Update CRM access flag,P0,"1. Admin toggles crm_enabled
+2. Save
+3. User tries to access CRM","If enabled: access granted
+If disabled: redirected to Sales OS",,,PASS/FAIL,P0,
+ORG-022,Organization Settings,Update max users limit,P1,"1. Admin sets max_users = 5
+2. Save
+3. Try to add 6th user","6th user blocked:
+Error: User limit reached
+Prompt to upgrade plan",,,PASS/FAIL,P1,
+ORG-023,Organization Settings,Invite code generation,P1,"1. Admin clicks Generate Invite Code
+2. Copy code
+3. Share with new user","Code generated:
+- Unique code created
+- Links to org_id
+- Can be used for signup",,,PASS/FAIL,P1,
+ORG-024,Organization Settings,Invite code expiry,P2,"1. Create invite code with expiry
+2. Wait until expired
+3. Try to use code","Code rejected:
+Error: Invite code expired
+User cannot register",,,PASS/FAIL,P2,
+ORG-025,Multi-Org,Super admin switches between orgs,P1,"1. Super admin logs in
+2. View org list
+3. Switch to different org","Switched successfully:
+- Dashboard shows new org data
+- Users/teams for that org
+- Isolated from other orgs",,,PASS/FAIL,P1,

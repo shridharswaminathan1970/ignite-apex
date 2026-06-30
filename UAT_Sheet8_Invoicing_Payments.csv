@@ -1,0 +1,83 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+INV-001,Manual Invoice,Generate invoice (admin),P0,"1. Admin logs in
+2. Go to admin/invoices.html
+3. Fill invoice form:
+   - Organization
+   - Plan (Mini/Midi/Maxi)
+   - Billing (Monthly/Yearly)
+   - B2B addon (yes/no)
+4. Click Generate PDF","PDF invoice generated:
+- Organization details
+- Plan + pricing
+- Invoice number
+- Due date
+- Total amount
+- Professional formatting",,,PASS/FAIL,P0,
+INV-002,Manual Invoice,Invoice pricing auto-fills,P1,"1. Select plan: Team Mini Monthly
+2. Check price field","Price auto-filled: $9.00",,,PASS/FAIL,P1,
+INV-003,Manual Invoice,B2B addon adds to total,P1,"1. Select Team Mini Monthly ($9)
+2. Enable B2B addon
+3. Check total","Total = $9 + $6 = $15",,,PASS/FAIL,P1,
+INV-004,Manual Invoice,Yearly discount applied,P1,"1. Select Team Mini Yearly
+2. Check price","Price = $100 (not $108)
+Shows savings",,,PASS/FAIL,P1,
+INV-005,Manual Invoice,Invoice saved to database,P0,"1. Generate invoice
+2. Check payment_transactions table","Record created:
+- org_id
+- amount
+- currency = USD
+- status = pending
+- invoice_url (PDF)",,,PASS/FAIL,P0,
+INV-006,Manual Invoice,View recent invoices,P0,"1. Go to invoices dashboard
+2. View recent list","Invoices shown:
+- Organization name
+- Amount
+- Date
+- Status
+- Actions (Mark Paid, Download)",,,PASS/FAIL,P0,
+INV-007,Manual Invoice,Mark invoice as paid,P0,"1. Select pending invoice
+2. Click Mark as Paid
+3. Confirm","Invoice updated:
+- Status = completed
+- paid_at = now()
+- Green badge in list",,,PASS/FAIL,P0,
+INV-008,Manual Invoice,Download invoice PDF,P1,"1. Click Download on invoice
+2. Open PDF","PDF downloads:
+- Same as generated
+- All details intact",,,PASS/FAIL,P1,
+INV-009,Manual Invoice,Only admin can access,P0,"1. Non-admin user tries to access /admin/invoices.html
+2. View result","Access denied:
+- Redirected
+- Or error message",,,PASS/FAIL,P0,Security critical
+INV-010,Payment Tracking,View payment history,P1,"1. Admin views payment transactions
+2. Filter by organization","Transactions shown:
+- Date
+- Amount
+- Method
+- Status",,,PASS/FAIL,P1,
+PAY-001,Paddle Checkout,Access checkout page,P1,"1. Go to pricing.html
+2. Click Start 99-Day Trial
+3. Redirected to checkout","Checkout page loads:
+- Shows selected plan
+- Paddle embed ready",,,PASS/FAIL,P1,
+PAY-002,Paddle Checkout,Checkout shows correct plan,P1,"1. Select Team Midi Monthly on pricing
+2. Go to checkout","Checkout shows:
+- Team Midi
+- $18/month
+- Description",,,PASS/FAIL,P1,
+PAY-003,Paddle Checkout,Add B2B addon at checkout,P2,"1. On checkout page
+2. Check B2B addon
+3. View total","Total updates:
+- Base + addon
+- Correct calculation",,,PASS/FAIL,P2,
+PAY-004,Paddle Integration,Subscription activated after payment,P0,"1. Complete Paddle checkout (sandbox)
+2. Webhook received
+3. Check org_subscriptions","Subscription activated:
+- status = active
+- plan = selected plan
+- paddle_subscription_id saved
+- trial_ends_at = null",,,PASS/FAIL,P0,Needs Paddle account
+PAY-005,Paddle Integration,Webhook signature verified,P0,"1. Send test webhook with invalid signature
+2. Check logs","Webhook rejected:
+- Error: Invalid signature
+- No subscription updated",,,PASS/FAIL,P0,Security critical

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2B Outreach — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1);display:flex;align-items:center;justify-content:center}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.container{position:relative;z-index:1;max-width:600px;text-align:center;padding:3rem 2rem}
+.icon{font-size:5rem;margin-bottom:2rem;animation:pulse 2s ease-in-out infinite}
+.title{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--purple);margin-bottom:1rem}
+.subtitle{font-size:1.1rem;color:var(--t2);line-height:1.7;margin-bottom:2rem}
+
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:2rem 0;text-align:left}
+.feature{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:1rem}
+.feature-icon{font-size:1.5rem;margin-bottom:.5rem}
+.feature-title{font-size:.9rem;font-weight:700;color:var(--t1);margin-bottom:.25rem}
+.feature-desc{font-size:.75rem;color:var(--t3);line-height:1.5}
+
+.cta-box{background:var(--s1);border:2px solid var(--purple);border-radius:12px;padding:2rem;margin-top:2rem}
+.cta-title{font-size:1.3rem;font-weight:700;color:var(--purple);margin-bottom:1rem}
+.cta-text{font-size:.9rem;color:var(--t2);margin-bottom:1.5rem}
+
+.btn{padding:1rem 2rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem;text-decoration:none;display:inline-block;transition:all .2s;border:none;margin:.5rem}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-2px)}
+.btn-secondary{background:var(--s2);color:var(--t2);border:1px solid var(--b1)}
+.btn-secondary:hover{border-color:var(--purple);color:var(--t1)}
+
+.loading{font-size:1rem;color:var(--t3)}
+
+@keyframes pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.05)}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="loading" class="loading">Checking access...</div>
+
+  <div id="content" style="display:none">
+    <div class="icon">🚀</div>
+    <h1 class="title">B2B Outreach Agent</h1>
+    <p class="subtitle">
+      AI-powered sales outreach automation. Import leads, generate personalized sequences,
+      send emails, track replies, and sync everything back to your CRM.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">ICP Lead Scoring</div>
+        <div class="feature-desc">AI scores leads against your ideal customer profile</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✍️</div>
+        <div class="feature-title">Personalized Sequences</div>
+        <div class="feature-desc">Claude AI generates tailored outreach messages</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📧</div>
+        <div class="feature-title">Email Delivery</div>
+        <div class="feature-desc">Automated sending via approved providers</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">CRM Sync</div>
+        <div class="feature-desc">Bi-directional sync with IGNITE_APEX CRM</div>
+      </div>
+    </div>
+
+    <div class="cta-box" id="access-granted" style="display:none">
+      <div class="cta-title">✅ Access Granted</div>
+      <p class="cta-text">You have B2B Outreach add-on enabled. Launching platform...</p>
+      <a href="#" id="launch-btn" class="btn btn-primary">🚀 Launch B2B Outreach</a>
+    </div>
+
+    <div class="cta-box" id="access-denied" style="display:none">
+      <div class="cta-title">🔒 Subscription Required</div>
+      <p class="cta-text">
+        B2B Outreach is a paid add-on (+$6-12/month) that requires an active CRM subscription.
+      </p>
+      <a href="../pricing.html?addon=b2b" class="btn btn-primary">View Pricing</a>
+      <a href="../crm/index.html" class="btn btn-secondary">← Back to CRM</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+
+<script>
+const B2B_OUTREACH_URL = 'https://b2b.shaamelz.com'; // TODO: Update with actual deployed URL
+
+(async function init() {
+  try {
+    const sb = window.supabaseClient;
+    const { data: { session } } = await sb.auth.getSession();
+
+    if (!session) {
+      window.location.href = '../app/auth.html?redirect=outreach';
+      return;
+    }
+
+    const { data: user } = await sb.from('users').select('*, organisations(*)').eq('id', session.user.id).single();
+    if (!user) {
+      window.location.href = '../app/auth.html';
+      return;
+    }
+
+    // Check B2B0 entitlement (INDEPENDENT of CRM)
+    const { data: subscription } = await sb
+      .from('org_subscriptions')
+      .select('b2b0_enabled, b2b0_plan, b2b0_trial_ends_at, status')
+      .eq('org_id', user.org_id)
+      .single();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    // B2B0 ACCESS LOGIC (independent of crm_enabled):
+    // - During 7-day trial: b2b0_enabled=true, trial_ends_at in future
+    // - After trial: b2b0_enabled=true, subscription active
+    // - No trial/no subscription: b2b0_enabled=false
+
+    const now = new Date();
+    const trialEndsAt = subscription?.b2b0_trial_ends_at ? new Date(subscription.b2b0_trial_ends_at) : null;
+    const inTrial = trialEndsAt && now < trialEndsAt;
+    const hasActiveSubscription = subscription?.b2b0_enabled && (subscription.status === 'active' || inTrial);
+
+    if (hasActiveSubscription) {
+      // Access granted!
+      document.getElementById('access-granted').style.display = 'block';
+
+      // Auto-redirect after 2 seconds
+      setTimeout(() => {
+        document.getElementById('launch-btn').href = B2B_OUTREACH_URL;
+        // Auto-redirect to B2B0 platform
+        window.location.href = B2B_OUTREACH_URL;
+      }, 2000);
+
+    } else {
+      // Access denied - need subscription
+      document.getElementById('access-denied').style.display = 'block';
+
+      let reason = 'B2B0 module not enabled.';
+      if (!subscription) {
+        reason = 'No organization subscription found.';
+      } else if (!subscription.b2b0_enabled) {
+        reason = 'B2B0 not purchased. Start 7-day trial!';
+      } else if (trialEndsAt && now > trialEndsAt) {
+        reason = '7-day trial expired. Subscribe to continue.';
+      }
+
+      console.log('[B2B0 Access] Denied:', reason);
+    }
+
+  } catch (err) {
+    console.error('[B2B Outreach] Init error:', err);
+    document.getElementById('loading').textContent = 'Error: ' + err.message;
+  }
+})();
+</script>
+
+</body>
+</html>

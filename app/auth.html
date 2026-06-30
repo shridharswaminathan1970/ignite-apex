@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1);display:flex;align-items:center;justify-content:center}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.auth-container{position:relative;z-index:1;width:100%;max-width:440px;padding:2rem}
+.auth-logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--amber);letter-spacing:2px;text-align:center;margin-bottom:3rem}
+.auth-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:2.5rem;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.auth-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--t1);margin-bottom:.5rem;text-align:center}
+.auth-subtitle{font-size:.85rem;color:var(--t3);text-align:center;margin-bottom:2rem}
+.form-group{margin-bottom:1.5rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.85rem;color:var(--t1);font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.form-input:focus{outline:none;border-color:var(--amber)}
+.form-input::placeholder{color:var(--t3)}
+.btn-primary{width:100%;background:var(--amber);color:#000;padding:.95rem;border-radius:10px;font-size:.9rem;font-weight:700;border:none;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.btn-primary:hover{background:var(--amber2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.5rem 0}
+.divider-line{flex:1;height:1px;background:var(--b1)}
+.divider-text{font-size:.7rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.link-text{text-align:center;font-size:.85rem;color:var(--t2);margin-top:1.5rem}
+.link-text a{color:var(--amber);text-decoration:none;font-weight:600}
+.link-text a:hover{text-decoration:underline}
+.alert{padding:1rem;border-radius:8px;margin-bottom:1.5rem;font-size:.85rem}
+.alert.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.alert.error{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.alert.info{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+.feature-list{margin-top:2rem;padding-top:2rem;border-top:1px solid var(--b1)}
+.feature-list h3{font-size:.8rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:1rem}
+.feature-list ul{list-style:none}
+.feature-list li{font-size:.8rem;color:var(--t2);padding:.4rem 0;display:flex;align-items:center;gap:.5rem}
+.feature-list li::before{content:'✓';color:var(--amber);font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="auth-container">
+  <div class="auth-logo">IGNITE_APEX</div>
+
+  <div class="auth-card">
+    <div id="signin-view">
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle" id="signin-subtitle">Sign in to continue</p>
+
+      <div id="signin-alert" style="display:none"></div>
+
+      <form id="signin-form" onsubmit="handleSignIn(event); return false;" method="post" action="javascript:void(0);">
+        <div class="form-group">
+          <label class="form-label">User ID (Email Address)</label>
+          <input type="email" class="form-input" name="email" required placeholder="you@company.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password Key</label>
+          <input type="password" class="form-input" name="password" required placeholder="Enter your password key" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary" id="signin-btn">Sign In</button>
+      </form>
+
+      <p class="link-text">
+        <a href="#" onclick="showView('forgot'); return false">Forgot password?</a>
+        ·
+        <a href="#" onclick="showView('signup'); return false">Create account</a>
+      </p>
+
+      <div class="alert info" style="display:block;font-size:.75rem;margin-top:1.5rem">
+        ℹ️ <strong>New user?</strong> Click "Create account" above to start your free trial.
+      </div>
+    </div>
+
+    <div id="signup-view" style="display:none">
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Start your 90-day free trial</p>
+
+      <div id="signup-alert" style="display:none"></div>
+
+      <form id="signup-form" onsubmit="handleSignUp(event); return false;" method="post" action="javascript:void(0);">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-input" name="first_name" required placeholder="John" autocomplete="given-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-input" name="last_name" required placeholder="Doe" autocomplete="family-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" name="email" required placeholder="you@company.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" name="password" required placeholder="Enter a strong password" autocomplete="new-password" minlength="8">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Organisation Name</label>
+          <input type="text" class="form-input" name="org_name" required placeholder="Acme Corp">
+        </div>
+        <button type="submit" class="btn-primary" id="signup-btn">Create Account</button>
+      </form>
+
+      <p class="link-text">
+        Already have an account? <a href="#" onclick="showView('signin'); return false">Sign in</a>
+      </p>
+
+      <div class="feature-list">
+        <h3>What's Included (90 Days Free)</h3>
+        <ul>
+          <li>Complete CRM with lead & opportunity management</li>
+          <li>IGNITE_APEX methodology built-in</li>
+          <li>Task tracking with reminders</li>
+          <li>Team collaboration & role-based access</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="forgot-view" style="display:none">
+      <h1 class="auth-title">Reset Password</h1>
+      <p class="auth-subtitle">We'll send you a reset link via email</p>
+
+      <div id="forgot-alert" style="display:none"></div>
+
+      <form id="forgot-form" onsubmit="handleForgotPassword(event); return false;" method="post" action="javascript:void(0);">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" name="email" required placeholder="you@company.com" autocomplete="email">
+        </div>
+        <button type="submit" class="btn-primary" id="forgot-btn">Send Reset Link</button>
+      </form>
+
+      <p class="link-text">
+        <a href="#" onclick="showView('signin'); return false">← Back to sign in</a>
+      </p>
+    </div>
+
+    <div id="verify-view" style="display:none">
+      <h1 class="auth-title">Check Your Email</h1>
+      <p class="auth-subtitle">Your login credentials have been sent to <strong id="verify-email"></strong></p>
+
+      <div class="alert info">
+        📧 You will receive an email with:<br>
+        • <strong>User ID</strong>: Your email address<br>
+        • <strong>Password Key</strong>: A secure access code<br><br>
+        Use these credentials to sign in below.
+      </div>
+
+      <p class="link-text" style="margin-top:2rem">
+        Didn't receive the email? Check your spam folder or <a href="#" onclick="resendCredentials()">resend credentials</a>
+      </p>
+
+      <p class="link-text">
+        <a href="#" onclick="showView('signin'); return false">← Go to sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+
+<script>
+let currentEmail = '';
+let supabaseClient = null; // Will be initialized when ready
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) {
+      resolve(window.supabaseClient);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) {
+        clearInterval(interval);
+        resolve(window.supabaseClient);
+      }
+    }, 50);
+  });
+}
+
+function showView(view) {
+  document.querySelectorAll('[id$="-view"]').forEach(v => v.style.display = 'none');
+  document.getElementById(`${view}-view`).style.display = 'block';
+
+  document.querySelectorAll('[id$="-alert"]').forEach(a => {
+    a.style.display = 'none';
+    a.className = 'alert';
+    a.textContent = '';
+  });
+}
+
+function showAlert(view, type, message) {
+  const alert = document.getElementById(`${view}-alert`);
+  alert.className = `alert ${type}`;
+  alert.textContent = message;
+  alert.style.display = 'block';
+}
+
+async function handleSignIn(e) {
+  e.preventDefault();
+  const btn = document.getElementById('signin-btn');
+  const formData = new FormData(e.target);
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    // Use shared client (session will persist across pages)
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) throw error;
+
+    console.log('[Auth] Login successful for:', email);
+    console.log('[Auth] Session:', data.session ? 'exists' : 'null');
+    localStorage.setItem('last_login_email', email);
+
+    // CRITICAL: Wait for session to be persisted to localStorage
+    // Use auth state change event to ensure session is fully persisted
+    await new Promise((resolve) => {
+      const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          console.log('[Auth] SIGNED_IN event received, session persisted');
+          subscription.unsubscribe();
+          resolve();
+        }
+      });
+      // Fallback timeout in case event doesn't fire
+      setTimeout(resolve, 1000);
+    });
+
+    // Verify session is accessible
+    const { data: { session: verifySession } } = await supabaseClient.auth.getSession();
+    console.log('[Auth] Session verification after login:', verifySession ? 'FOUND' : 'NOT FOUND');
+
+    if (!verifySession) {
+      throw new Error('Session not persisted - please try logging in again');
+    }
+
+    try {
+      // Update login activity
+      await supabaseClient.rpc('update_user_login', { user_id: data.user.id });
+    } catch(dbErr) {
+      console.warn('[Auth] Could not update login activity:', dbErr);
+    }
+
+    const destination = localStorage.getItem('ia_destination');
+    if (destination) {
+      console.log('[Auth] Redirecting to:', destination);
+      localStorage.removeItem('ia_destination');
+      window.location.replace(destination);
+    } else {
+      console.log('[Auth] Redirecting to launcher');
+      window.location.replace('./launcher.html');
+    }
+  } catch (err) {
+    console.error('Sign in error:', err);
+    showAlert('signin', 'error', err.message || 'Failed to sign in. Please check your credentials.');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function handleSignUp(e) {
+  e.preventDefault();
+  const btn = document.getElementById('signup-btn');
+  const formData = new FormData(e.target);
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    const email = formData.get('email');
+    const firstName = formData.get('first_name');
+    const lastName = formData.get('last_name');
+    const password = formData.get('password');
+    const orgName = formData.get('org_name');
+    const fullName = `${firstName} ${lastName}`;
+
+    // Use shared client
+
+    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: { name: fullName, org_name: orgName },
+        emailRedirectTo: `${window.location.origin}/app/auth.html?email=${encodeURIComponent(email)}`
+      }
+    });
+
+    if (authError) throw authError;
+
+    const { data: org, error: orgError } = await supabaseClient
+      .from('organisations')
+      .insert([{ name: orgName }])
+      .select()
+      .single();
+
+    if (orgError) throw orgError;
+
+    const { error: userError } = await supabaseClient
+      .from('users')
+      .insert([{
+        id: authData.user.id,
+        email: email,
+        name: fullName,
+        role: 'admin',
+        org_id: org.id
+      }]);
+
+    if (userError) throw userError;
+
+    currentEmail = email;
+    document.getElementById('verify-email').textContent = email;
+    showAlert('signup', 'success', `✓ Account created! Check your email (${email}) for a confirmation link.`);
+
+    setTimeout(() => {
+      showView('signin');
+      const emailInput = document.querySelector('#signin-form input[name="email"]');
+      if (emailInput) emailInput.value = email;
+    }, 3000);
+
+  } catch (err) {
+    console.error('Sign up error:', err);
+    showAlert('signup', 'error', err.message || 'Failed to create account.');
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+  }
+}
+
+function generatePasswordKey() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+  let key = '';
+  const array = new Uint8Array(12);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 12; i++) {
+    key += chars[array[i] % chars.length];
+  }
+  return key;
+}
+
+async function handleForgotPassword(e) {
+  e.preventDefault();
+  const btn = document.getElementById('forgot-btn');
+  const formData = new FormData(e.target);
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    // Use shared client
+
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(
+      formData.get('email'),
+      { redirectTo: `${window.location.origin}/app/reset-password.html` }
+    );
+
+    if (error) throw error;
+
+    showAlert('forgot', 'success', '✓ Password reset link sent! Check your email.');
+    btn.disabled = false;
+    btn.textContent = 'Send Reset Link';
+    setTimeout(() => showView('signin'), 3000);
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    showAlert('forgot', 'error', err.message || 'Failed to send reset link.');
+    btn.disabled = false;
+    btn.textContent = 'Send Reset Link';
+  }
+}
+
+async function resendCredentials() {
+  if (!currentEmail) {
+    showAlert('verify', 'error', 'Email address not found.');
+    return;
+  }
+  showAlert('verify', 'info', 'Please contact support to resend your credentials.');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    console.log('[Auth] Initializing...');
+
+    // Wait for Supabase client to be ready
+    supabaseClient = await waitForSupabaseClient();
+    console.log('[Auth] Supabase client ready');
+
+    // Check if already logged in
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email');
+    const isEmailConfirmation = emailParam !== null;
+
+    if (session && !isEmailConfirmation) {
+      console.log('[Auth] Active session found, redirecting to launcher...');
+      window.location.replace('./launcher.html');
+      return;
+    }
+
+    if (session && isEmailConfirmation) {
+      await supabaseClient.auth.signOut();
+      const emailInput = document.querySelector('#signin-form input[name="email"]');
+      if (emailInput) emailInput.value = emailParam;
+      showAlert('signin', 'success', '✓ Email confirmed! Please enter your password key to sign in.');
+      const passwordInput = document.querySelector('#signin-form input[name="password"]');
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+
+    const emailInput = document.querySelector('#signin-form input[name="email"]');
+    const lastLoginEmail = localStorage.getItem('last_login_email');
+
+    if (emailParam) {
+      if (emailInput) emailInput.value = emailParam;
+      showAlert('signin', 'success', '✓ Email confirmed! Please enter your password key to sign in.');
+    } else if (lastLoginEmail && emailInput) {
+      emailInput.value = lastLoginEmail;
+    }
+
+    const subtitleEl = document.getElementById('signin-subtitle');
+    const authDestination = localStorage.getItem('ia_destination');
+    if (authDestination && authDestination.includes('/system/')) {
+      subtitleEl.textContent = 'Sign in to access IGNITE APEX Sales OS';
+    } else if (authDestination && authDestination.includes('/crm/')) {
+      subtitleEl.textContent = 'Sign in to access IGNITE-APEX CRM';
+    }
+
+    if (emailInput && emailInput.value) {
+      const passwordInput = document.querySelector('#signin-form input[name="password"]');
+      if (passwordInput) passwordInput.focus();
+    }
+
+    const hash = window.location.hash.substring(1);
+    if (hash === 'signup') {
+      showView('signup');
+    } else if (hash === 'forgot') {
+      showView('forgot');
+    }
+  } catch (err) {
+    console.error('[Auth] Initialization error:', err);
+    showAlert('signin', 'error', 'Failed to initialize. Please refresh the page.');
+  }
+});
+</script>
+
+</body>
+</html>

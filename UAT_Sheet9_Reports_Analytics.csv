@@ -1,0 +1,79 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+REP-001,Dashboard,CRM dashboard loads,P0,"1. Go to crm/index.html
+2. View dashboard","Dashboard shown:
+- Key metrics
+- Recent activities
+- Pipeline summary
+- Quick actions",,,PASS/FAIL,P0,
+REP-002,Dashboard,Metrics show correct counts,P0,"1. View dashboard
+2. Check metrics","Counts accurate:
+- Total opportunities
+- Total value
+- Leads count
+- Activities logged",,,PASS/FAIL,P0,
+REP-003,Dashboard,Pipeline summary by stage,P1,"1. View pipeline widget
+2. Check stage breakdown","Shows:
+- Count per stage
+- $ amount per stage
+- Visual chart",,,PASS/FAIL,P1,
+REP-004,Dashboard,Recent activities shown,P1,"1. View recent activities section
+2. Check list","Shows last 10 activities:
+- Type, subject, date
+- Ordered by most recent",,,PASS/FAIL,P1,
+REP-005,Dashboard,Filters by date range,P2,"1. Set date range filter
+2. Apply
+3. View updated metrics","Metrics filtered:
+- Only selected date range
+- Accurate recalculation",,,PASS/FAIL,P2,
+REP-006,Reports,View forecast report,P0,"1. Go to Reports → Forecast
+2. View report","Forecast shown:
+- By stage
+- Weighted amounts
+- Close date timeline
+- Team breakdown",,,PASS/FAIL,P0,
+REP-007,Reports,Forecast grouped by user,P1,"1. Group forecast by user
+2. View results","Shows:
+- Each user's pipeline
+- Individual totals
+- Comparison",,,PASS/FAIL,P1,
+REP-008,Reports,Forecast grouped by team,P1,"1. Group forecast by team
+2. View results","Shows:
+- Each team's pipeline
+- Team totals",,,PASS/FAIL,P1,
+REP-009,Reports,Win rate report,P1,"1. Go to Reports → Win Rate
+2. View statistics","Shows:
+- # Won / # Total
+- Win rate %
+- Average deal size
+- Average sales cycle",,,PASS/FAIL,P1,
+REP-010,Reports,Activity report,P2,"1. Go to Reports → Activities
+2. View breakdown","Shows:
+- Activities by type
+- By user
+- By date range
+- Total count",,,PASS/FAIL,P2,
+REP-011,Reports,Export report to CSV,P2,"1. View any report
+2. Click Export CSV
+3. Download","CSV downloads:
+- All data included
+- Formatted correctly",,,PASS/FAIL,P2,
+REP-012,Analytics,Pipeline velocity,P2,"1. View analytics dashboard
+2. Check velocity metric","Shows:
+- Average days per stage
+- Overall sales cycle
+- Trend over time",,,PASS/FAIL,P2,
+REP-013,Analytics,Conversion rates by stage,P1,"1. View conversion analytics
+2. Check rates","Shows:
+- % advancing to next stage
+- Drop-off points
+- Visual funnel",,,PASS/FAIL,P1,
+REP-014,Analytics,Revenue by methodology,P2,"1. View revenue analytics
+2. Group by methodology","Shows:
+- IGNITE-APEX total
+- Standard CRM total
+- Comparison",,,PASS/FAIL,P2,
+REP-015,Charts,Charts render correctly,P1,"1. View any chart
+2. Check rendering","Charts shown:
+- Bars/lines visible
+- Labels readable
+- Legend correct",,,PASS/FAIL,P1,

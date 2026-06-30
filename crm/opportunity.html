@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opportunity — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+  --cream:#F8F5EF;--ink:#0D0C08;--ink2:#3D3428;--ink3:#6B5D4F;--ink4:#9C8D7A;
+  --border:#E5DFD5;--border2:#D1C7B7;
+  --amber-light:#FEF3C7;--forest:#065F46;--forest-light:#D1FAE5;
+  --rust:#991B1B;--rust-light:#FEE2E2;
+  --sapphire:#1E3A8A;--sapphire-light:#DBEAFE;
+  --plum:#581C87;--plum-light:#F3E8FF;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:1400px;margin:0 auto;padding:2rem}
+.opp-header{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;margin-bottom:2rem;display:flex;justify-content:space-between;align-items:flex-start}
+.opp-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1);margin-bottom:.5rem}
+.opp-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+.meta-badge{background:var(--s2);border:1px solid var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.8rem}
+.stage-badge{background:var(--amber);color:#000;font-weight:700}
+.methodology-badge{background:var(--green);color:#fff;font-weight:700}
+
+.tabs{display:flex;gap:.5rem;margin-bottom:2rem;border-bottom:2px solid var(--b1)}
+.tab{padding:.75rem 1.5rem;background:transparent;border:none;color:var(--t3);font-size:.85rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab:hover{color:var(--t1)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* IGNITE Framework Styles (from Sales OS) */
+.ignite-container{background:var(--cream);color:var(--ink);border-radius:12px;padding:2rem}
+.ignite-section{background:#fff;border:2px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.section-header{font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:1rem;border-bottom:2px solid var(--border2);padding-bottom:.5rem}
+
+.check-item{display:flex;gap:.75rem;padding:.75rem;background:var(--cream);border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;cursor:pointer;transition:all .2s}
+.check-item:hover{background:#fff}
+.check-box{width:24px;height:24px;border:2px solid var(--border2);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff}
+.check-box.checked{background:var(--green);border-color:var(--green)}
+.check-box .tick{display:none;color:#fff;font-weight:700;font-size:.9rem}
+.check-box.checked .tick{display:block}
+.check-text{flex:1;font-size:.85rem;line-height:1.5;color:var(--ink2)}
+.check-text strong{display:block;color:var(--ink);margin-bottom:.25rem}
+
+.stage-pill{display:inline-block;padding:.35rem .85rem;background:var(--amber-light);color:var(--amber);border:1px solid var(--amber2);border-radius:6px;font-size:.75rem;font-weight:700;margin:.25rem}
+.stage-pill.complete{background:var(--forest-light);color:var(--forest);border-color:var(--forest)}
+.stage-pill.blocked{background:var(--rust-light);color:var(--rust);border-color:var(--rust)}
+
+.btn-primary{background:var(--amber);color:#000;padding:.75rem 1.5rem;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--amber2)}
+
+.loading{text-align:center;padding:3rem;color:var(--t2)}
+
+/* Activities & Tasks */
+.activity-item{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1rem;margin-bottom:.75rem}
+.activity-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem}
+.activity-type{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);background:var(--s1);padding:.25rem .5rem;border-radius:4px}
+.activity-subject{font-weight:600;color:var(--t1);margin-top:.25rem}
+.activity-description{font-size:.85rem;color:var(--t2);margin-top:.5rem}
+.activity-meta{font-size:.75rem;color:var(--t3);margin-top:.5rem}
+
+.task-item{background:var(--s2);border-left:4px solid var(--amber);border-radius:8px;padding:1rem;margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center}
+.task-item.overdue{border-left-color:var(--red)}
+.task-item.completed{opacity:.6;border-left-color:var(--green)}
+.task-content{flex:1}
+.task-title{font-weight:600;color:var(--t1);margin-bottom:.25rem}
+.task-due{font-size:.75rem;color:var(--t3)}
+.task-actions{display:flex;gap:.5rem}
+
+.empty-state{text-align:center;padding:2rem;color:var(--t3);font-size:.85rem}
+
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.9rem;font-family:inherit}
+.form-textarea{resize:vertical;min-height:80px}
+.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--amber)}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;max-width:600px;width:90%;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-size:1.3rem;font-weight:700;color:var(--t1)}
+.modal-close{background:none;border:none;color:var(--t3);font-size:1.5rem;cursor:pointer}
+
+/* Toast notifications for auto-stage changes */
+.toast-container{position:fixed;top:2rem;right:2rem;z-index:2000;display:flex;flex-direction:column;gap:.75rem;pointer-events:none}
+.toast{background:var(--s1);border:2px solid;border-radius:10px;padding:1rem 1.25rem;min-width:300px;max-width:400px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;gap:.75rem;pointer-events:auto;animation:toastSlideIn .3s ease}
+.toast.success{border-color:var(--green);background:linear-gradient(135deg,var(--s1),rgba(16,185,129,.05))}
+.toast.warning{border-color:var(--amber);background:linear-gradient(135deg,var(--s1),rgba(245,158,11,.05))}
+.toast-icon{font-size:1.5rem;flex-shrink:0}
+.toast-content{flex:1}
+.toast-title{font-size:.85rem;font-weight:700;color:var(--t1);margin-bottom:.25rem}
+.toast-message{font-size:.75rem;color:var(--t2);line-height:1.4}
+@keyframes toastSlideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastSlideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+.toast.hiding{animation:toastSlideOut .3s ease forwards}
+</style>
+<!-- Trial Banner Component -->
+<script src="../components/trial-banner.js"></script>
+
+</head>
+<body>
+
+<!-- Toast notification container -->
+<div class="toast-container" id="toast-container"></div>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <div class="tb-nav">
+    <a href="./pipeline.html">← Back to Pipeline</a>
+    <a href="./index.html">Dashboard</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="loading" class="loading">
+    <div style="font-size:1.2rem;margin-bottom:1rem">⏳ Loading opportunity...</div>
+  </div>
+
+  <div id="opp-content" style="display:none">
+    <div class="opp-header">
+      <div>
+        <div class="opp-title" id="opp-name">Opportunity Name</div>
+        <div class="opp-meta">
+          <div class="meta-badge stage-badge" id="opp-stage">Stage</div>
+          <div class="meta-badge" id="opp-owner">Owner</div>
+          <div class="meta-badge methodology-badge" id="opp-methodology">Methodology</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn-primary" onclick="saveOpportunity()">💾 Save Changes</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('qualification')">🎯 Qualification</button>
+      <button class="tab" onclick="switchTab('activities')">📋 Activities</button>
+      <button class="tab" onclick="switchTab('tasks')">✅ Tasks</button>
+      <button class="tab" onclick="switchTab('details')">📄 Details</button>
+    </div>
+
+    <div id="tab-qualification" class="tab-content active">
+      <!-- Qualification framework renders here dynamically based on methodology -->
+    </div>
+
+    <div id="tab-activities" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h2 style="font-size:1.3rem;font-weight:700">Activity Timeline</h2>
+        <button class="btn-primary" onclick="openActivityModal()">+ Log Activity</button>
+      </div>
+      <div id="activities-list"></div>
+    </div>
+
+    <div id="tab-tasks" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h2 style="font-size:1.3rem;font-weight:700">Tasks</h2>
+        <button class="btn-primary" onclick="openTaskModal()">+ Create Task</button>
+      </div>
+      <div id="tasks-list"></div>
+    </div>
+
+    <div id="tab-details" class="tab-content">
+      <div class="ignite-section">
+        <div class="section-header">Opportunity Details</div>
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" class="form-input" id="detail-company-name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estimated Value</label>
+          <input type="number" class="form-input" id="detail-value" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected Close Date</label>
+          <input type="date" class="form-input" id="detail-close-date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="detail-notes"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Activity Modal -->
+<div id="activity-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Log Activity</div>
+      <button class="modal-close" onclick="closeActivityModal()">×</button>
+    </div>
+    <form onsubmit="submitActivity(event)">
+      <div class="form-group">
+        <label class="form-label">Activity Type</label>
+        <select class="form-select" id="activity-type" required>
+          <option value="">Select type...</option>
+          <option value="call">📞 Phone Call</option>
+          <option value="email">📧 Email</option>
+          <option value="meeting">🤝 Meeting (F2F/Virtual)</option>
+          <option value="note">📝 Note</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <input type="text" class="form-input" id="activity-subject" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="activity-description"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Outcome</label>
+        <select class="form-select" id="activity-outcome">
+          <option value="">Select outcome...</option>
+          <option value="positive">✓ Positive</option>
+          <option value="neutral">◉ Neutral</option>
+          <option value="negative">✗ Negative</option>
+          <option value="no_answer">— No Answer</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duration (minutes)</label>
+        <input type="number" class="form-input" id="activity-duration" placeholder="30" />
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;margin-top:1rem">Log Activity</button>
+    </form>
+  </div>
+</div>
+
+<!-- Methodology Choice Modal -->
+<div id="methodology-modal" class="modal">
+  <div class="modal-content" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">Choose Qualification Methodology</div>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:.85rem;color:var(--t2);margin-bottom:1.5rem">
+        This opportunity has no methodology set. Choose how you want to qualify this deal:
+      </div>
+
+      <div
+        id="methodology-choice-ignite"
+        onclick="selectMethodologyChoice('ignite_apex')"
+        style="background:var(--forest-light);border:3px solid var(--forest);border-radius:12px;padding:1.5rem;margin-bottom:1rem;cursor:pointer;transition:all .2s">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
+          <div style="font-size:2rem">🎯</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--forest)">IGNITE-APEX Sales OS</div>
+          <div style="background:var(--forest);color:#fff;padding:.25rem .75rem;border-radius:6px;font-size:.7rem;font-weight:700">RECOMMENDED</div>
+        </div>
+        <div style="font-size:.85rem;color:var(--ink2)">
+          Brutal demand-creation qualification. 4U validation + 6-stage IGNITE diagnostic + PROBE gates. Forces evidence at every stage. Keeps your forecast honest.
+        </div>
+      </div>
+
+      <div
+        id="methodology-choice-standard"
+        onclick="selectMethodologyChoice('standard')"
+        style="background:var(--s2);border:2px solid var(--b1);border-radius:12px;padding:1.5rem;cursor:pointer;transition:all .2s">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
+          <div style="font-size:2rem">📊</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--t1)">Standard CRM</div>
+        </div>
+        <div style="font-size:.85rem;color:var(--t2)">
+          Traditional BANT qualification. Simpler gates, familiar flow. Same 6 stages and forecast math, lighter evidence requirements.
+        </div>
+      </div>
+    </div>
+
+    <button id="methodology-confirm-btn" onclick="confirmMethodologyChoice()" class="btn-primary" style="width:100%" disabled>
+      Continue →
+    </button>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div id="task-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Create Task</div>
+      <button class="modal-close" onclick="closeTaskModal()">×</button>
+    </div>
+    <form onsubmit="submitTask(event)">
+      <div class="form-group">
+        <label class="form-label">Task Type</label>
+        <select class="form-select" id="task-type" required>
+          <option value="">Select type...</option>
+          <option value="call">📞 Call</option>
+          <option value="email">📧 Email</option>
+          <option value="meeting">🤝 Meeting</option>
+          <option value="follow_up">🔄 Follow Up</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <input type="text" class="form-input" id="task-subject" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="task-description"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input type="date" class="form-input" id="task-due-date" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-select" id="task-priority">
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reminder (before due)</label>
+        <select class="form-select" id="task-reminder">
+          <option value="">No reminder</option>
+          <option value="15">15 minutes before</option>
+          <option value="60">1 hour before</option>
+          <option value="1440">1 day before</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;margin-top:1rem">Create Task</button>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="./crm-v2-client.js"></script>
+<script src="./gate-engine.js"></script>
+<script src="./ignite-stage-mapping.js"></script>
+<script src="./task-automation.js"></script>
+<script src="./qualification-roadmap.js"></script>
+
+<script>
+let currentOpportunity = null;
+let currentUser = null;
+let oppId = null;
+
+// Toast notification system
+function showToast(title, message, type = 'success', duration = 5000) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+
+  const icon = type === 'success' ? '🚀' : type === 'warning' ? '⚠️' : 'ℹ️';
+
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-content">
+      <div class="toast-title">${title}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  // Auto-remove after duration
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// Wait for Supabase client
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) { resolve(window.supabaseClient); return; }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) { clearInterval(interval); resolve(window.supabaseClient); }
+    }, 50);
+  });
+}
+
+// Initialize
+(async function init() {
+  try {
+    const sb = await waitForSupabaseClient();
+    console.log('[Opportunity] Supabase client ready');
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '../app/auth.html'; return; }
+
+    const { data: profile } = await sb.from('users').select('*').eq('id', session.user.id).single();
+    if (!profile || !profile.crm_enabled) { window.location.href = '../system/index.html'; return; }
+
+    window.currentUser = profile;
+    window.currentOrgId = profile.org_id;
+    currentUser = profile;
+
+    // Check CRM trial access
+    if (window.TrialBanner) {
+      const access = await window.TrialBanner.checkAccess();
+      if (!access.allowed) {
+        return; // TrialBanner will show block modal
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    oppId = urlParams.get('id');
+    if (!oppId) { alert('No opportunity ID'); window.location.href = './pipeline.html'; return; }
+
+    await loadOpportunity(oppId);
+  } catch (err) {
+    console.error('[Opportunity] Init error:', err);
+    document.getElementById('loading').innerHTML = `<div style="color:var(--red)">Error: ${err.message}</div>`;
+  }
+})();
+
+async function loadOpportunity(id) {
+  try {
+    const { data: opp, error } = await window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    currentOpportunity = opp;
+
+    console.log('[Opportunity] Loaded:', { id: opp.id, name: opp.name, methodology: opp.methodology, pipeline_stage: opp.pipeline_stage });
+
+    document.getElementById('opp-name').textContent = opp.name || opp.company_name || 'Unnamed';
+    document.getElementById('opp-stage').textContent = opp.pipeline_stage || 'Lead';
+    document.getElementById('opp-owner').textContent = `Owner: ${currentUser.name || currentUser.email}`;
+
+    // Make methodology badge clickable toggle
+    const methodologyBadge = document.getElementById('opp-methodology');
+    const methodologyText = opp.methodology === 'ignite_apex' ? '🎯 IGNITE-APEX' : (opp.methodology === 'standard' ? '📊 Standard' : '⚙️ Not Set');
+    methodologyBadge.textContent = methodologyText;
+    methodologyBadge.style.cursor = 'pointer';
+    methodologyBadge.title = 'Click to switch methodology';
+    methodologyBadge.onclick = toggleMethodology;
+
+    console.log('[Opportunity] Methodology badge set to:', methodologyText);
+
+    // Prompt for methodology choice if not set BEFORE showing content
+    if (!opp.methodology) {
+      document.getElementById('loading').innerHTML = '<div style="font-size:1.2rem;margin-bottom:1rem">⚙️ Configuring methodology...</div>';
+      const choice = await showMethodologyChoice();
+      await setMethodology(choice, false);
+      opp.methodology = choice;
+
+      // Update badge after choice
+      const updatedText = choice === 'ignite_apex' ? '🎯 IGNITE-APEX' : '📊 Standard';
+      methodologyBadge.textContent = updatedText;
+      console.log('[Opportunity] Methodology set to:', updatedText);
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('opp-content').style.display = 'block';
+
+    renderQualificationTab(opp);
+    loadActivities();
+    loadTasks();
+    loadDetails(opp);
+  } catch (err) {
+    console.error('[Opportunity] Load error:', err);
+    document.getElementById('loading').innerHTML = `
+      <div style="color:var(--red);font-size:1rem;margin-bottom:1rem">❌ Failed to load opportunity</div>
+      <div style="color:var(--t3);font-size:.85rem">${err.message}</div>
+      <button onclick="window.location.reload()" style="margin-top:1rem;background:var(--amber);color:#000;border:none;padding:.75rem 1.5rem;border-radius:8px;cursor:pointer;font-weight:700">Retry</button>
+    `;
+  }
+}
+
+function renderQualificationTab(opp) {
+  try {
+    if (opp.methodology === 'ignite_apex') {
+      renderIgniteFramework(opp);
+    } else {
+      renderStandardFramework(opp);
+    }
+  } catch (err) {
+    console.error('[Qualification] Render error:', err);
+    document.getElementById('tab-qualification').innerHTML = `
+      <div style="padding:2rem;text-align:center">
+        <div style="color:var(--red);font-size:1rem;margin-bottom:.5rem">❌ Error rendering qualification tab</div>
+        <div style="color:var(--t3);font-size:.85rem">${err.message}</div>
+      </div>
+    `;
+  }
+}
+
+function renderIgniteFramework(opp) {
+  // Use integrated qualification roadmap instead of iframe
+  if (window.QualificationRoadmap) {
+    window.QualificationRoadmap.render(opp);
+  } else {
+    // Fallback if roadmap not loaded
+    const container = document.getElementById('tab-qualification');
+    container.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Qualification roadmap failed to load. Please refresh.</div>';
+  }
+}
+
+function renderStandardFramework(opp) {
+  // Standard CRM: Same 6 pipeline stages, BANT gates instead of IGNITE
+  const stages = [
+    { name: 'Qualification', percent: 10, color: '#EF4444' },
+    { name: 'Discovery', percent: 30, color: '#F59E0B' },
+    { name: 'Demo', percent: 50, color: '#3B82F6' },
+    { name: 'Proposal', percent: 70, color: '#10B981' },
+    { name: 'Negotiation', percent: 90, color: '#8B5CF6' },
+    { name: 'Closed Won', percent: 100, color: '#065F46' }
+  ];
+
+  const currentStageIndex = stages.findIndex(s => s.name === opp.pipeline_stage) || 0;
+
+  const container = document.getElementById('tab-qualification');
+  container.innerHTML = `
+    <div style="background:#F8F5EF;border-radius:12px;padding:2rem">
+      <div style="font-size:1.2rem;font-weight:700;color:#0D0C08;margin-bottom:1rem">📊 Standard CRM Pipeline</div>
+      <p style="font-size:.85rem;color:#6B5D4F;margin-bottom:2rem">Traditional 6-stage pipeline with BANT qualification. Same forecast math as IGNITE-APEX, different gate criteria.</p>
+
+      <div style="margin-bottom:2rem">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F;margin-bottom:.75rem">Pipeline Progress</div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          ${stages.map((stage, idx) => `
+            <div style="flex:1;min-width:120px">
+              <div style="background:${idx <= currentStageIndex ? stage.color : '#E5DFD5'};color:${idx <= currentStageIndex ? '#fff' : '#9C8D7A'};padding:.75rem;border-radius:8px;text-align:center;cursor:pointer;transition:all .2s" onclick="updateStage('${stage.name}', ${stage.percent})">
+                <div style="font-size:.7rem;font-weight:700;margin-bottom:.25rem">${stage.name}</div>
+                <div style="font-size:.85rem;font-weight:800">${stage.percent}%</div>
+              </div>
+            </div>
+          `).join('<div style="font-size:1.5rem;color:#D1C7B7">→</div>')}
+        </div>
+      </div>
+
+      ${window.GateEngine ? window.GateEngine.renderGateChecklist(opp) : '<div style="padding:1rem;background:var(--rust-light);color:var(--rust);border-radius:8px;margin-bottom:1rem">⚠️ Gate engine not loaded</div>'}
+
+      <div style="background:#fff;border:2px solid #E5DFD5;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+        <div style="font-size:1rem;font-weight:700;color:#0D0C08;margin-bottom:1rem;border-bottom:2px solid #E5DFD5;padding-bottom:.5rem">BANT Qualification</div>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F;margin-bottom:.5rem">Budget</label>
+          <textarea id="bant-budget" onchange="updateGateFromBANT()" style="width:100%;background:#F8F5EF;border:1.5px solid #D1C7B7;border-radius:8px;padding:.75rem;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical;min-height:60px" placeholder="Confirmed budget range, approval process, decision timeline...">${opp.bant_budget || ''}</textarea>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F;margin-bottom:.5rem">Authority</label>
+          <textarea id="bant-authority" onchange="updateGateFromBANT()" style="width:100%;background:#F8F5EF;border:1.5px solid #D1C7B7;border-radius:8px;padding:.75rem;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical;min-height:60px" placeholder="Economic buyer identified, stakeholders mapped, decision-making process...">${opp.bant_authority || ''}</textarea>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F;margin-bottom:.5rem">Need</label>
+          <textarea id="bant-need" onchange="updateGateFromBANT()" style="width:100%;background:#F8F5EF;border:1.5px solid #D1C7B7;border-radius:8px;padding:.75rem;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical;min-height:60px" placeholder="Business pain identified, impact quantified, solution fit confirmed...">${opp.bant_need || ''}</textarea>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F;margin-bottom:.5rem">Timeline</label>
+          <textarea id="bant-timeline" onchange="updateGateFromBANT()" style="width:100%;background:#F8F5EF;border:1.5px solid #D1C7B7;border-radius:8px;padding:.75rem;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical;min-height:60px" placeholder="Expected close date, forcing events, implementation timeline...">${opp.bant_timeline || ''}</textarea>
+        </div>
+
+        <div style="border-top:2px solid #E5DFD5;padding-top:1rem;margin-top:1rem">
+          <div style="font-size:.85rem;font-weight:700;color:#6B5D4F;margin-bottom:.75rem">Additional Gate Conditions</div>
+
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#F8F5EF;border-radius:8px;margin-bottom:.5rem;cursor:pointer">
+            <input type="checkbox" id="gate-demo-delivered" ${opp.gate_demo_delivered ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer">
+            <span style="font-size:.85rem;color:#0D0C08">Demo/POC delivered to prospect</span>
+          </label>
+
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#F8F5EF;border-radius:8px;margin-bottom:.5rem;cursor:pointer">
+            <input type="checkbox" id="gate-need-validated" ${opp.gate_need_validated ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer">
+            <span style="font-size:.85rem;color:#0D0C08">Need validated against solution (prospect confirmed fit)</span>
+          </label>
+
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#F8F5EF;border-radius:8px;margin-bottom:.5rem;cursor:pointer">
+            <input type="checkbox" id="gate-proposal-delivered" ${opp.gate_proposal_delivered ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer">
+            <span style="font-size:.85rem;color:#0D0C08">Proposal delivered to economic buyer</span>
+          </label>
+
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#F8F5EF;border-radius:8px;margin-bottom:.5rem;cursor:pointer">
+            <input type="checkbox" id="gate-contract-signed" ${opp.gate_contract_signed ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer">
+            <span style="font-size:.85rem;color:#0D0C08">Contract signed (deal closed won)</span>
+          </label>
+        </div>
+
+        <button onclick="saveBANT()" style="background:#F59E0B;color:#000;padding:.75rem 1.5rem;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;width:100%;margin-top:1rem">
+          💾 Save Qualification & Gates
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function toggleMethodology() {
+  const newMethodology = currentOpportunity.methodology === 'ignite_apex' ? 'standard' : 'ignite_apex';
+
+  if (!confirm(`Switch to ${newMethodology === 'ignite_apex' ? 'IGNITE-APEX' : 'Standard CRM'} methodology?`)) {
+    return;
+  }
+
+  await setMethodology(newMethodology, true);
+}
+
+async function setMethodology(methodology, reload) {
+  try {
+    const { error } = await window.supabaseClient
+      .from('opportunities')
+      .update({ methodology })
+      .eq('id', oppId);
+
+    if (error) throw error;
+
+    currentOpportunity.methodology = methodology;
+
+    // Update badge
+    const badge = document.getElementById('opp-methodology');
+    badge.textContent = methodology === 'ignite_apex' ? '🎯 IGNITE-APEX' : '📊 Standard';
+
+    // Re-render qualification tab
+    if (reload) {
+      renderQualificationTab(currentOpportunity);
+    }
+
+    console.log('[Opportunity] Methodology updated to:', methodology);
+  } catch (err) {
+    console.error('[Opportunity] Failed to update methodology:', err);
+    alert('Failed to switch methodology: ' + err.message);
+  }
+}
+
+async function updateStage(stageName, percent) {
+  try {
+    // SEQUENTIAL ENFORCEMENT: Can't skip stages
+    const currentStage = currentOpportunity.pipeline_stage || 'Lead';
+    const stageOrder = ['Lead', 'Qualification', 'Discovery', 'Demo', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+    const currentIndex = stageOrder.indexOf(currentStage);
+    const targetIndex = stageOrder.indexOf(stageName);
+
+    // Allow moving backward (demotion) or to Closed Lost from anywhere
+    const isBackward = targetIndex < currentIndex;
+    const isClosedLost = stageName === 'Closed Lost';
+
+    if (!isBackward && !isClosedLost && targetIndex > currentIndex + 1) {
+      alert(`❌ Cannot skip stages!\n\nYou're at: ${currentStage}\nYou tried to jump to: ${stageName}\n\nYou must move through stages sequentially. Next allowed stage: ${stageOrder[currentIndex + 1]}`);
+      return;
+    }
+
+    // GATE ENFORCEMENT: Validate before allowing move (if GateEngine loaded)
+    if (window.GateEngine && !isBackward && !isClosedLost) {
+      const validation = window.GateEngine.validateStageMove(currentOpportunity, stageName);
+
+      if (!validation.allowed) {
+        // BLOCKED: Show missing conditions
+        const missingList = validation.missing.map(m => `  • ${m}`).join('\n');
+        alert(`❌ Cannot move to ${stageName}\n\nMissing gate requirements:\n${missingList}\n\nGo back and fix the missing conditions.`);
+        return;
+      }
+    }
+
+    // Gate passed - allow move
+    const oldStage = currentOpportunity.pipeline_stage;
+
+    const { error } = await window.supabaseClient
+      .from('opportunities')
+      .update({
+        pipeline_stage: stageName,
+        probability: percent
+      })
+      .eq('id', oppId);
+
+    if (error) throw error;
+
+    currentOpportunity.pipeline_stage = stageName;
+    currentOpportunity.probability = percent;
+    document.getElementById('opp-stage').textContent = stageName;
+
+    // AUTO-CREATE TASKS for new stage
+    if (window.TaskAutomation) {
+      await window.TaskAutomation.handleStageChange(
+        currentOpportunity,
+        oldStage,
+        stageName,
+        currentUser.id
+      );
+    }
+
+    // Re-render qualification tab
+    renderQualificationTab(currentOpportunity);
+
+    // Reload tasks to show newly created ones
+    loadTasks();
+
+    alert(`✅ Moved to ${stageName} (${percent}%)`);
+  } catch (err) {
+    alert('Failed to update stage: ' + err.message);
+  }
+}
+
+async function saveBANT() {
+  try {
+    const oldStage = currentOpportunity.stage;
+
+    const bantData = {
+      bant_budget: document.getElementById('bant-budget').value,
+      bant_authority: document.getElementById('bant-authority').value,
+      bant_need: document.getElementById('bant-need').value,
+      bant_timeline: document.getElementById('bant-timeline').value
+    };
+
+    // Auto-calculate gate flags from BANT data
+    const gateUpdates = {
+      gate_need_identified: !!bantData.bant_need,
+      gate_authority_confirmed: !!bantData.bant_authority,
+      gate_budget_confirmed: !!bantData.bant_budget,
+      gate_timeline_locked: !!bantData.bant_timeline,
+      // Additional gate checkboxes
+      gate_demo_delivered: document.getElementById('gate-demo-delivered')?.checked || false,
+      gate_need_validated: document.getElementById('gate-need-validated')?.checked || false,
+      gate_proposal_delivered: document.getElementById('gate-proposal-delivered')?.checked || false,
+      gate_contract_signed: document.getElementById('gate-contract-signed')?.checked || false
+    };
+
+    const updates = { ...bantData, ...gateUpdates };
+
+    // AUTO-CLOSE: If contract signed, mark as Closed Won
+    if (gateUpdates.gate_contract_signed) {
+      updates.pipeline_stage = 'Closed Won';
+      updates.pipeline_status = 'Won';
+      updates.probability = 100;
+    }
+
+    const { error } = await window.supabaseClient
+      .from('opportunities')
+      .update(updates)
+      .eq('id', oppId);
+
+    if (error) throw error;
+
+    // Reload opportunity to get any auto-stage changes from trigger
+    const { data: refreshedOpp, error: refreshError } = await window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('id', oppId)
+      .single();
+
+    if (refreshError) throw refreshError;
+
+    // Check if stage changed automatically
+    if (refreshedOpp.stage !== oldStage) {
+      const action = refreshedOpp.last_auto_action || 'stage_changed';
+      if (action.startsWith('advanced_to_')) {
+        const newStage = action.replace('advanced_to_', '');
+        showToast(
+          '🚀 Auto-Advanced!',
+          `Deal automatically moved to ${newStage.toUpperCase()} stage (all gates met)`,
+          'success',
+          7000
+        );
+      } else if (action.startsWith('demoted_to_')) {
+        const newStage = action.replace('demoted_to_', '');
+        showToast(
+          '⚠️ Auto-Demoted',
+          `Deal moved back to ${newStage.toUpperCase()} stage (critical gates lost)`,
+          'warning',
+          7000
+        );
+      }
+    }
+
+    // Update local copy with refreshed data
+    currentOpportunity = refreshedOpp;
+
+    // Re-render to show updated gate checklist
+    renderStandardFramework(currentOpportunity);
+
+    alert('✅ Qualification & gates saved');
+  } catch (err) {
+    alert('Failed to save: ' + err.message);
+  }
+}
+
+function updateGateFromBANT() {
+  // Live update (debounced auto-save could be added here)
+  console.log('[Gate] BANT field changed');
+}
+
+function fixGateCondition(field) {
+  alert(`To fix "${field}", scroll down and complete the required information in the qualification form below.`);
+}
+
+async function autoAdvanceStage() {
+  try {
+    if (!window.IgniteStageMapping) {
+      alert('Stage mapping not loaded');
+      return;
+    }
+
+    const recommended = window.IgniteStageMapping.getRecommendedStage(currentOpportunity);
+
+    if (!recommended.auto) {
+      alert('No auto-advance available at this stage');
+      return;
+    }
+
+    if (!confirm(`Auto-advance to ${recommended.stage} (${recommended.probability}%)?\n\n${recommended.description}`)) {
+      return;
+    }
+
+    const oldStage = currentOpportunity.pipeline_stage;
+
+    const { error } = await window.supabaseClient
+      .from('opportunities')
+      .update({
+        pipeline_stage: recommended.stage,
+        probability: recommended.probability,
+        ignite_current_stage: recommended.ignite_stage
+      })
+      .eq('id', oppId);
+
+    if (error) throw error;
+
+    // AUTO-CREATE TASKS for new stage
+    if (window.TaskAutomation) {
+      await window.TaskAutomation.handleStageChange(
+        currentOpportunity,
+        oldStage,
+        recommended.stage,
+        currentUser.id
+      );
+    }
+
+    // Reload opportunity to refresh UI
+    await loadOpportunity(oppId);
+
+    alert(`✅ Auto-advanced to ${recommended.stage} (${recommended.probability}%)`);
+  } catch (err) {
+    console.error('[AutoAdvance] Error:', err);
+    alert('Failed to auto-advance: ' + err.message);
+  }
+}
+
+// Methodology choice modal
+let _selectedMethodology = null;
+
+function showMethodologyChoice() {
+  return new Promise((resolve) => {
+    _selectedMethodology = null;
+    document.getElementById('methodology-modal').classList.add('active');
+
+    // Store resolver
+    window._methodologyResolver = resolve;
+  });
+}
+
+function selectMethodologyChoice(methodology) {
+  _selectedMethodology = methodology;
+
+  // Update UI
+  const igniteEl = document.getElementById('methodology-choice-ignite');
+  const standardEl = document.getElementById('methodology-choice-standard');
+  const confirmBtn = document.getElementById('methodology-confirm-btn');
+
+  if (methodology === 'ignite_apex') {
+    igniteEl.style.border = '3px solid var(--forest)';
+    igniteEl.style.background = 'var(--forest-light)';
+    standardEl.style.border = '2px solid var(--b1)';
+    standardEl.style.background = 'var(--s2)';
+  } else {
+    standardEl.style.border = '3px solid var(--amber)';
+    standardEl.style.background = 'var(--amber-light)';
+    igniteEl.style.border = '2px solid var(--b1)';
+    igniteEl.style.background = 'var(--s2)';
+  }
+
+  confirmBtn.disabled = false;
+}
+
+function confirmMethodologyChoice() {
+  if (!_selectedMethodology) return;
+
+  document.getElementById('methodology-modal').classList.remove('active');
+
+  if (window._methodologyResolver) {
+    window._methodologyResolver(_selectedMethodology);
+    window._methodologyResolver = null;
+  }
+}
+
+function loadDetails(opp) {
+  document.getElementById('detail-company-name').value = opp.company_name || opp.name || '';
+  document.getElementById('detail-value').value = opp.estimated_value || '';
+  document.getElementById('detail-close-date').value = opp.expected_close_date || '';
+  document.getElementById('detail-notes').value = opp.notes || '';
+}
+
+async function saveOpportunity() {
+  try {
+    const updates = {
+      company_name: document.getElementById('detail-company-name').value,
+      name: document.getElementById('detail-company-name').value,
+      estimated_value: parseFloat(document.getElementById('detail-value').value) || null,
+      expected_close_date: document.getElementById('detail-close-date').value || null,
+      notes: document.getElementById('detail-notes').value
+    };
+
+    const { error } = await window.supabaseClient
+      .from('opportunities')
+      .update(updates)
+      .eq('id', oppId);
+
+    if (error) throw error;
+
+    alert('✓ Opportunity saved');
+    await loadOpportunity(oppId);
+  } catch (err) {
+    console.error('[Opportunity] Save error:', err);
+    alert('Failed to save: ' + err.message);
+  }
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+// Activities
+async function loadActivities() {
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('activities')
+      .select('*')
+      .eq('opportunity_id', oppId)
+      .order('activity_date', { ascending: false });
+
+    if (error) throw error;
+
+    const container = document.getElementById('activities-list');
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="empty-state">No activities logged yet</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(a => `
+      <div class="activity-item">
+        <div class="activity-header">
+          <div>
+            <div class="activity-type">${a.type}</div>
+            <div class="activity-subject">${a.subject || 'No subject'}</div>
+          </div>
+          <div class="activity-meta">${new Date(a.activity_date).toLocaleString()}</div>
+        </div>
+        ${a.description ? `<div class="activity-description">${a.description}</div>` : ''}
+        ${a.outcome ? `<div class="activity-meta">Outcome: ${a.outcome}</div>` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('[Activities] Load error:', err);
+  }
+}
+
+async function loadTasks() {
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('tasks')
+      .select('*')
+      .eq('opportunity_id', oppId)
+      .order('due_date', { ascending: true });
+
+    if (error) throw error;
+
+    const container = document.getElementById('tasks-list');
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="empty-state">No tasks created yet</div>';
+      return;
+    }
+
+    const now = new Date();
+    container.innerHTML = data.map(t => {
+      const dueDate = t.due_date ? new Date(t.due_date) : null;
+      const isOverdue = dueDate && dueDate < now && t.status !== 'completed';
+      const cssClass = t.status === 'completed' ? 'completed' : (isOverdue ? 'overdue' : '');
+
+      return `
+        <div class="task-item ${cssClass}">
+          <div class="task-content">
+            <div class="task-title">${t.subject}</div>
+            <div class="task-due">
+              ${dueDate ? `Due: ${dueDate.toLocaleDateString()}` : 'No due date'}
+              ${t.priority === 'high' ? '🔴' : t.priority === 'low' ? '🔵' : ''}
+            </div>
+          </div>
+          <div class="task-actions">
+            ${t.status !== 'completed' ? `<button class="btn-primary" onclick="completeTask('${t.id}')">✓</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('[Tasks] Load error:', err);
+  }
+}
+
+function openActivityModal() {
+  document.getElementById('activity-modal').classList.add('active');
+}
+
+function closeActivityModal() {
+  document.getElementById('activity-modal').classList.remove('active');
+}
+
+async function submitActivity(e) {
+  e.preventDefault();
+  try {
+    const activity = {
+      org_id: currentUser.org_id,
+      opportunity_id: oppId,
+      type: document.getElementById('activity-type').value,
+      subject: document.getElementById('activity-subject').value,
+      description: document.getElementById('activity-description').value,
+      outcome: document.getElementById('activity-outcome').value,
+      duration_minutes: parseInt(document.getElementById('activity-duration').value) || null,
+      created_by: currentUser.id
+    };
+
+    const { error } = await window.supabaseClient.from('activities').insert(activity);
+    if (error) throw error;
+
+    closeActivityModal();
+    e.target.reset();
+    loadActivities();
+  } catch (err) {
+    alert('Failed to log activity: ' + err.message);
+  }
+}
+
+function openTaskModal() {
+  document.getElementById('task-modal').classList.add('active');
+}
+
+function closeTaskModal() {
+  document.getElementById('task-modal').classList.remove('active');
+}
+
+async function submitTask(e) {
+  e.preventDefault();
+  try {
+    const task = {
+      org_id: currentUser.org_id,
+      opportunity_id: oppId,
+      type: document.getElementById('task-type').value,
+      subject: document.getElementById('task-subject').value,
+      description: document.getElementById('task-description').value,
+      due_date: document.getElementById('task-due-date').value || null,
+      priority: document.getElementById('task-priority').value,
+      reminder_minutes: parseInt(document.getElementById('task-reminder').value) || null,
+      assigned_to: currentUser.id,
+      created_by: currentUser.id
+    };
+
+    const { error } = await window.supabaseClient.from('tasks').insert(task);
+    if (error) throw error;
+
+    closeTaskModal();
+    e.target.reset();
+    loadTasks();
+  } catch (err) {
+    alert('Failed to create task: ' + err.message);
+  }
+}
+
+async function completeTask(taskId) {
+  try {
+    const { error } = await window.supabaseClient
+      .from('tasks')
+      .update({ status: 'completed', completed_at: new Date().toISOString(), completed_by: currentUser.id })
+      .eq('id', taskId);
+
+    if (error) throw error;
+    loadTasks();
+  } catch (err) {
+    alert('Failed to complete task: ' + err.message);
+  }
+}
+</script>
+
+</body>
+</html>

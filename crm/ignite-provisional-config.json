@@ -1,0 +1,109 @@
+{
+  "_note": "⚠️ PROVISIONAL DRAFT CONTENT - Awaiting final wording. Editable without code changes.",
+  "_version": "1.0-draft",
+  "_lastUpdated": "2026-06-25",
+
+  "jtbd": {
+    "enabled": true,
+    "status": "DRAFT",
+    "promptText": "Build the Jobs-To-Be-Done statement from the root cause you uncovered in Peel the Onion",
+    "fields": [
+      {
+        "name": "when_situation",
+        "label": "When [situation]",
+        "placeholder": "The trigger or context from root cause",
+        "hint": "e.g., 'Our ops team manually re-keys 400 orders/week with 8% error rate'"
+      },
+      {
+        "name": "i_want",
+        "label": "I want to [motivation]",
+        "placeholder": "What they're trying to accomplish",
+        "hint": "e.g., 'Automate data sync between our 3 systems'"
+      },
+      {
+        "name": "so_i_can",
+        "label": "So I can [outcome]",
+        "placeholder": "Strategic business impact",
+        "hint": "e.g., 'Redeploy 12 hours/week to strategic work and eliminate costly errors'"
+      },
+      {
+        "name": "functional_job",
+        "label": "Functional job",
+        "placeholder": "The task/process improvement",
+        "hint": "e.g., 'Reduce manual data entry time by 90%'"
+      },
+      {
+        "name": "emotional_job",
+        "label": "Emotional job",
+        "placeholder": "How they want to feel",
+        "hint": "e.g., 'Feel confident our data is accurate'"
+      },
+      {
+        "name": "social_job",
+        "label": "Social job",
+        "placeholder": "How they want to be perceived",
+        "hint": "e.g., 'Be seen as driving efficiency gains'"
+      }
+    ],
+    "example": {
+      "when_situation": "Our ops team manually re-keys 400 orders/week with 8% error rate",
+      "i_want": "Automate data sync between our 3 systems",
+      "so_i_can": "Redeploy 12 hours/week to strategic work and eliminate costly errors",
+      "functional_job": "Reduce manual data entry time by 90%",
+      "emotional_job": "Feel confident our data is accurate",
+      "social_job": "Be seen as driving efficiency gains"
+    }
+  },
+
+  "igniteDiagnostics": {
+    "enabled": true,
+    "status": "DRAFT",
+    "passThreshold": 4,
+    "totalQuestions": 6,
+    "note": "Must pass ≥4 of 6 questions",
+    "questions": [
+      {
+        "id": "ignite_stage_i_complete",
+        "letter": "I",
+        "label": "Identify",
+        "question": "Have you identified the right prospect at the right moment with a clear trigger event?",
+        "hint": "Not just any prospect — the RIGHT one, at the RIGHT time, with a documented trigger."
+      },
+      {
+        "id": "ignite_stage_g_complete",
+        "letter": "G",
+        "label": "Go Deep",
+        "question": "Have you researched their world deeply enough to earn the right to make contact?",
+        "hint": "15 minutes of research before any outreach. Know their business, challenges, and context."
+      },
+      {
+        "id": "ignite_stage_n_complete",
+        "letter": "N",
+        "label": "Nurture",
+        "question": "Have you established a nurture sequence and built trust before asking for the sale?",
+        "hint": "Education before pitch. Value before ask. Trust before transaction."
+      },
+      {
+        "id": "ignite_stage_i2_complete",
+        "letter": "I",
+        "label": "Iterate",
+        "question": "Have you iterated on your messaging based on their responses and feedback?",
+        "hint": "Not a script you repeat — a conversation you adapt based on what they tell you."
+      },
+      {
+        "id": "ignite_stage_t_complete",
+        "letter": "T",
+        "label": "Trigger",
+        "question": "Have you confirmed the trigger event is still active and creates urgency?",
+        "hint": "Triggers expire. Re-confirm the forcing event is still present and pressing."
+      },
+      {
+        "id": "ignite_stage_e_complete",
+        "letter": "E",
+        "label": "Escalate",
+        "question": "Have you escalated from initial contact to a diagnostic conversation with decision-makers?",
+        "hint": "Not stuck at initial contact — you've moved into a real diagnostic with people who can decide."
+      }
+    ]
+  }
+}

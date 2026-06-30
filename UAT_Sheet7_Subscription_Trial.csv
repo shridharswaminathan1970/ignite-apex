@@ -1,0 +1,95 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+SUB-001,Trial Tracking,New org gets 99-day trial on first CRM access,P0,"1. Create new org
+2. User from that org accesses CRM for first time
+3. Check org_subscriptions table","Record created:
+- trial_started_at = now()
+- trial_ends_at = now() + 99 days
+- status = 'trial'
+- crm_first_accessed_at = now()",,,PASS/FAIL,P0,
+SUB-002,Trial Tracking,Trial countdown banner shows days remaining,P1,"1. User in trial (days remaining < 30)
+2. Access any CRM page","Banner appears at top:
+- Shows X days left
+- Amber/yellow styling
+- View Pricing button",,,PASS/FAIL,P1,
+SUB-003,Trial Tracking,No banner if trial > 30 days remaining,P2,"1. User in trial with 50+ days left
+2. Access CRM",No trial banner shown,,,PASS/FAIL,P2,
+SUB-004,Trial Tracking,Banner styling changes at 10 days,P2,"1. Trial with < 10 days remaining
+2. Access CRM","Banner shows:
+- Red/warning styling
+- ⚠️ icon
+- Trial ends in X days!",,,PASS/FAIL,P2,
+SUB-005,Grace Period,Access allowed during grace (105-150 days),P0,"1. Org with trial ended 20 days ago
+2. User tries to access CRM","Access GRANTED
+Banner shows:
+- Trial expired — Subscribe
+- Days since expiry shown",,,PASS/FAIL,P0,
+SUB-006,Grace Period,Login counter increments during grace,P1,"1. In grace period
+2. Login to CRM
+3. Check org_subscriptions.login_count_since_trial_end",Counter incremented by 1,,,PASS/FAIL,P1,
+SUB-007,Grace Period,Reminder shows every 5th login,P1,"1. login_count_since_trial_end = 4
+2. Login (makes it 5)
+3. View CRM","Modal/banner shows:
+Trial expired X days ago
+Subscribe now prompt",,,PASS/FAIL,P1,
+SUB-008,Grace Period,No reminder on non-5th login,P2,"1. login_count = 3 or 6 or 7
+2. Login",No special reminder (just banner),,,PASS/FAIL,P2,
+SUB-009,Trial Expiry,Access BLOCKED after 150 days,P0,"1. Org with trial ended 151 days ago
+2. User tries to access CRM","Access DENIED
+Full-screen modal:
+🔒 Trial Expired
+View Pricing + Contact Admin buttons
+Cannot access CRM at all",,,PASS/FAIL,P0,Critical - hard block must work
+SUB-010,Trial Expiry,Modal shows correct messaging,P1,"1. Trigger expired modal","Message includes:
+- 150-day trial period ended
+- Subscribe to continue
+- Sales OS remains free",,,PASS/FAIL,P1,
+SUB-011,Trial Expiry,Contact Admin button works,P1,"1. In expired modal
+2. Click Contact Administrator","Opens email client:
+To: muhammad.shaamel@gmail.com + @shaamelz.com
+Subject: CRM Subscription Request
+Body: Pre-filled template",,,PASS/FAIL,P1,
+SUB-012,User Limits,User limit enforced based on plan,P1,"1. Org on Team Mini (max 3 users)
+2. 4th user tries to login to CRM","Access denied
+Modal: User Limit Reached
+Max 3 users for Team Mini plan",,,PASS/FAIL,P1,
+SUB-013,User Limits,Admin can see current user count,P2,"1. Login as admin
+2. View org settings or dashboard","Shows: X/Y users
+Where Y = max_users from plan",,,PASS/FAIL,P2,
+SUB-014,Pricing Page,Pricing page loads correctly,P1,1. Go to /pricing.html,"Page shows:
+- 3 tiers (Mini/Midi/Maxi)
+- Monthly/Yearly toggle
+- B2B Outreach addon section
+- FAQ
+- Contact Admin buttons",,,PASS/FAIL,P1,
+SUB-015,Pricing Page,Monthly/Yearly toggle works,P1,"1. Toggle to Yearly
+2. Check prices","Prices update:
+Mini: $100/yr
+Midi: $195/yr
+Maxi: $320/yr
+Billing text: Billed yearly",,,PASS/FAIL,P1,
+SUB-016,Pricing Page,Contact Admin button opens email,P1,"1. Click any Contact Administrator button","Opens email with:
+To: both admin emails
+Subject: Get back to me...
+Body: Template with placeholders",,,PASS/FAIL,P1,
+SUB-017,Checkout,Start Trial redirects to checkout,P2,"1. Logged in user
+2. Click Start 99-Day Trial on pricing page",Redirects to /checkout.html?plan=X&billing=Y,,,PASS/FAIL,P2,
+SUB-018,Checkout,Not logged in redirects to auth,P2,"1. Not logged in
+2. Click Start Trial",Redirects to auth.html with redirect params,,,PASS/FAIL,P2,
+SUB-019,Checkout,Checkout shows selected plan,P1,"1. Access checkout with plan=team_midi&billing=yearly","Displays:
+- Team Midi
+- $195/year
+- Order summary
+- Proceed to Payment button",,,PASS/FAIL,P1,
+SUB-020,Checkout,Addon selection updates total,P2,"1. Select plan
+2. Select B2B addon
+3. Check total",Total = base + addon price,,,PASS/FAIL,P2,
+SUB-021,Active Subscription,Active subscriber has no trial banner,P1,"1. Org with status='active'
+2. Access CRM",No trial banner shown,,,PASS/FAIL,P1,
+SUB-022,Active Subscription,Active subscriber can exceed trial period,P1,"1. Org subscribed (active) for 200+ days
+2. Access CRM",Full access granted,,,PASS/FAIL,P1,
+SUB-023,Subscription Status,Past due shows warning,P2,"1. Org with status='past_due'
+2. Access CRM","Access granted
+Warning banner: Payment overdue",,,PASS/FAIL,P2,
+SUB-024,Subscription Status,Cancelled blocks access,P1,"1. Org with status='cancelled'
+2. Try to access CRM","Access denied
+Message: Subscription cancelled",,,PASS/FAIL,P1,

@@ -1,0 +1,90 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+ACC-001,Accounts,Create new account,P0,"1. Go to CRM → Accounts
+2. Click New Account
+3. Fill: name, domain, industry, size
+4. Save","Account created:
+- Record in accounts table
+- Shows in accounts list",,,PASS/FAIL,P0,
+ACC-002,Accounts,Account name is required,P1,"1. Try to create account without name
+2. Submit",Validation error: Name required,,,PASS/FAIL,P1,
+ACC-003,Accounts,Account domain validation,P2,"1. Enter invalid domain (no TLD)
+2. Try to save",Validation warning (not blocking),,,PASS/FAIL,P2,
+ACC-004,Accounts,View account detail,P0,"1. Click account from list
+2. View detail page","Account details shown:
+- Name, domain, industry
+- Related contacts
+- Related opportunities
+- Activity history",,,PASS/FAIL,P0,
+ACC-005,Accounts,Edit account details,P1,"1. Open account
+2. Edit fields
+3. Save",Changes saved and reflected,,,PASS/FAIL,P1,
+ACC-006,Accounts,Delete account (no relationships),P1,"1. Select account with no contacts/opps
+2. Click Delete
+3. Confirm","Account deleted:
+- Removed from database",,,PASS/FAIL,P1,
+ACC-007,Accounts,Cannot delete account with opportunities,P0,"1. Select account with opportunities
+2. Try to delete","Error: Cannot delete
+Message: Account has X opportunities
+Prompt: Close opportunities first",,,PASS/FAIL,P0,Prevents data orphaning
+ACC-008,Accounts,Filter accounts by industry,P2,"1. Filter by industry (e.g., Technology)
+2. View results",Only that industry shown,,,PASS/FAIL,P2,
+ACC-009,Accounts,Search accounts by name,P1,"1. Enter name in search
+2. Press Enter",Matching accounts shown,,,PASS/FAIL,P1,
+ACC-010,Accounts,Sort accounts by name,P2,"1. Click Name column header
+2. Toggle sort",Accounts sorted alphabetically,,,PASS/FAIL,P2,
+CON-001,Contacts,Create new contact,P0,"1. Go to CRM → Contacts
+2. Click New Contact
+3. Fill: name, email, phone, title, account
+4. Save","Contact created:
+- Record in contacts table
+- Linked to account
+- Shows in contacts list",,,PASS/FAIL,P0,
+CON-002,Contacts,Contact name is required,P1,"1. Try to create contact without name
+2. Submit",Validation error: Name required,,,PASS/FAIL,P1,
+CON-003,Contacts,Contact email validation,P1,"1. Enter invalid email
+2. Try to save",Validation error: Invalid email,,,PASS/FAIL,P1,
+CON-004,Contacts,Link contact to account,P0,"1. Create/edit contact
+2. Select account from dropdown
+3. Save","Contact linked:
+- account_id saved
+- Contact appears in account detail
+- Can view from account",,,PASS/FAIL,P0,
+CON-005,Contacts,View contact detail,P0,"1. Click contact from list
+2. View detail page","Contact details shown:
+- Name, email, phone, title
+- Related account
+- Related opportunities
+- Activity history",,,PASS/FAIL,P0,
+CON-006,Contacts,Edit contact details,P1,"1. Open contact
+2. Edit fields
+3. Save",Changes saved and reflected,,,PASS/FAIL,P1,
+CON-007,Contacts,Delete contact,P1,"1. Select contact
+2. Click Delete
+3. Confirm","Contact deleted:
+- Removed from database
+- Removed from account",,,PASS/FAIL,P1,
+CON-008,Contacts,Filter contacts by account,P1,"1. Filter by account
+2. View results",Only contacts from that account shown,,,PASS/FAIL,P1,
+CON-009,Contacts,Search contacts by name,P1,"1. Enter name in search
+2. Press Enter",Matching contacts shown,,,PASS/FAIL,P1,
+CON-010,Contacts,Sort contacts by name,P2,"1. Click Name column
+2. Toggle sort",Contacts sorted alphabetically,,,PASS/FAIL,P2,
+REL-001,Relationships,Opportunity linked to account,P0,"1. Create opportunity
+2. Select account
+3. Save","Opportunity linked:
+- account_id saved
+- Opp appears in account detail",,,PASS/FAIL,P0,
+REL-002,Relationships,Opportunity linked to contact,P0,"1. Create/edit opportunity
+2. Select contact
+3. Save","Opportunity linked:
+- contact_id saved
+- Opp appears in contact detail",,,PASS/FAIL,P0,
+REL-003,Relationships,View all opportunities for account,P0,"1. Open account detail
+2. View Opportunities tab",All related opportunities shown,,,PASS/FAIL,P0,
+REL-004,Relationships,View all contacts for account,P0,"1. Open account detail
+2. View Contacts tab",All related contacts shown,,,PASS/FAIL,P0,
+REL-005,Relationships,Change opportunity account,P1,"1. Open opportunity
+2. Change account
+3. Save","Account updated:
+- Old account no longer shows opp
+- New account shows opp",,,PASS/FAIL,P1,

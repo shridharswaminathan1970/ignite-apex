@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IGNITE_APEX · Weekly Pipeline Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;--t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;--amber:#F59E0B;--amber2:#FCD34D;--ad:#2D1F00;--green:#10B981;--gd:#021F12;--blue:#3B82F6;--bd:#020F2A;--red:#EF4444;--rd:#1F0202;--purple:#8B5CF6}
+html,body{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1);min-height:100vh}
+.top-bar{background:var(--s1);border-bottom:1px solid var(--b1);padding:.75rem 1.75rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.top-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.top-sub{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-top:.1rem}
+.gen-btn{background:var(--amber);color:#000;font-weight:700;font-size:.78rem;padding:.5rem 1.2rem;border:none;border-radius:6px;cursor:pointer}
+.wrap{max-width:860px;margin:0 auto;padding:2rem 1.5rem 7rem}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;margin-bottom:1.25rem;overflow:hidden}
+.card-head{padding:.85rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.65rem}
+.card-stripe{width:4px;height:26px;border-radius:2px;flex-shrink:0}
+.card-title{font-size:.88rem;font-weight:700;color:var(--t1)}
+.card-sub{font-size:.66rem;color:var(--t3);margin-top:.1rem}
+.card-body{padding:1.1rem 1.25rem}
+label{display:block;font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.3rem}
+input,select,textarea{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;font-size:.82rem;color:var(--t1);font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--amber)}
+select option{background:var(--s2)}
+textarea{resize:vertical;min-height:70px;line-height:1.55}
+.fg{display:grid;gap:.85rem}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.fg4{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem}
+.act-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.act-cell{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.65rem .75rem}
+.act-cell label{margin-bottom:.4rem}
+.act-mini{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.act-mini-label{font-size:.55rem;color:var(--t3);margin-bottom:.2rem}
+.deal-table-wrap{overflow-x:auto}
+.deal-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.deal-table th{padding:.5rem .75rem;font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);border-bottom:2px solid var(--b1);background:var(--s2);text-align:left;white-space:nowrap}
+.deal-table td{padding:.55rem .75rem;border-bottom:1px solid var(--b1);vertical-align:middle}
+.deal-table tr:last-child td{border-bottom:none}
+.deal-table tr:hover td{background:var(--s2)}
+.v-chip{font-size:.6rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;border:1px solid;white-space:nowrap}
+.v-commit{background:var(--gd);color:#6EE7B7;border-color:var(--green)}
+.v-best{background:var(--ad);color:var(--amber2);border-color:var(--amber)}
+.v-pipe{background:var(--s2);color:var(--t3);border-color:var(--b2)}
+.v-disq{background:var(--rd);color:#FCA5A5;border-color:var(--red)}
+.deal-val-in{background:var(--bg);border:1px solid var(--b2);border-radius:5px;padding:.28rem .5rem;font-size:.78rem;color:var(--t1);font-family:'IBM Plex Mono',monospace;width:100px;text-align:right}
+.deal-close-in{background:var(--bg);border:1px solid var(--b2);border-radius:5px;padding:.28rem .5rem;font-size:.72rem;color:var(--t2);width:110px}
+.deal-val-in:focus,.deal-close-in:focus{border-color:var(--amber);outline:none}
+.no-deals{padding:2rem;text-align:center;color:var(--t3);font-size:.82rem;line-height:1.8}
+.no-deals a{color:var(--amber);font-weight:700;text-decoration:none}
+.status-banner{border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.78rem;line-height:1.6;display:flex;align-items:flex-start;gap:.65rem}
+.sb-info{background:var(--bd);border:1px solid var(--blue);color:#93C5FD}
+.sb-warn{background:var(--ad);border:1px solid var(--amber);color:var(--amber2)}
+.sb-ok{background:var(--gd);border:1px solid var(--green);color:#6EE7B7}
+.gen-footer{position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--b1);padding:.85rem 1.75rem;display:flex;align-items:center;justify-content:space-between;z-index:100}
+.gf-info{font-size:.72rem;color:var(--t3)}
+.gf-info strong{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <div>
+    <div class="top-logo">IGNITE_APEX · Weekly Pipeline Report</div>
+    <div class="top-sub">Deal verdicts from qualification gates · Activity counts are the only manual inputs</div>
+  </div>
+  <button class="gen-btn" onclick="generateReport()">⚡ Generate Report →</button>
+</div>
+
+<div class="wrap">
+
+<div id="status-banner" class="status-banner sb-info"><span>📡</span><span id="status-text">Reading deal registry from Sales OS…</span></div>
+
+<!-- HEADER -->
+<div class="card">
+  <div class="card-head"><div class="card-stripe" style="background:var(--amber)"></div>
+    <div><div class="card-title">Report Header</div><div class="card-sub">Your details · week · quota</div></div>
+  </div>
+  <div class="card-body">
+    <div class="fg2" style="margin-bottom:.85rem">
+      <div><label>Rep Name</label><input type="text" id="rep_name" value="Shaamelz"></div>
+      <div><label>Role / Company</label><input type="text" id="rep_role" value="VP Go-to-Market · Orangekloud Technology Inc. (NASDAQ: ORKT)"></div>
+    </div>
+    <div class="fg4">
+      <div><label>Week Number</label><input type="number" id="week_num" value="10" min="1" max="52" onchange="onWeekNumChange()"></div>
+      <div><label>Year</label><input type="number" id="week_year" value="2026"></div>
+      <div><label>Week Dates</label><input type="text" id="week_dates" placeholder="07–11 Apr 2026"></div>
+      <div><label>Annual Quota ($)</label><input type="number" id="annual_quota" value="150000"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DEALS FROM REGISTRY -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-stripe" style="background:var(--green)"></div>
+    <div>
+      <div class="card-title">Pipeline Deals — sourced from Sales OS</div>
+      <div class="card-sub">Verdict · probability · IGNITE stage read from qualification data · Enter deal value and expected close date only</div>
+    </div>
+    <button onclick="DR_reloadDeals()" style="margin-left:auto;background:transparent;border:1px solid var(--b2);color:var(--t3);font-size:.7rem;padding:.3rem .65rem;border-radius:5px;cursor:pointer">↻ Refresh from Sales OS</button>
+  </div>
+  <div class="card-body">
+    <div id="deal-container"></div>
+    <div style="margin-top:.65rem;font-size:.7rem;color:var(--t3)">ℹ To change a deal's verdict or score — work on it in the <a href="../system/" style="color:var(--amber)">Sales OS</a>, then click Refresh.</div>
+  </div>
+</div>
+
+<!-- ACTIVITY -->
+<div class="card">
+  <div class="card-head"><div class="card-stripe" style="background:#3B82F6"></div>
+    <div><div class="card-title">Section 1 — Weekly Activity</div><div class="card-sub">Enter this week's numbers · Last week auto-loads from your previous saved report</div></div>
+  </div>
+  <div class="card-body">
+    <div class="act-grid" id="activityGrid"></div>
+    <div class="fg2" style="margin-top:.85rem">
+      <div><label>Forecast Accuracy (3-wk rolling %)</label><input type="number" id="forecast_accuracy" value="91.2" step="0.1"></div>
+      <div><label>Activity Score This Week / Auto: Last Week</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <input type="number" id="act_score_this" placeholder="This week (e.g. 89)">
+          <input type="number" id="act_score_last" placeholder="Auto from W-1" readonly style="opacity:.45;cursor:not-allowed" tabindex="-1">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOP MEETINGS -->
+<div class="card">
+  <div class="card-head"><div class="card-stripe" style="background:#6D28D9"></div>
+    <div><div class="card-title">Top Meetings This Week</div><div class="card-sub">Optional intelligence notes for the activity section</div></div>
+  </div>
+  <div class="card-body fg">
+    <div class="fg2"><div><label>Meeting 1</label><input type="text" id="meet1" placeholder="Republic Polytechnic — Final commercial review. Verbal commit received."></div><div><label>Status</label><select id="meet1_s"><option>SUPER HOT</option><option>HOT</option><option selected>WARM</option><option>COLD</option></select></div></div>
+    <div class="fg2"><div><label>Meeting 2</label><input type="text" id="meet2" placeholder="SP Group — Proposal accepted. Legal review initiated."></div><div><label>Status</label><select id="meet2_s"><option>SUPER HOT</option><option>HOT</option><option selected>WARM</option><option>COLD</option></select></div></div>
+    <div class="fg2"><div><label>Meeting 3</label><input type="text" id="meet3" placeholder="ITE Singapore — 3-campus pilot submitted."></div><div><label>Status</label><select id="meet3_s"><option>SUPER HOT</option><option>HOT</option><option selected>WARM</option><option>COLD</option></select></div></div>
+  </div>
+</div>
+
+<!-- QUOTA -->
+<div class="card">
+  <div class="card-head"><div class="card-stripe" style="background:var(--purple)"></div>
+    <div><div class="card-title">Quota Attainment</div></div>
+  </div>
+  <div class="card-body">
+    <div class="fg4">
+      <div><label>Closed YTD ($)</label><input type="number" id="closed_ytd" placeholder="0"></div>
+      <div><label>Committed This Month ($)</label><input type="number" id="committed_month" placeholder="0"></div>
+      <div><label>Best Case This Month ($)</label><input type="number" id="bestcase_month" placeholder="0"></div>
+      <div><label>Total Pipeline ($)</label><input type="number" id="total_pipeline" readonly style="opacity:.5"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RISK FLAGS -->
+<div class="card">
+  <div class="card-head"><div class="card-stripe" style="background:var(--red)"></div>
+    <div><div class="card-title">Risk Flags</div><div class="card-sub">Auto-detected from qualification gaps · add manually if needed</div></div>
+  </div>
+  <div class="card-body">
+    <div id="risk-container"></div>
+    <button onclick="addRisk()" style="margin-top:.5rem;background:transparent;border:1px solid var(--amber);color:var(--amber);font-size:.7rem;font-weight:700;padding:.3rem .75rem;border-radius:5px;cursor:pointer">+ Add Risk Flag</button>
+  </div>
+</div>
+
+<!-- NARRATIVE -->
+<div class="card">
+  <div class="card-head"><div class="card-stripe" style="background:var(--t3)"></div>
+    <div><div class="card-title">Weekly Narrative</div><div class="card-sub">Optional · appears at top of report</div></div>
+  </div>
+  <div class="card-body">
+    <textarea id="weekly_narrative" rows="4" placeholder="e.g. Week 10 opened with two verbal commits confirmed…"></textarea>
+  </div>
+</div>
+
+</div>
+
+<div class="gen-footer">
+  <div class="gf-info"><strong id="deal_count_label">0 deals</strong> loaded from Sales OS · Verdicts from qualification gates only</div>
+  <div style="display:flex;gap:.65rem">
+    <button onclick="saveData()" style="background:transparent;border:1px solid var(--b2);color:var(--t2);font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:6px;cursor:pointer">💾 Save</button>
+    <button class="gen-btn" onclick="generateReport()">⚡ Generate Report →</button>
+  </div>
+</div>
+
+<script>
+const DR_REGISTRY_KEY='ia_deal_registry';
+const SAVE_KEY='ia_weekly_inputs_v2';
+
+const ACTS=[
+  {id:'calls',label:'Calls Made'},{id:'emails',label:'Emails Sent'},
+  {id:'meetings',label:'Meetings Held'},{id:'demos',label:'Demos Delivered'},
+  {id:'proposals',label:'Proposals Sent'},{id:'prospects',label:'New Prospects Added'},
+  {id:'linkedin',label:'LinkedIn Touches'},{id:'replies',label:'Replies Received'}
+];
+
+function buildActivityGrid(){
+  document.getElementById('activityGrid').innerHTML=ACTS.map(m=>`
+    <div class="act-cell"><label>${m.label}</label>
+    <div class="act-mini">
+      <div><div class="act-mini-label">This Week</div><input type="number" id="act_${m.id}_this" min="0"></div>
+      <div><div class="act-mini-label" style="color:var(--t3)">Auto (prev week)</div><input type="number" id="act_${m.id}_last" min="0" readonly style="opacity:.45;cursor:not-allowed" tabindex="-1"></div>
+    </div></div>`).join('');
+}
+
+let loadedDeals=[];
+let dealExtra={};// id->{value,closeDate}
+let risks=[];
+
+function DR_reloadDeals(){
+  try{
+    const reg=JSON.parse(localStorage.getItem(DR_REGISTRY_KEY)||'[]');
+    loadedDeals=[];
+    reg.forEach(entry=>{
+      try{
+        const s=JSON.parse(localStorage.getItem('ia_deal_'+entry.id)||'null');
+        if(!s) return;
+        loadedDeals.push({
+          id:entry.id,
+          prospect:s.prospect||entry.prospect||'Unnamed',
+          verdict:s.verdict||'Not scored',
+          forecast_category:s.forecast_category||'Pipeline',
+          probability:s.probability||0,
+          engagement:s.engagement||'COLD',
+          ignite_stage:s.ignite_stage||'Not Started',
+          ignite_pct:s.ignite_pct||0,
+          t1_yes:s.t1_yes||0,t2_yes:s.t2_yes||0,t3_yes:s.t3_yes||0,
+          icp_score:s.icp_score||0,
+          champion:s.champion||'',
+          forcing_event:s.forcing_event||'',
+          pain:s.pain||'',impact:s.impact||'',roi:s.roi||'',
+          layer3:s.layer3||'',savedAt:s.savedAt||entry.savedAt
+        });
+      }catch(e){}
+    });
+    renderDeals();
+    updateTotal();
+    autoRisks();
+    updateStatus();
+  }catch(e){
+    setStatus('sb-warn','⚠ Could not read registry. Work a deal in the Sales OS first, then refresh.');
+  }
+}
+
+function renderDeals(){
+  const c=document.getElementById('deal-container');
+  const lbl=document.getElementById('deal_count_label');
+  if(!loadedDeals.length){
+    c.innerHTML=`<div class="no-deals"><strong style="color:var(--t2);display:block;margin-bottom:.5rem">No deals in registry</strong>Go to the <a href="../system/">Sales OS</a>, work a deal through the qualification stages, then return and click Refresh.<br>Deal verdicts, probabilities, and IGNITE stages will appear here automatically.</div>`;
+    if(lbl)lbl.textContent='0 deals loaded';
+    return;
+  }
+  if(lbl)lbl.textContent=loadedDeals.length+' deal'+(loadedDeals.length!==1?'s':'')+' loaded from Sales OS';
+  c.innerHTML=`<div class="deal-table-wrap"><table class="deal-table">
+    <thead><tr>
+      <th>Deal / Prospect</th><th>Qualification Verdict</th><th>Scores (T1·T2·T3)</th>
+      <th>Prob %</th><th>Engagement</th><th>Deal Value ($)</th><th>Expected Close</th>
+    </tr></thead>
+    <tbody>${loadedDeals.map(d=>{
+      const vCls=d.verdict==='COMMIT FORECAST'?'v-commit':d.verdict==='BEST CASE'?'v-best':d.verdict==='DISQUALIFIED'?'v-disq':'v-pipe';
+      const eCls=d.engagement==='SUPER HOT'||d.engagement==='HOT'?'v-disq':d.engagement==='WARM'?'v-best':'v-pipe';
+      const sv=dealExtra[d.id]?.value||'';
+      const sc=dealExtra[d.id]?.closeDate||d.forcing_event||'';
+      return `<tr>
+        <td><div style="font-weight:700;font-size:.82rem;color:var(--t1)">${d.prospect}</div>
+            <div style="font-size:.67rem;color:var(--t3);margin-top:.1rem">IGNITE: ${d.ignite_stage} · ICP: ${d.icp_score}/100</div></td>
+        <td><span class="v-chip ${vCls}">${d.verdict}</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--t2)">${d.t1_yes}/5 · ${d.t2_yes}/10 · ${d.t3_yes}/5</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.8rem">${d.probability}%</td>
+        <td><span class="v-chip ${eCls}" style="font-size:.58rem">${d.engagement}</span></td>
+        <td><input class="deal-val-in" type="number" id="val_${d.id}" value="${sv}" placeholder="0" oninput="updateTotal()"></td>
+        <td><input class="deal-close-in" type="text" id="close_${d.id}" value="${sc}" placeholder="e.g. 30 Apr 2026"></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function updateTotal(){
+  let t=0;
+  loadedDeals.forEach(d=>{
+    const v=parseFloat(document.getElementById('val_'+d.id)?.value||0);
+    dealExtra[d.id]={value:v,closeDate:document.getElementById('close_'+d.id)?.value||''};
+    t+=v;
+  });
+  const tp=document.getElementById('total_pipeline');
+  if(tp)tp.value=t;
+}
+
+function autoRisks(){
+  risks=[];
+  loadedDeals.forEach(d=>{
+    if(d.verdict==='COMMIT FORECAST')return;
+    if(d.t2_yes>=5&&d.t2_yes<7)risks.push({sev:'amber',deal:d.prospect,body:`T2 score ${d.t2_yes}/10 — ${7-d.t2_yes} criteria unconfirmed. Reach Best Case threshold before forecasting.`});
+    if(d.verdict==='BEST CASE'&&d.t3_yes<5)risks.push({sev:'amber',deal:d.prospect,body:`T3 Commit Gate ${d.t3_yes}/5 — ${5-d.t3_yes} gate${5-d.t3_yes>1?'s':''} outstanding. Remains Best Case until all 5 pass.`});
+    if(d.icp_score>0&&d.icp_score<70&&d.t2_yes>0)risks.push({sev:'red',deal:d.prospect,body:`ICP score ${d.icp_score}/100 below the 70-point gate. Deal advanced without confirmed prospect fit. Re-evaluate.`});
+  });
+  renderRisks();
+}
+
+function renderRisks(){
+  document.getElementById('risk-container').innerHTML=risks.map((r,i)=>`
+    <div style="display:flex;gap:.65rem;margin-bottom:.5rem;align-items:flex-start;background:${r.sev==='red'?'var(--rd)':'var(--ad)'};border:1px solid ${r.sev==='red'?'var(--red)':'var(--amber)'};border-radius:8px;padding:.65rem .85rem">
+      <span>${r.sev==='red'?'🚨':'⚠️'}</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.8rem;color:${r.sev==='red'?'#FCA5A5':'var(--amber2)'};margin-bottom:.2rem">${r.deal}</div>
+        <div style="font-size:.76rem;color:var(--t2);line-height:1.5">${r.body}</div>
+      </div>
+      <button onclick="risks.splice(${i},1);renderRisks()" style="background:transparent;border:none;color:var(--t3);cursor:pointer;font-size:.75rem">✕</button>
+    </div>`).join('');
+}
+
+function addRisk(){
+  const idx=risks.length;
+  risks.push({sev:'amber',deal:'',body:''});
+  const c=document.getElementById('risk-container');
+  const div=document.createElement('div');
+  div.style.cssText='display:grid;grid-template-columns:100px 1fr 1fr;gap:.5rem;margin-bottom:.5rem';
+  div.innerHTML=`
+    <select style="background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:.38rem .5rem;color:var(--t1);font-size:.75rem" onchange="risks[${idx}].sev=this.value"><option value="amber">⚠️ Caution</option><option value="red">🚨 Critical</option></select>
+    <input placeholder="Deal / area" style="background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:.38rem .5rem;color:var(--t1);font-size:.75rem" oninput="risks[${idx}].deal=this.value">
+    <input placeholder="Description & required action" style="background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:.38rem .5rem;color:var(--t1);font-size:.75rem" oninput="risks[${idx}].body=this.value">`;
+  c.appendChild(div);
+}
+
+// ── PER-WEEK STORAGE ─────────────────────────────────────────────────────────
+// Each week's data saved under its own key: ia_weekly_W10_2026
+// "Last week" fields always populated automatically from the previous week's saved data
+function weekKey(wn,yr){ return 'ia_weekly_W'+wn+'_'+yr; }
+function prevWeekKey(){
+  const wn=parseInt(document.getElementById('week_num')?.value||'1');
+  const yr=parseInt(document.getElementById('week_year')?.value||'2026');
+  const pw=wn>1?wn-1:52;
+  const py=wn>1?yr:yr-1;
+  return 'ia_weekly_W'+pw+'_'+py;
+}
+
+function saveData(){
+  const wn=document.getElementById('week_num')?.value||'1';
+  const yr=document.getElementById('week_year')?.value||'2026';
+  // Capture activity — this week numbers only (last week is auto-populated, not stored here)
+  const act={};
+  ACTS.forEach(m=>{act[m.id]=document.getElementById('act_'+m.id+'_this')?.value||'';});
+  const act_score=document.getElementById('act_score_this')?.value||'';
+  const ds={};loadedDeals.forEach(d=>{ds[d.id]={value:document.getElementById('val_'+d.id)?.value||'',closeDate:document.getElementById('close_'+d.id)?.value||''};});
+  const flds=['rep_name','rep_role','week_dates','annual_quota','forecast_accuracy','closed_ytd','committed_month','bestcase_month','weekly_narrative','meet1','meet1_s','meet2','meet2_s','meet3','meet3_s'];
+  const data={wn,yr,act,act_score,ds};
+  flds.forEach(f=>{data[f]=document.getElementById(f)?.value||'';});
+  // Save under this week's key
+  localStorage.setItem(weekKey(wn,yr),JSON.stringify(data));
+  // Also save to SAVE_KEY so week_num/year/rep_name persist on next open
+  localStorage.setItem(SAVE_KEY,JSON.stringify({rep_name:data.rep_name,rep_role:data.rep_role,week_num:wn,week_year:yr,annual_quota:data.annual_quota}));
+  setStatus('sb-ok',`✓ W${wn} saved. Next week's "last week" column will auto-populate.`);
+  setTimeout(updateStatus,3000);
+}
+
+function loadData(){
+  try{
+    // First restore persistent header fields (rep name, quota, last week number used)
+    const meta=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+    if(meta){
+      ['rep_name','rep_role','week_num','week_year','annual_quota'].forEach(f=>{
+        const el=document.getElementById(f);if(el&&meta[f]!==undefined)el.value=meta[f];
+      });
+    }
+
+    // Load this week's data if it exists
+    const wn=document.getElementById('week_num')?.value||'1';
+    const yr=document.getElementById('week_year')?.value||'2026';
+    const thisWeekData=JSON.parse(localStorage.getItem(weekKey(wn,yr))||'null');
+    if(thisWeekData){
+      const flds=['rep_name','rep_role','week_dates','annual_quota','forecast_accuracy','closed_ytd','committed_month','bestcase_month','weekly_narrative','meet1','meet1_s','meet2','meet2_s','meet3','meet3_s'];
+      flds.forEach(f=>{const el=document.getElementById(f);if(el&&thisWeekData[f]!==undefined)el.value=thisWeekData[f];});
+      if(thisWeekData.act)ACTS.forEach(m=>{const t=document.getElementById('act_'+m.id+'_this');if(t)t.value=thisWeekData.act[m.id]||'';});
+      if(thisWeekData.act_score){const el=document.getElementById('act_score_this');if(el)el.value=thisWeekData.act_score;}
+      if(thisWeekData.ds)dealExtra=thisWeekData.ds;
+    }
+
+    // Auto-populate "last week" from the previous week's saved data
+    autoPopulateLastWeek();
+
+  }catch(e){ console.warn('loadData error',e); }
+}
+
+function autoPopulateLastWeek(){
+  try{
+    const pk=prevWeekKey();
+    const prev=JSON.parse(localStorage.getItem(pk)||'null');
+    if(!prev||!prev.act) return;
+    // Populate all "last week" fields from previous week's "this week" data
+    ACTS.forEach(m=>{
+      const el=document.getElementById('act_'+m.id+'_last');
+      if(el&&!el.value){ el.value=prev.act[m.id]||''; }
+    });
+    // Activity score
+    const scoreEl=document.getElementById('act_score_last');
+    if(scoreEl&&!scoreEl.value){ scoreEl.value=prev.act_score||''; }
+    setStatus('sb-ok',`✓ Last week data auto-loaded from W${parseInt(document.getElementById('week_num')?.value||'1')-1} saved data.`);
+    setTimeout(updateStatus,3000);
+  }catch(e){}
+}
+
+// When week number changes — re-run auto-populate
+function onWeekNumChange(){
+  // Clear last week fields so they get re-populated from correct previous week
+  ACTS.forEach(m=>{ const el=document.getElementById('act_'+m.id+'_last'); if(el) el.value=''; });
+  const scoreEl=document.getElementById('act_score_last'); if(scoreEl) scoreEl.value='';
+  autoPopulateLastWeek();
+  saveData();
+}
+
+function setStatus(cls,msg){const b=document.getElementById('status-banner');const t=document.getElementById('status-text');if(b&&t){b.className='status-banner '+cls;t.textContent=msg;}}
+function updateStatus(){const n=loadedDeals.length;if(!n){setStatus('sb-warn','⚠ No deals in registry. Work at least one deal in the Sales OS first.');return;}const c=loadedDeals.filter(d=>d.verdict==='COMMIT FORECAST').length;const bc=loadedDeals.filter(d=>d.verdict==='BEST CASE').length;setStatus('sb-ok',`✓ ${n} deal${n!==1?'s':''} loaded · ${c} Commit · ${bc} Best Case · All verdicts from IGNITE_APEX qualification gates`);}
+
+function fmt(v){if(!v||isNaN(v))return '$0';return '$'+parseFloat(v).toLocaleString('en-US',{maximumFractionDigits:0});}
+function actRow(lbl,tw,lw){const t=parseFloat(tw)||0,l=parseFloat(lw)||0;const td=t>l?`<span style="color:#047857">↑ +${t-l}</span>`:t<l?`<span style="color:#B91C1C">↓ ${t-l}</span>`:'<span style="color:#6B7280">→</span>';return `<tr><td style="font-size:.8rem;color:#3A4260;padding:.35rem .5rem;border-bottom:1px solid #DDE2EE">${lbl}</td><td style="font-family:'IBM Plex Mono',monospace;font-weight:700;text-align:right;padding:.35rem .5rem;border-bottom:1px solid #DDE2EE;color:#0D1120">${t}</td><td style="text-align:right;padding:.35rem .5rem;border-bottom:1px solid #DDE2EE;font-size:.75rem">${td}</td></tr>`;}
+
+function generateReport(){
+  saveData();
+  const wn=document.getElementById('week_num')?.value||'—';
+  const yr=document.getElementById('week_year')?.value||'2026';
+  const fa=document.getElementById('forecast_accuracy')?.value||'—';
+  const quota=parseFloat(document.getElementById('annual_quota')?.value)||150000;
+  const closedYTD=parseFloat(document.getElementById('closed_ytd')?.value)||0;
+  const committed=parseFloat(document.getElementById('committed_month')?.value)||0;
+  const bestcase=parseFloat(document.getElementById('bestcase_month')?.value)||0;
+  const scoreThis=parseFloat(document.getElementById('act_score_this')?.value)||0;
+  const scoreLast=parseFloat(document.getElementById('act_score_last')?.value)||0;
+  const scoreDelta=scoreThis-scoreLast;
+  const narrative=document.getElementById('weekly_narrative')?.value||'';
+  const repName=document.getElementById('rep_name')?.value||'Rep Name';
+  const repRole=document.getElementById('rep_role')?.value||'';
+  const initials=repName.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
+
+  const deals=loadedDeals.map(d=>({...d,value:parseFloat(document.getElementById('val_'+d.id)?.value||0)||0,closeDate:document.getElementById('close_'+d.id)?.value||d.forcing_event||'TBD'}));
+
+  function horizon(d){if(d.verdict==='COMMIT FORECAST')return'7';if(d.verdict==='BEST CASE')return'30';if(d.verdict==='PIPELINE+')return'90';return'180';}
+  const byH={'7':[],'30':[],'90':[],'180':[]};
+  deals.forEach(d=>(byH[horizon(d)]||byH['180']).push(d));
+  const totalVal=deals.reduce((s,d)=>s+d.value,0);
+  const wtdVal=deals.reduce((s,d)=>s+d.value*(d.probability/100),0);
+  const wtdPct=quota>0?Math.min(Math.round(closedYTD/quota*100),100):0;
+
+  const act=ACTS.reduce((o,m)=>({...o,[m.id+'_this']:document.getElementById('act_'+m.id+'_this')?.value||'0',[m.id+'_last']:document.getElementById('act_'+m.id+'_last')?.value||'0'}),{});
+
+  function dtbl(list,title,color){
+    if(!list.length)return`<div style="padding:1rem;text-align:center;color:#6B75A0;font-size:.8rem">No deals in this horizon</div>`;
+    const rows=list.map(d=>{
+      const vmap={'COMMIT FORECAST':{bg:'#ECFDF5',c:'#047857',b:'#A7F3D0'},'BEST CASE':{bg:'#FFFBEB',c:'#D97706',b:'#FDE68A'},'PIPELINE+':{bg:'#EFF6FF',c:'#1D4ED8',b:'#BFDBFE'},'PIPELINE ONLY':{bg:'#F9FAFB',c:'#6B7280',b:'#E5E7EB'},'DISQUALIFIED':{bg:'#FEF2F2',c:'#B91C1C',b:'#FECACA'}};
+      const vm=vmap[d.verdict]||vmap['PIPELINE ONLY'];
+      const emap={'SUPER HOT':{bg:'#FEF2F2',c:'#B91C1C',b:'#FECACA'},'HOT':{bg:'#FEF2F2',c:'#B91C1C',b:'#FECACA'},'WARM':{bg:'#FFFBEB',c:'#D97706',b:'#FDE68A'},'COLD':{bg:'#F9FAFB',c:'#6B7280',b:'#E5E7EB'}};
+      const em=emap[d.engagement]||emap['COLD'];
+      return`<tr>
+        <td><div style="font-weight:700;color:#0D1120;margin-bottom:.1rem">${d.prospect}</div><div style="font-size:.67rem;color:#6B75A0">IGNITE: ${d.ignite_stage} · ICP: ${d.icp_score}/100</div></td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:#0D1120">${fmt(d.value)}</td>
+        <td><div style="display:flex;align-items:center;gap:.35rem"><div style="width:48px;height:5px;background:#E8ECF4;border-radius:3px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${d.probability}%;background:${d.probability>=75?'#047857':d.probability>=50?'#D97706':'#B91C1C'};border-radius:3px"></div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:700">${d.probability}%</span></div><div style="font-size:.6rem;color:#6B75A0;margin-top:.15rem">T2: ${d.t2_yes}/10 · T3: ${d.t3_yes}/5</div></td>
+        <td><span style="font-size:.6rem;font-weight:700;padding:.18rem .42rem;border-radius:4px;background:${vm.bg};color:${vm.c};border:1px solid ${vm.b}">${d.verdict}</span></td>
+        <td><span style="font-size:.6rem;font-weight:700;padding:.18rem .42rem;border-radius:4px;background:${em.bg};color:${em.c};border:1px solid ${em.b}">${d.engagement}</span></td>
+        <td style="font-size:.75rem;color:#3A4260">${d.closeDate}</td>
+      </tr>`;
+    }).join('');
+    const tv=list.reduce((s,d)=>s+d.value,0);
+    const wv=list.reduce((s,d)=>s+d.value*(d.probability/100),0);
+    return`<table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F1F3F8">
+      <th style="padding:.5rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0;text-align:left;border-bottom:2px solid #DDE2EE">Deal / Prospect</th>
+      <th style="padding:.5rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0;border-bottom:2px solid #DDE2EE">Value</th>
+      <th style="padding:.5rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0;border-bottom:2px solid #DDE2EE">Probability</th>
+      <th style="padding:.5rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0;border-bottom:2px solid #DDE2EE">Verdict</th>
+      <th style="padding:.5rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0;border-bottom:2px solid #DDE2EE">Engagement</th>
+      <th style="padding:.5rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0;border-bottom:2px solid #DDE2EE">Close Date</th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <div style="background:#F1F3F8;display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid #DDE2EE">
+      <div style="padding:.6rem .9rem"><div style="font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0">Total Value</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.1rem;color:#0D1120">${fmt(tv)}</div></div>
+      <div style="padding:.6rem .9rem"><div style="font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0">Weighted</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.1rem;color:#047857">${fmt(wv)}</div></div>
+      <div style="padding:.6rem .9rem"><div style="font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6B75A0">Deals</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.1rem;color:#1D4ED8">${list.length}</div></div>
+    </div>`;
+  }
+
+  const riskHTML=risks.filter(r=>r.deal||r.body).map(r=>`
+    <div style="display:flex;align-items:flex-start;gap:.65rem;padding:.65rem .85rem;border-radius:7px;border:1px solid ${r.sev==='red'?'#FECACA':'#FDE68A'};background:${r.sev==='red'?'#FEF2F2':'#FFFBEB'};margin-bottom:.5rem">
+      <span style="font-size:.9rem">${r.sev==='red'?'🚨':'⚠️'}</span>
+      <div><div style="font-weight:700;font-size:.82rem;color:${r.sev==='red'?'#B91C1C':'#D97706'};margin-bottom:.15rem">${r.deal}</div><div style="font-size:.77rem;color:#3A4260;line-height:1.4">${r.body}</div></div>
+    </div>`).join('');
+
+  const meet1=document.getElementById('meet1')?.value||'';const meet1s=document.getElementById('meet1_s')?.value||'WARM';
+  const meet2=document.getElementById('meet2')?.value||'';const meet2s=document.getElementById('meet2_s')?.value||'WARM';
+  const meet3=document.getElementById('meet3')?.value||'';const meet3s=document.getElementById('meet3_s')?.value||'WARM';
+  function mrow(txt,st){if(!txt)return'';const sm={'SUPER HOT':{bg:'#FEF2F2',c:'#B91C1C',b:'#FECACA'},'HOT':{bg:'#FEF2F2',c:'#B91C1C',b:'#FECACA'},'WARM':{bg:'#FFFBEB',c:'#D97706',b:'#FDE68A'},'COLD':{bg:'#F9FAFB',c:'#6B7280',b:'#E5E7EB'}};const m=sm[st]||sm['WARM'];return`<div style="display:flex;gap:.65rem;padding:.5rem .6rem;border-radius:6px;border:1px solid #DDE2EE;background:#F9FAFB;margin-bottom:.4rem"><div style="flex:1;font-size:.78rem;color:#3A4260;line-height:1.4">${txt}</div><span style="font-size:.6rem;font-weight:700;padding:.18rem .4rem;border-radius:4px;background:${m.bg};color:${m.c};border:1px solid ${m.b};white-space:nowrap">${st}</span></div>`;}
+
+  const H=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Weekly Sales Intelligence Report · W${wn} ${yr}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--ink:#0A0C12;--paper:#F8F9FC;--s1:#FFFFFF;--s2:#F1F3F8;--b1:#DDE2EE;--t1:#0D1120;--t2:#3A4260;--t3:#6B75A0;--t4:#A0AABF;--amber:#D97706;--ag:#FFFBEB;--green:#047857;--gg:#ECFDF5;--red:#B91C1C;--rg:#FEF2F2;--blue:#1D4ED8;--bg:#EFF6FF}html{background:var(--paper);print-color-adjust:exact;-webkit-print-color-adjust:exact}body{font-family:'IBM Plex Sans',sans-serif;background:var(--paper);color:var(--t1);font-size:14px;line-height:1.5}@media print{.np{display:none!important}body{font-size:11px}.pb{page-break-before:always}.sec{border:1px solid #ccc!important;box-shadow:none!important}}.rh{background:var(--ink);color:#fff;padding:2rem 2.5rem;position:relative;overflow:hidden}.rh::before{content:'';position:absolute;top:-40px;right:-40px;width:280px;height:280px;background:radial-gradient(circle,rgba(245,158,11,.15),transparent 70%);pointer-events:none}.rht{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}.rhl .sf{font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#D97706;margin-bottom:.25rem}.rhl .ttl{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:#fff;line-height:1.1}.rhl .sub{font-size:.75rem;color:#8892B0;margin-top:.2rem}.rc{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.85rem 1.1rem;display:flex;gap:1rem;align-items:center;max-width:480px;margin-top:.65rem}.ra{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#D97706,#92400E);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex-shrink:0}.rhr{text-align:right}.rw{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:#64748B;letter-spacing:1px;margin-bottom:.2rem}.rb{background:rgba(209,250,229,.15);border:1px solid rgba(167,243,208,.3);color:#A7F3D0;font-size:.62rem;font-weight:700;letter-spacing:1.5px;padding:.2rem .6rem;border-radius:4px;text-transform:uppercase;display:inline-block}.ks{display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.08)}.kp{text-align:center}.kv{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#fff;line-height:1}.kl{font-size:.58rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#64748B;margin-top:.2rem}.ksep{width:1px;background:rgba(255,255,255,.06)}.pg{max-width:1100px;margin:0 auto;padding:1.5rem}.sec{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;margin-bottom:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,.06)}.sh{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.25rem;border-bottom:1px solid var(--b1)}.shl{display:flex;align-items:center;gap:.65rem}.str{width:4px;height:28px;border-radius:2px;flex-shrink:0}.se{font-size:.55rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--t4)}.st{font-size:.95rem;font-weight:700;color:var(--t1);margin-top:.1rem}.shr{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}.bdg{font-size:.62rem;font-weight:700;padding:.22rem .6rem;border-radius:5px;border:1px solid;white-space:nowrap}.bg{background:var(--gg);color:var(--green);border-color:#A7F3D0}.ba{background:var(--ag);color:var(--amber);border-color:#FDE68A}.bb{background:var(--bg);color:var(--blue);border-color:#BFDBFE}.bgr{background:var(--s2);color:var(--t3);border-color:var(--b1)}.sb2{padding:1.1rem 1.25rem}.tc{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.at{width:100%;border-collapse:collapse}.at td{padding:.35rem .5rem;border-bottom:1px solid var(--b1);font-size:.8rem}.nt{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--t2);line-height:1.7;font-style:italic}.mn{background:var(--bg);border:1px solid #BFDBFE;border-radius:8px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.77rem;color:var(--t2);line-height:1.6}.mn-t{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:.4rem}.qt{background:var(--ink);border-radius:10px;padding:1.25rem 1.5rem;color:#fff}.qbr{display:flex;align-items:center;gap:.75rem;margin-bottom:.4rem}.qbt{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}.qbf{height:100%;border-radius:4px}.pr{background:#fff;border-bottom:1px solid #e5e7eb;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between}.pb2{background:#D97706;color:#fff;border:none;padding:.55rem 1.25rem;border-radius:6px;font-weight:700;font-size:.82rem;cursor:pointer}.sr{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--b1)}.sl{border-bottom:1px solid var(--b1);height:32px;margin-bottom:.35rem}.slbl{font-size:.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t4)}</style>
+</head><body>
+<div class="pr np"><div><div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#64748B">IGNITE_APEX · Weekly Pipeline Report · W${wn} ${yr}</div><div style="font-size:.62rem;color:#374151">Verdicts sourced from qualification gates · <strong style="color:#D97706">Ctrl+P / Cmd+P → Save as PDF</strong></div></div><button class="pb2" onclick="window.print()">🖨 Print / Export PDF</button></div>
+<div class="rh">
+  <div class="rht">
+    <div class="rhl">
+      <div class="sf">IGNITE_APEX · Qualification-Driven Sales Intelligence</div>
+      <div class="ttl">Weekly Sales Intelligence Report</div>
+      <div class="sub">Engagement · Pipeline · Weighted Forecast · Risk Intelligence</div>
+      <div class="rc"><div class="ra">${initials}</div><div><div style="font-weight:700;font-size:.9rem;color:#fff">${repName}</div><div style="font-size:.68rem;color:#8892B0;margin-top:.1rem">${repRole}</div><div style="font-size:.65rem;color:#64748B;margin-top:.2rem">Annual Quota: <strong style="color:#D97706">${fmt(quota)}</strong> · Closed YTD: <strong style="color:#D97706">${fmt(closedYTD)}</strong></div></div></div>
+    </div>
+    <div class="rhr">
+      <div class="rw">WEEK ${wn} · ${document.getElementById('week_dates')?.value||yr}</div>
+      <div class="rw">Generated: ${new Date().toLocaleDateString('en-SG',{day:'2-digit',month:'short',year:'numeric'})}</div>
+      <div class="rb">CONFIDENTIAL · INTERNAL USE ONLY</div>
+      <div style="margin-top:.65rem"><div style="font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#374151;margin-bottom:.2rem">Forecast Accuracy</div><div style="font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:700;color:#D97706;line-height:1">${fa}%</div><div style="font-size:.6rem;color:#374151">3-week rolling average</div></div>
+    </div>
+  </div>
+  <div class="ks">
+    <div class="kp"><div class="kv" style="color:#D97706">${fmt(byH['7'].reduce((s,d)=>s+d.value,0))}</div><div class="kl">Commit / 7-Day</div></div>
+    <div class="ksep"></div>
+    <div class="kp"><div class="kv" style="color:#10B981">${fmt(byH['30'].reduce((s,d)=>s+d.value,0))}</div><div class="kl">Best Case / 30-Day</div></div>
+    <div class="ksep"></div>
+    <div class="kp"><div class="kv" style="color:#60A5FA">${fmt(byH['90'].reduce((s,d)=>s+d.value,0))}</div><div class="kl">Pipeline+ / 90-Day</div></div>
+    <div class="ksep"></div>
+    <div class="kp"><div class="kv" style="color:#A78BFA">${fmt(byH['180'].reduce((s,d)=>s+d.value,0))}</div><div class="kl">Pipeline / 180+</div></div>
+    <div class="ksep"></div>
+    <div class="kp"><div class="kv" style="color:#FCD34D">${fmt(wtdVal)}</div><div class="kl">Wtd. Forecast</div></div>
+    <div class="ksep"></div>
+    <div class="kp"><div class="kv" style="color:#F87171">${fmt(committed)}</div><div class="kl">Committed</div></div>
+  </div>
+</div>
+<div class="pg">
+${narrative?`<div class="nt">"${narrative}"</div>`:''}
+<div class="mn"><div class="mn-t">IGNITE_APEX Qualification-Driven Pipeline</div>All verdicts, probabilities, and engagement statuses are <strong>system-determined from qualification gates</strong> — not rep-entered. <strong>Commit 90%</strong> = T1 4+/5 · T2 10/10 · T3 5/5. <strong>Best Case 65%</strong> = T2 7–9/10. <strong>Pipeline+ 40%</strong> = T2 5–6/10. <strong>Pipeline Only 20%</strong> = T2 1–4/10.</div>
+
+<div class="sec"><div class="sh"><div class="shl"><div class="str" style="background:#3B82F6"></div><div><div class="se">Section 1 · Week ${wn}</div><div class="st">Engagement & Activity Report</div></div></div><div class="shr"><span class="bdg ${scoreDelta>=0?'bg':'bgr'}">W${parseInt(wn)-1}: ${scoreLast} pts</span><span class="bdg ${scoreThis>=scoreLast?'bg':'ba'}">W${wn}: ${scoreThis} pts ${scoreDelta>0?'↑ +'+scoreDelta:scoreDelta<0?'↓ '+Math.abs(scoreDelta):'→'}</span></div></div>
+<div class="sb2"><div class="tc"><table class="at"><thead><tr><th style="font-size:.57rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);padding:.35rem .5rem;border-bottom:2px solid var(--b1)">Activity</th><th style="font-size:.57rem;font-weight:700;text-align:right;color:var(--t3);padding:.35rem .5rem;border-bottom:2px solid var(--b1)">This Week</th><th style="font-size:.57rem;font-weight:700;text-align:right;color:var(--t3);padding:.35rem .5rem;border-bottom:2px solid var(--b1)">vs Prev</th></tr></thead><tbody>${ACTS.map(m=>actRow(m.label,act[m.id+'_this'],act[m.id+'_last'])).join('')}</tbody></table>
+<div><div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.65rem">Top Meetings</div>${mrow(meet1,meet1s)}${mrow(meet2,meet2s)}${mrow(meet3,meet3s)}</div></div></div></div>
+
+<div class="sec"><div class="sh"><div class="shl"><div class="str" style="background:#DC2626"></div><div><div class="se">Section 2 · This Week</div><div class="st">Commit Forecast — Next 7 Days</div></div></div><div class="shr"><span class="bdg" style="background:#FEF2F2;color:#B91C1C;border-color:#FECACA">${fmt(byH['7'].reduce((s,d)=>s+d.value,0))} · ${byH['7'].length} Deal${byH['7'].length!==1?'s':''}</span></div></div><div class="sb2" style="padding:0">${dtbl(byH['7'])}</div></div>
+
+<div class="sec pb"><div class="sh"><div class="shl"><div class="str" style="background:#047857"></div><div><div class="se">Section 3 · This Month</div><div class="st">Best Case — 30 Days</div></div></div><div class="shr"><span class="bdg bg">${fmt(byH['30'].reduce((s,d)=>s+d.value,0))} · ${byH['30'].length} Deal${byH['30'].length!==1?'s':''}</span></div></div><div class="sb2" style="padding:0">${dtbl(byH['30'])}</div></div>
+
+<div class="sec"><div class="sh"><div class="shl"><div class="str" style="background:#1D4ED8"></div><div><div class="se">Section 4 · This Quarter</div><div class="st">Pipeline+ — 90 Days</div></div></div><div class="shr"><span class="bdg bb">${fmt(byH['90'].reduce((s,d)=>s+d.value,0))} · ${byH['90'].length} Deal${byH['90'].length!==1?'s':''}</span></div></div><div class="sb2" style="padding:0">${dtbl(byH['90'])}</div></div>
+
+<div class="sec"><div class="sh"><div class="shl"><div class="str" style="background:#6D28D9"></div><div><div class="se">Section 5 · Beyond Quarter</div><div class="st">Pipeline Only — 180+ Days</div></div></div><div class="shr"><span class="bdg" style="background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE">${fmt(byH['180'].reduce((s,d)=>s+d.value,0))} · ${byH['180'].length} Deal${byH['180'].length!==1?'s':''}</span></div></div><div class="sb2" style="padding:0">${dtbl(byH['180'])}</div></div>
+
+<div class="sec pb"><div class="sh"><div class="shl"><div class="str" style="background:#D97706"></div><div><div class="se">Section 6 · Forecast Intelligence</div><div class="st">Weighted Forecast Model</div></div></div><div class="shr"><span class="bdg ba">Weighted: ${fmt(wtdVal)}</span></div></div>
+<div class="sb2">
+<div style="background:var(--gg);border:1px solid #A7F3D0;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem"><div><div style="font-size:.62rem;font-weight:700;color:var(--green)">QUALIFICATION-DERIVED FORECAST · IGNITE_APEX STANDARD</div><div style="font-size:.65rem;color:var(--t3);margin-top:.1rem">Probabilities set by T2/T3 scores — not rep estimates</div></div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--t1)">${fa}% Rolling Accuracy</div></div>
+<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--s2)"><th style="padding:.45rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);text-align:left;border-bottom:2px solid var(--b1)">Horizon</th><th style="padding:.45rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);border-bottom:2px solid var(--b1)">Category</th><th style="padding:.45rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);border-bottom:2px solid var(--b1)">Deals</th><th style="padding:.45rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);text-align:right;border-bottom:2px solid var(--b1)">Total Value</th><th style="padding:.45rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);text-align:right;border-bottom:2px solid var(--b1)">Avg Prob</th><th style="padding:.45rem .75rem;font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);text-align:right;border-bottom:2px solid var(--b1)">Weighted</th></tr></thead><tbody>
+${[{h:'7',lbl:'Next 7 Days',cat:'Commit',col:'#047857'},{h:'30',lbl:'30-Day',cat:'Best Case',col:'#D97706'},{h:'90',lbl:'90-Day',cat:'Pipeline+',col:'#1D4ED8'},{h:'180',lbl:'180+ Day',cat:'Pipeline Only',col:'#6D28D9'}].map(({h,lbl,cat,col})=>{const l=byH[h];if(!l.length)return'';const tv=l.reduce((s,d)=>s+d.value,0);const ap=l.length>0?Math.round(l.reduce((s,d)=>s+d.probability,0)/l.length):0;const wv=l.reduce((s,d)=>s+d.value*(d.probability/100),0);return`<tr><td style="padding:.48rem .75rem;font-weight:600;color:${col};font-size:.8rem">${lbl}</td><td style="padding:.48rem .75rem;font-size:.78rem;color:var(--t2)">${cat}</td><td style="padding:.48rem .75rem;font-size:.78rem">${l.length}</td><td style="padding:.48rem .75rem;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.78rem;text-align:right">${fmt(tv)}</td><td style="padding:.48rem .75rem;font-family:'IBM Plex Mono',monospace;font-size:.78rem;text-align:right">${ap}%</td><td style="padding:.48rem .75rem;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.78rem;text-align:right;color:#047857">${fmt(wv)}</td></tr>`;}).join('')}
+<tr style="background:var(--ink)"><td style="padding:.5rem .75rem;color:#fff;font-weight:700;font-size:.82rem" colspan="3">TOTAL WEIGHTED FORECAST</td><td style="padding:.5rem .75rem;font-family:'IBM Plex Mono',monospace;font-weight:700;color:#fff;text-align:right">${fmt(totalVal)}</td><td style="color:#fff;text-align:right;padding:.5rem .75rem">—</td><td style="padding:.5rem .75rem;font-family:'IBM Plex Mono',monospace;font-weight:700;color:#FCD34D;text-align:right">${fmt(wtdVal)}</td></tr>
+</tbody></table></div></div>
+
+<div class="sec"><div class="sh"><div class="shl"><div class="str" style="background:#6D28D9"></div><div><div class="se">Section 7 · Revenue Intelligence</div><div class="st">Quota Attainment Tracker</div></div></div><div class="shr"><span class="bdg" style="background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE">Quota: ${fmt(quota)}</span></div></div>
+<div class="sb2"><div class="qt">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+<div><div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#64748B;margin-bottom:.2rem">Annual Quota</div><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:#fff;line-height:1">${fmt(quota)}</div></div>
+<div style="text-align:right"><div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#64748B;margin-bottom:.2rem">YTD Attainment</div><div style="font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:700;color:${wtdPct>=100?'#10B981':wtdPct>=70?'#D97706':'#EF4444'}">${wtdPct}%</div></div></div>
+${[{lbl:'Closed YTD',val:closedYTD,pct:quota>0?Math.min(Math.round(closedYTD/quota*100),100):0,col:'#10B981'},{lbl:'Committed (This Month)',val:committed,pct:quota>0?Math.min(Math.round(committed/(quota/12)*100),100):0,col:'#D97706'},{lbl:'Best Case (This Month)',val:bestcase,pct:quota>0?Math.min(Math.round(bestcase/(quota/12)*100),100):0,col:'#3B82F6'},{lbl:'Total Wtd. Forecast',val:wtdVal,pct:quota>0?Math.min(Math.round(wtdVal/quota*100),100):0,col:'#8B5CF6'}].map(r=>`<div class="qbr"><div style="font-size:.65rem;font-weight:600;color:#64748B;width:180px;flex-shrink:0">${r.lbl}</div><div class="qbt"><div class="qbf" style="width:${r.pct}%;background:${r.col}"></div></div><div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:600;width:120px;text-align:right;color:${r.col}">${fmt(r.val)} (${r.pct}%)</div></div>`).join('')}
+</div></div></div>
+
+${riskHTML?`<div class="sec pb"><div class="sh"><div class="shl"><div class="str" style="background:#B91C1C"></div><div><div class="se">Section 8 · Pipeline Health</div><div class="st">Risk Flags — Qualification Gap Detection</div></div></div><div class="shr"><span class="bdg" style="background:#FEF2F2;color:#B91C1C;border-color:#FECACA">${risks.filter(r=>r.deal||r.body).length} Flag${risks.filter(r=>r.deal||r.body).length!==1?'s':''}</span></div></div><div class="sb2">${riskHTML}</div></div>`:''}
+
+<div style="padding:1.25rem 0 .5rem"><div class="sr"><div><div class="sl"></div><div style="font-weight:600;font-size:.82rem;color:var(--t2);margin-bottom:.1rem">${repName}</div><div class="slbl">${repRole.split('·')[0]?.trim()||'Account Executive'}</div></div><div><div class="sl"></div><div style="font-weight:600;font-size:.82rem;color:var(--t2);margin-bottom:.1rem">Sales Manager / VP Sales</div><div class="slbl">Reviewed & Approved</div></div></div>
+<div style="margin-top:1.5rem;text-align:center;font-size:.65rem;color:var(--t4)">IGNITE_APEX Sales Operating System · Qualification-Driven Pipeline Intelligence · W${wn} ${yr} · Confidential</div></div>
+
+</div></body></html>`;
+
+  const w=window.open('','_blank');w.document.write(H);w.document.close();
+}
+
+buildActivityGrid();
+DR_reloadDeals();
+loadData();
+setTimeout(()=>{
+  // Restore deal values after deals are rendered
+  loadedDeals.forEach(d=>{
+    const dv=dealExtra[d.id];
+    if(dv){
+      const vi=document.getElementById('val_'+d.id);if(vi)vi.value=dv.value||'';
+      const ci=document.getElementById('close_'+d.id);if(ci)ci.value=dv.closeDate||'';
+    }
+  });
+  updateTotal();
+  // Auto-populate last week after deals render
+  autoPopulateLastWeek();
+},400);
+// Auto-save on input — but skip readonly fields
+document.addEventListener('input',(e)=>{
+  if(e.target.readOnly) return;
+  clearTimeout(window._wt);
+  window._wt=setTimeout(saveData,1500);
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script src="../nav.js"></script>
+</body>
+</html>

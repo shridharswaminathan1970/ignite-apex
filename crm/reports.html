@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{margin-bottom:2rem}
+.page-title{font-size:2rem;font-weight:700;margin-bottom:.5rem}
+.page-subtitle{color:var(--t3);font-size:.9rem}
+
+.report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem}
+.report-card{background:var(--s1);border:2px solid var(--b1);border-radius:12px;padding:1.5rem;cursor:pointer;transition:all .2s}
+.report-card:hover{border-color:var(--amber);transform:translateY(-2px)}
+.report-card.active{border-color:var(--amber);background:linear-gradient(135deg,var(--s1),rgba(245,158,11,.05))}
+.report-icon{font-size:2rem;margin-bottom:.75rem}
+.report-name{font-size:1.1rem;font-weight:700;color:var(--t1);margin-bottom:.5rem}
+.report-description{font-size:.8rem;color:var(--t3);line-height:1.5}
+
+.controls-section{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+.controls-title{font-size:1rem;font-weight:700;margin-bottom:1rem;color:var(--amber)}
+.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem}
+.form-group{display:flex;flex-direction:column;gap:.5rem}
+.form-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)}
+.form-input,.form-select{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.65rem;color:var(--t1);font-size:.85rem;font-family:inherit}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--amber)}
+
+.action-buttons{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-primary{background:var(--amber);color:#000;border:none;padding:.75rem 1.5rem;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-primary:hover{background:var(--amber2)}
+.btn-secondary{background:var(--s2);color:var(--t1);border:1px solid var(--b1);padding:.75rem 1.5rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-secondary:hover{border-color:var(--amber)}
+
+.results-section{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem}
+.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--b1)}
+.results-title{font-size:1.2rem;font-weight:700}
+.results-meta{font-size:.75rem;color:var(--t3)}
+
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2)}
+th{padding:.75rem;text-align:left;font-size:.7rem;text-transform:uppercase;color:var(--t3);font-weight:700;border-bottom:2px solid var(--b1)}
+td{padding:.75rem;font-size:.85rem;border-bottom:1px solid var(--b1)}
+tr:hover{background:var(--s2)}
+
+.empty-state{text-align:center;padding:3rem;color:var(--t3)}
+.loading{text-align:center;padding:3rem;color:var(--t3)}
+
+.badge{display:inline-block;padding:.3rem .75rem;border-radius:6px;font-size:.7rem;font-weight:700}
+.badge.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.badge.danger{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+.badge.warning{background:#2D1F00;color:var(--amber);border:1px solid var(--amber)}
+.badge.info{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <div style="display:flex;align-items:center;gap:2rem">
+    <nav class="tb-nav">
+      <a href="./index.html">Dashboard</a>
+      <a href="./leads.html">Leads</a>
+      <a href="./pipeline.html">Pipeline</a>
+      <a href="./accounts.html">Accounts</a>
+      <a href="./contacts.html">Contacts</a>
+      <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+    </nav>
+    <div id="user-menu-container"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <h1 class="page-title">📊 Reports</h1>
+    <p class="page-subtitle">Generate insights, export data, and analyze performance</p>
+  </div>
+
+  <!-- Report Type Selection -->
+  <div class="report-grid" id="report-grid">
+    <div class="report-card active" onclick="selectReport('pipeline_forecast')">
+      <div class="report-icon">📈</div>
+      <div class="report-name">Pipeline Forecast</div>
+      <div class="report-description">Weighted pipeline value by stage with close date projections</div>
+    </div>
+    <div class="report-card" onclick="selectReport('win_loss')">
+      <div class="report-icon">🎯</div>
+      <div class="report-name">Win/Loss Analysis</div>
+      <div class="report-description">Closed deal analysis with win rates by stage, rep, and product</div>
+    </div>
+    <div class="report-card" onclick="selectReport('sales_activity')">
+      <div class="report-icon">⚡</div>
+      <div class="report-name">Sales Activity</div>
+      <div class="report-description">Calls, emails, meetings, and touchpoints by rep and date</div>
+    </div>
+    <div class="report-card" onclick="selectReport('rep_performance')">
+      <div class="report-icon">👤</div>
+      <div class="report-name">Rep Performance</div>
+      <div class="report-description">Individual performance metrics, quotas, and attainment</div>
+    </div>
+    <div class="report-card" onclick="selectReport('deal_velocity')">
+      <div class="report-icon">⏱️</div>
+      <div class="report-name">Deal Velocity</div>
+      <div class="report-description">Average time in each stage and total sales cycle length</div>
+    </div>
+    <div class="report-card" onclick="selectReport('gate_compliance')">
+      <div class="report-icon">✅</div>
+      <div class="report-name">Gate Compliance</div>
+      <div class="report-description">IGNITE gate completion rates and qualification quality</div>
+    </div>
+  </div>
+
+  <!-- Filters & Controls -->
+  <div class="controls-section">
+    <div class="controls-title">Report Filters & Options</div>
+    <div class="filter-grid">
+      <div class="form-group">
+        <label class="form-label">Date Range</label>
+        <select class="form-select" id="filter-date-range" onchange="updateDateInputs()">
+          <option value="this_month">This Month</option>
+          <option value="last_month">Last Month</option>
+          <option value="this_quarter" selected>This Quarter</option>
+          <option value="last_quarter">Last Quarter</option>
+          <option value="this_year">This Year</option>
+          <option value="last_year">Last Year</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+      <div class="form-group" id="custom-date-start" style="display:none">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-input" id="filter-start-date">
+      </div>
+      <div class="form-group" id="custom-date-end" style="display:none">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-input" id="filter-end-date">
+      </div>
+      <div class="form-group" id="filter-owner-group">
+        <label class="form-label">Owner</label>
+        <select class="form-select" id="filter-owner">
+          <option value="all">All Reps</option>
+          <option value="me">My Deals Only</option>
+        </select>
+      </div>
+      <div class="form-group" id="filter-stage-group" style="display:none">
+        <label class="form-label">Stage</label>
+        <select class="form-select" id="filter-stage">
+          <option value="all">All Stages</option>
+          <option value="qualify">Qualify</option>
+          <option value="discover">Discover</option>
+          <option value="validate">Validate</option>
+          <option value="close">Close</option>
+        </select>
+      </div>
+      <div class="form-group" id="filter-team-group" style="display:none">
+        <label class="form-label">Team</label>
+        <select class="form-select" id="filter-team">
+          <option value="all">All Teams</option>
+        </select>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-primary" onclick="generateReport()">
+        🔄 Generate Report
+      </button>
+      <button class="btn-secondary" onclick="exportCSV()" id="export-csv-btn" disabled>
+        📥 Export CSV
+      </button>
+      <button class="btn-secondary" onclick="emailReport()" id="email-btn" disabled>
+        📧 Email Report
+      </button>
+      <button class="btn-secondary" onclick="customizeReport()" id="customize-btn">
+        ⚙️ Customize
+      </button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="results-section" style="display:none">
+    <div class="results-header">
+      <div>
+        <div class="results-title" id="results-title">Report Results</div>
+        <div class="results-meta" id="results-meta">Generated on ...</div>
+      </div>
+    </div>
+    <div class="table-container" id="results-table-container">
+      <!-- Dynamic table will be inserted here -->
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="./crm-v2-client.js"></script>
+<script src="../components/user-menu.js"></script>
+<script>
+window.IAUserMenu.render('user-menu-container');
+
+let currentUser = null;
+let currentReport = 'pipeline_forecast';
+let reportData = null;
+
+(async function init() {
+  await waitForSupabaseClient();
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
+
+  if (!session) {
+    window.location.href = '../app/auth.html';
+    return;
+  }
+
+  const { data: profile } = await window.supabaseClient
+    .from('users')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!profile) {
+    window.location.href = '../app/auth.html';
+    return;
+  }
+
+  currentUser = profile;
+
+  // Show admin link for authorized roles
+  if (['super_duper_admin', 'admin', 'admin_m'].includes(profile.role)) {
+    document.getElementById('admin-link').style.display = 'inline-block';
+  }
+
+  // Load team and user options
+  await loadFilterOptions();
+})();
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) { resolve(); return; }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) { clearInterval(interval); resolve(); }
+    }, 50);
+  });
+}
+
+async function loadFilterOptions() {
+  // Load users for owner filter
+  const { data: users } = await window.supabaseClient
+    .from('users')
+    .select('id, name, email')
+    .eq('org_id', currentUser.org_id)
+    .eq('is_active', true)
+    .order('name');
+
+  const ownerSelect = document.getElementById('filter-owner');
+  if (users) {
+    users.forEach(u => {
+      const option = document.createElement('option');
+      option.value = u.id;
+      option.textContent = u.name || u.email;
+      ownerSelect.appendChild(option);
+    });
+  }
+
+  // Load teams
+  const { data: teams } = await window.supabaseClient
+    .from('teams')
+    .select('id, name')
+    .eq('org_id', currentUser.org_id)
+    .order('name');
+
+  const teamSelect = document.getElementById('filter-team');
+  if (teams) {
+    teams.forEach(t => {
+      const option = document.createElement('option');
+      option.value = t.id;
+      option.textContent = t.name;
+      teamSelect.appendChild(option);
+    });
+  }
+}
+
+function selectReport(reportType) {
+  currentReport = reportType;
+
+  // Update UI
+  document.querySelectorAll('.report-card').forEach(card => card.classList.remove('active'));
+  event.target.closest('.report-card').classList.add('active');
+
+  // Show/hide relevant filters
+  document.getElementById('filter-stage-group').style.display =
+    ['pipeline_forecast', 'deal_velocity'].includes(reportType) ? 'block' : 'none';
+
+  document.getElementById('filter-team-group').style.display =
+    ['rep_performance', 'sales_activity'].includes(reportType) ? 'block' : 'none';
+
+  // Clear previous results
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('export-csv-btn').disabled = true;
+  document.getElementById('email-btn').disabled = true;
+}
+
+function updateDateInputs() {
+  const range = document.getElementById('filter-date-range').value;
+  const customStart = document.getElementById('custom-date-start');
+  const customEnd = document.getElementById('custom-date-end');
+
+  if (range === 'custom') {
+    customStart.style.display = 'block';
+    customEnd.style.display = 'block';
+  } else {
+    customStart.style.display = 'none';
+    customEnd.style.display = 'none';
+  }
+}
+
+async function generateReport() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+
+  try {
+    // Get filter values
+    const dateRange = document.getElementById('filter-date-range').value;
+    const owner = document.getElementById('filter-owner').value;
+    const stage = document.getElementById('filter-stage').value;
+    const team = document.getElementById('filter-team').value;
+
+    // Calculate date range
+    const { startDate, endDate } = getDateRange(dateRange);
+
+    // Generate report based on type
+    let data;
+    switch(currentReport) {
+      case 'pipeline_forecast':
+        data = await generatePipelineForecast(startDate, endDate, owner, stage);
+        break;
+      case 'win_loss':
+        data = await generateWinLossAnalysis(startDate, endDate, owner);
+        break;
+      case 'sales_activity':
+        data = await generateSalesActivity(startDate, endDate, owner, team);
+        break;
+      case 'rep_performance':
+        data = await generateRepPerformance(startDate, endDate, owner, team);
+        break;
+      case 'deal_velocity':
+        data = await generateDealVelocity(startDate, endDate, owner, stage);
+        break;
+      case 'gate_compliance':
+        data = await generateGateCompliance(startDate, endDate, owner);
+        break;
+    }
+
+    reportData = data;
+    renderReport(data);
+
+    document.getElementById('export-csv-btn').disabled = false;
+    document.getElementById('email-btn').disabled = false;
+
+  } catch (err) {
+    alert('Error generating report: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔄 Generate Report';
+  }
+}
+
+function getDateRange(range) {
+  const now = new Date();
+  let startDate, endDate;
+
+  switch(range) {
+    case 'this_month':
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      break;
+    case 'last_month':
+      startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+      break;
+    case 'this_quarter':
+      const quarter = Math.floor(now.getMonth() / 3);
+      startDate = new Date(now.getFullYear(), quarter * 3, 1);
+      endDate = new Date(now.getFullYear(), (quarter + 1) * 3, 0);
+      break;
+    case 'last_quarter':
+      const lastQ = Math.floor(now.getMonth() / 3) - 1;
+      startDate = new Date(now.getFullYear(), lastQ * 3, 1);
+      endDate = new Date(now.getFullYear(), (lastQ + 1) * 3, 0);
+      break;
+    case 'this_year':
+      startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = new Date(now.getFullYear(), 11, 31);
+      break;
+    case 'last_year':
+      startDate = new Date(now.getFullYear() - 1, 0, 1);
+      endDate = new Date(now.getFullYear() - 1, 11, 31);
+      break;
+    case 'custom':
+      startDate = new Date(document.getElementById('filter-start-date').value);
+      endDate = new Date(document.getElementById('filter-end-date').value);
+      break;
+  }
+
+  return {
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0]
+  };
+}
+
+async function generatePipelineForecast(startDate, endDate, owner, stage) {
+  let query = window.supabaseClient
+    .from('opportunities')
+    .select('*')
+    .eq('org_id', currentUser.org_id)
+    .in('stage', ['qualify', 'discover', 'validate', 'close'])
+    .gte('created_at', startDate)
+    .lte('created_at', endDate);
+
+  if (owner === 'me') query = query.eq('owner_id', currentUser.id);
+  else if (owner !== 'all') query = query.eq('owner_id', owner);
+
+  if (stage !== 'all') query = query.eq('stage', stage);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return {
+    title: 'Pipeline Forecast',
+    headers: ['Deal Name', 'Account', 'Stage', 'Value', 'Probability', 'Weighted Value', 'Close Date', 'Owner'],
+    rows: data.map(opp => [
+      opp.name,
+      opp.account_name || '—',
+      opp.stage,
+      `$${(opp.amount || 0).toLocaleString()}`,
+      `${opp.probability || 0}%`,
+      `$${Math.round((opp.amount || 0) * (opp.probability || 0) / 100).toLocaleString()}`,
+      opp.close_date ? new Date(opp.close_date).toLocaleDateString() : '—',
+      opp.owner_name || '—'
+    ]),
+    summary: {
+      total: data.reduce((sum, opp) => sum + (opp.amount || 0), 0),
+      weighted: data.reduce((sum, opp) => sum + (opp.amount || 0) * (opp.probability || 0) / 100, 0),
+      count: data.length
+    }
+  };
+}
+
+async function generateWinLossAnalysis(startDate, endDate, owner) {
+  let query = window.supabaseClient
+    .from('opportunities')
+    .select('*')
+    .eq('org_id', currentUser.org_id)
+    .in('stage', ['won', 'lost'])
+    .gte('updated_at', startDate)
+    .lte('updated_at', endDate);
+
+  if (owner === 'me') query = query.eq('owner_id', currentUser.id);
+  else if (owner !== 'all') query = query.eq('owner_id', owner);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return {
+    title: 'Win/Loss Analysis',
+    headers: ['Deal Name', 'Account', 'Outcome', 'Value', 'Close Date', 'Owner', 'Lost Reason'],
+    rows: data.map(opp => [
+      opp.name,
+      opp.account_name || '—',
+      opp.stage === 'won' ? '✅ Won' : '❌ Lost',
+      `$${(opp.amount || 0).toLocaleString()}`,
+      opp.close_date ? new Date(opp.close_date).toLocaleDateString() : '—',
+      opp.owner_name || '—',
+      opp.lost_reason || '—'
+    ]),
+    summary: {
+      won: data.filter(o => o.stage === 'won').length,
+      lost: data.filter(o => o.stage === 'lost').length,
+      winRate: ((data.filter(o => o.stage === 'won').length / data.length) * 100).toFixed(1),
+      totalWon: data.filter(o => o.stage === 'won').reduce((sum, o) => sum + (o.amount || 0), 0)
+    }
+  };
+}
+
+async function generateSalesActivity(startDate, endDate, owner, team) {
+  let query = window.supabaseClient
+    .from('opportunity_activities')
+    .select('*, opportunities(owner_name, account_name)')
+    .eq('opportunities.org_id', currentUser.org_id)
+    .gte('created_at', startDate)
+    .lte('created_at', endDate)
+    .order('created_at', { ascending: false });
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return {
+    title: 'Sales Activity Report',
+    headers: ['Date', 'Activity Type', 'Description', 'Opportunity', 'Account', 'Rep'],
+    rows: data.map(act => [
+      new Date(act.created_at).toLocaleDateString(),
+      act.activity_type,
+      act.description || '—',
+      act.opportunities?.name || '—',
+      act.opportunities?.account_name || '—',
+      act.opportunities?.owner_name || '—'
+    ]),
+    summary: {
+      total: data.length,
+      calls: data.filter(a => a.activity_type === 'call').length,
+      meetings: data.filter(a => a.activity_type === 'meeting').length,
+      emails: data.filter(a => a.activity_type === 'email').length
+    }
+  };
+}
+
+async function generateRepPerformance(startDate, endDate, owner, team) {
+  // Get all opportunities by rep
+  const { data, error } = await window.supabaseClient
+    .from('opportunities')
+    .select('owner_id, owner_name, stage, amount, probability')
+    .eq('org_id', currentUser.org_id)
+    .gte('created_at', startDate)
+    .lte('created_at', endDate);
+
+  if (error) throw error;
+
+  // Group by owner
+  const repStats = {};
+  data.forEach(opp => {
+    if (!repStats[opp.owner_id]) {
+      repStats[opp.owner_id] = {
+        name: opp.owner_name || 'Unknown',
+        deals: 0,
+        won: 0,
+        lost: 0,
+        pipeline: 0,
+        wonValue: 0
+      };
+    }
+    repStats[opp.owner_id].deals++;
+    if (opp.stage === 'won') {
+      repStats[opp.owner_id].won++;
+      repStats[opp.owner_id].wonValue += opp.amount || 0;
+    } else if (opp.stage === 'lost') {
+      repStats[opp.owner_id].lost++;
+    } else {
+      repStats[opp.owner_id].pipeline += opp.amount || 0;
+    }
+  });
+
+  return {
+    title: 'Rep Performance',
+    headers: ['Rep Name', 'Total Deals', 'Won', 'Lost', 'Win Rate', 'Revenue', 'Pipeline'],
+    rows: Object.values(repStats).map(rep => [
+      rep.name,
+      rep.deals,
+      rep.won,
+      rep.lost,
+      `${((rep.won / (rep.won + rep.lost || 1)) * 100).toFixed(1)}%`,
+      `$${rep.wonValue.toLocaleString()}`,
+      `$${rep.pipeline.toLocaleString()}`
+    ])
+  };
+}
+
+async function generateDealVelocity(startDate, endDate, owner, stage) {
+  const { data, error } = await window.supabaseClient
+    .from('opportunities')
+    .select('name, stage, created_at, close_date, account_name, owner_name')
+    .eq('org_id', currentUser.org_id)
+    .in('stage', ['won', 'lost'])
+    .gte('created_at', startDate)
+    .lte('created_at', endDate);
+
+  if (error) throw error;
+
+  return {
+    title: 'Deal Velocity',
+    headers: ['Deal Name', 'Account', 'Days to Close', 'Outcome', 'Owner'],
+    rows: data.map(opp => {
+      const created = new Date(opp.created_at);
+      const closed = new Date(opp.close_date || opp.created_at);
+      const days = Math.floor((closed - created) / (1000 * 60 * 60 * 24));
+      return [
+        opp.name,
+        opp.account_name || '—',
+        days,
+        opp.stage === 'won' ? '✅ Won' : '❌ Lost',
+        opp.owner_name || '—'
+      ];
+    }),
+    summary: {
+      avgDays: Math.round(data.reduce((sum, opp) => {
+        const days = Math.floor((new Date(opp.close_date || opp.created_at) - new Date(opp.created_at)) / (1000 * 60 * 60 * 24));
+        return sum + days;
+      }, 0) / data.length)
+    }
+  };
+}
+
+async function generateGateCompliance(startDate, endDate, owner) {
+  const { data, error } = await window.supabaseClient
+    .from('opportunities')
+    .select('*')
+    .eq('org_id', currentUser.org_id)
+    .eq('methodology', 'ignite_apex')
+    .gte('created_at', startDate)
+    .lte('created_at', endDate);
+
+  if (error) throw error;
+
+  return {
+    title: 'Gate Compliance Report',
+    headers: ['Deal Name', 'Stage', 'Qualify Gates', 'Discover Gates', 'Validate Gates', 'Owner'],
+    rows: data.map(opp => [
+      opp.name,
+      opp.stage,
+      `${[opp.gate_account_exists, opp.gate_contact_exists, opp.gate_prospect_engaged, opp.gate_quantified_pain].filter(Boolean).length}/4`,
+      `${[opp.gate_economic_buyer_identified, opp.gate_metrics_quantified, opp.gate_champion_emerging, opp.gate_pain_tied_to_outcome].filter(Boolean).length}/4`,
+      `${[opp.gate_demo_delivered, opp.gate_prospect_confirms_fit, opp.gate_decision_criteria_documented, opp.gate_decision_process_documented].filter(Boolean).length}/4`,
+      opp.owner_name || '—'
+    ])
+  };
+}
+
+function renderReport(data) {
+  const resultsSection = document.getElementById('results-section');
+  const titleEl = document.getElementById('results-title');
+  const metaEl = document.getElementById('results-meta');
+  const containerEl = document.getElementById('results-table-container');
+
+  titleEl.textContent = data.title;
+  metaEl.textContent = `Generated on ${new Date().toLocaleString()} • ${data.rows.length} records`;
+
+  let tableHTML = `
+    <table>
+      <thead>
+        <tr>${data.headers.map(h => `<th>${h}</th>`).join('')}</tr>
+      </thead>
+      <tbody>
+        ${data.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+
+  if (data.summary) {
+    tableHTML += `<div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--b1)">
+      <div style="font-size:.8rem;font-weight:700;color:var(--amber);margin-bottom:.75rem">SUMMARY</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem">
+        ${Object.entries(data.summary).map(([key, val]) => `
+          <div>
+            <div style="font-size:.7rem;color:var(--t3);text-transform:uppercase">${key.replace(/([A-Z])/g, ' $1').trim()}</div>
+            <div style="font-size:1.2rem;font-weight:700;color:var(--t1);margin-top:.25rem">${typeof val === 'number' && val > 1000 ? '$' + val.toLocaleString() : val}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+
+  containerEl.innerHTML = tableHTML;
+  resultsSection.style.display = 'block';
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function exportCSV() {
+  if (!reportData) return;
+
+  // Build CSV
+  let csv = reportData.headers.join(',') + '\n';
+  csv += reportData.rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+  // Download
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${currentReport}_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function emailReport() {
+  if (!reportData) return;
+
+  const email = prompt('Enter email address to send report to:', currentUser.email);
+  if (!email) return;
+
+  alert('📧 Email functionality will be implemented with your email service provider (SendGrid, etc.)');
+}
+
+function customizeReport() {
+  alert('⚙️ Report customization (column selection, grouping, sorting) coming soon!');
+}
+</script>
+
+</body>
+</html>

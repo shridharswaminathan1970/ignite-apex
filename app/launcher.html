@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNITE_APEX - Choose Your App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#A855F7;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-org{font-size:.7rem;color:var(--t3);margin-left:.5rem;font-weight:400}
+.user-menu{display:flex;align-items:center;gap:1rem}
+.user-btn{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.5rem 1rem;color:var(--t1);font-size:.75rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;font-weight:600;transition:all .2s}
+.user-btn:hover{background:var(--b1);border-color:var(--amber)}
+.user-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--s1);border:1px solid var(--b1);border-radius:8px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200}
+.user-dropdown.active{display:block}
+.user-info{padding:1rem;border-bottom:1px solid var(--b1)}
+.user-name{font-weight:700;font-size:.85rem;color:var(--t1)}
+.user-email{font-size:.7rem;color:var(--t3);margin-top:.25rem}
+.user-role{font-size:.65rem;color:var(--amber);margin-top:.5rem;text-transform:uppercase;letter-spacing:.5px}
+.dropdown-item{padding:.75rem 1rem;font-size:.8rem;color:var(--t2);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.5rem}
+.dropdown-item:hover{background:var(--s2);color:var(--t1)}
+.dropdown-divider{height:1px;background:var(--b1);margin:.25rem 0}
+
+.container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:3rem 2rem}
+.welcome-section{text-align:center;margin-bottom:3rem}
+.welcome-title{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--t1);margin-bottom:.75rem}
+.welcome-subtitle{font-size:1rem;color:var(--t3)}
+.user-greeting{font-size:1.1rem;color:var(--amber);margin-bottom:2rem;font-weight:600}
+
+.app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem;margin-top:3rem}
+.app-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:2.5rem;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.app-card.locked{opacity:.6;cursor:not-allowed}
+.app-card.locked::after{content:'🔒 LOCKED';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(239,68,68,.9);color:white;padding:.5rem 1.5rem;border-radius:8px;font-size:.9rem;font-weight:700;letter-spacing:1px}
+.app-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--amber),var(--amber2));transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.app-card:not(.locked):hover::before{transform:scaleX(1)}
+.app-card:not(.locked):hover{border-color:var(--amber);transform:translateY(-4px);box-shadow:0 12px 32px rgba(245,158,11,.2)}
+
+.app-icon{font-size:3rem;margin-bottom:1.5rem}
+.app-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--t1);margin-bottom:.75rem}
+.app-description{font-size:.9rem;color:var(--t2);line-height:1.6;margin-bottom:1.5rem}
+.app-features{list-style:none;margin-top:1rem}
+.app-features li{font-size:.8rem;color:var(--t3);padding:.4rem 0;display:flex;align-items:center;gap:.5rem}
+.app-features li::before{content:'✓';color:var(--amber);font-weight:700;font-size:1rem}
+
+.app-badge{display:inline-block;background:var(--amber);color:#000;font-size:.65rem;font-weight:700;letter-spacing:.5px;padding:.35rem .75rem;border-radius:6px;text-transform:uppercase;margin-top:1rem}
+.lock-note{background:rgba(239,68,68,.1);border:1px solid var(--red);border-radius:8px;padding:1rem;margin-top:1rem;font-size:.8rem;color:var(--t2)}
+.lock-note strong{color:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <div class="tb-logo">IGNITE_APEX</div>
+    <div class="tb-org" id="org-name"></div>
+  </div>
+  <div class="user-menu">
+    <button class="user-btn" id="admin-settings-btn" onclick="openAdminPanel()" style="display:none;background:var(--amber);color:#000;padding:.5rem .75rem;border:none;font-weight:700" title="Admin Control Panel">
+      ⚙️ Admin
+    </button>
+    <div style="position:relative">
+      <button class="user-btn" onclick="toggleUserMenu()">
+        <span id="user-name-display">...</span>
+        <span>▼</span>
+      </button>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="user-info">
+          <div class="user-name" id="user-name-full">Loading...</div>
+          <div class="user-email" id="user-email">...</div>
+          <div class="user-role" id="user-role">...</div>
+        </div>
+        <div class="dropdown-item" onclick="viewProfile()">
+          👤 My Profile
+        </div>
+        <div class="dropdown-item" onclick="resetPassword()">
+          🔑 Reset Password
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="logout()" style="color:var(--red)">
+          🚪 Sign Out
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="welcome-section">
+    <h1 class="welcome-title">Welcome to IGNITE_APEX</h1>
+    <p class="user-greeting">Hi, <span id="greeting-name">there</span>!</p>
+    <p class="welcome-subtitle">Choose your application to get started</p>
+  </div>
+
+  <div class="app-grid">
+    <!-- Sales OS App -->
+    <div class="app-card" id="sales-os-card" onclick="launchApp('sales-os')">
+      <div class="app-icon">🎯</div>
+      <h2 class="app-title">IGNITE APEX Sales OS</h2>
+      <p class="app-description">
+        Complete sales methodology framework with IGNITE diagnostic tools, deal qualification, and strategic playbooks.
+      </p>
+      <ul class="app-features">
+        <li>IGNITE Framework (I-G-N-I-T-E stages)</li>
+        <li>3-Tier Qualification Gates (T1, T2, T3)</li>
+        <li>Deal Registry & Forecasting</li>
+        <li>Strategic Playbooks & Scripts</li>
+        <li>Weekly Reporting & Analytics</li>
+      </ul>
+      <div class="app-badge" style="background:var(--green);color:#000">Free - Public Access</div>
+    </div>
+
+    <!-- CRM App -->
+    <div class="app-card" id="crm-card" onclick="launchApp('crm')">
+      <div class="app-icon">💼</div>
+      <h2 class="app-title">IGNITE-APEX CRM</h2>
+      <p class="app-description">
+        Full-featured CRM with lead management, pipeline visualization, opportunity tracking, and team collaboration.
+      </p>
+      <ul class="app-features">
+        <li>Lead Queue with IGNITE Diagnostic</li>
+        <li>6-Stage Pipeline Kanban</li>
+        <li>MEDDPICC Qualification</li>
+        <li>Accounts & Contacts Management</li>
+        <li>Dashboard & Reporting</li>
+      </ul>
+      <div class="app-badge">🔒 Login Required</div>
+      <div class="lock-note" id="crm-lock-note" style="display:none">
+        <strong>CRM Locked</strong> - Contact <a href="mailto:info@shaamelz.com" style="color:var(--amber)">info@shaamelz.com</a> with your company details to get provisioned.
+      </div>
+    </div>
+
+    <!-- B2B0 Outreach App -->
+    <div class="app-card" id="b2b0-card" onclick="launchApp('b2b0')">
+      <div class="app-icon">🚀</div>
+      <h2 class="app-title">B2B Outreach Agent</h2>
+      <p class="app-description">
+        AI-powered sales outreach automation. Import leads, generate personalized sequences, and sync with your CRM.
+      </p>
+      <ul class="app-features">
+        <li>ICP Lead Scoring & Qualification</li>
+        <li>Personalized Email Sequences (AI)</li>
+        <li>LinkedIn Integration & Outreach</li>
+        <li>Reply Tracking & Analytics</li>
+        <li>CRM Bi-Directional Sync</li>
+      </ul>
+      <div class="app-badge" style="background:var(--purple);color:#fff">💎 Paid Add-On (7-Day Trial)</div>
+      <div class="lock-note" id="b2b0-lock-note" style="display:none">
+        <strong>B2B0 Locked</strong> - Independent module. Works with or without CRM. <a href="../pricing.html" style="color:var(--amber)">View Pricing</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script>
+let currentUser = null;
+let supabaseClient = null;
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) {
+      resolve(window.supabaseClient);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) {
+        clearInterval(interval);
+        resolve(window.supabaseClient);
+      }
+    }, 50);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    console.log('[Launcher] Initializing...');
+
+    // Wait for Supabase client to be ready
+    supabaseClient = await waitForSupabaseClient();
+    console.log('[Launcher] Supabase client ready');
+
+    // REQUIRE active session - redirect logged-out users to login
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      console.log('[Launcher] No session - redirecting to login');
+      window.location.replace('./auth.html');
+      return;
+    }
+
+    console.log('[Launcher] Session found:', session.user.email);
+
+    // Fetch user profile with org details
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('users')
+      .select('id, email, name, role, org_id, crm_enabled, account_type')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('[Launcher] Profile error:', profileError);
+      alert('Error loading user profile. Please try logging in again.');
+      await supabaseClient.auth.signOut();
+      window.location.replace('./auth.html');
+      return;
+    }
+
+    console.log('[Launcher] Profile loaded:', profile);
+    currentUser = profile;
+
+    // Get org name and subscription details if user has an org
+    let orgName = null;
+    let subscription = null;
+    if (profile.org_id) {
+      const { data: org } = await supabaseClient
+        .from('organisations')
+        .select('name')
+        .eq('id', profile.org_id)
+        .single();
+
+      if (org) {
+        orgName = org.name;
+      }
+
+      // Get subscription details (for B2B0 entitlement)
+      const { data: sub } = await supabaseClient
+        .from('org_subscriptions')
+        .select('*')
+        .eq('org_id', profile.org_id)
+        .single();
+
+      if (sub) {
+        subscription = sub;
+        console.log('[Launcher] Subscription loaded:', subscription);
+      }
+    }
+
+    // Update UI with user info
+    const firstName = profile.name ? profile.name.split(' ')[0] : profile.email.split('@')[0];
+    document.getElementById('greeting-name').textContent = firstName;
+    document.getElementById('user-name-display').textContent = firstName;
+    document.getElementById('user-name-full').textContent = profile.name || profile.email;
+    document.getElementById('user-email').textContent = profile.email;
+    document.getElementById('user-role').textContent = profile.role.replace(/_/g, ' ');
+
+    if (orgName) {
+      document.getElementById('org-name').textContent = `• ${orgName}`;
+    }
+
+    // Role-based routing and UI gating
+    console.log('[Launcher] Profile loaded, role:', profile.role);
+
+    // Normalize role (handle both 'super_duper_admin' and 'super duper admin' formats)
+    const normalizedRole = profile.role.replace(/\s+/g, '_').toLowerCase();
+    console.log('[Launcher] Normalized role:', normalizedRole);
+
+    // STAGE 3: Auto-redirect based on role
+    if (normalizedRole === 'super_duper_admin') {
+      // Master admin: redirect to master console
+      console.log('[Launcher] Redirecting super_duper_admin to master console');
+      window.location.replace('./master-console.html');
+      return;
+    }
+
+    if (normalizedRole === 'super_admin') {
+      // Company admin: redirect to company dashboard
+      console.log('[Launcher] Redirecting super_admin to company dashboard');
+      window.location.replace('./company-dashboard.html');
+      return;
+    }
+
+    // Team members: admin, admin_m, sdr, account_executive
+    // Show launcher - let them choose between Sales OS and CRM
+    if (['admin', 'admin_m', 'sdr', 'account_executive'].includes(normalizedRole)) {
+      console.log('[Launcher] Showing launcher for team member');
+
+      // Update CRM card based on access
+      const crmCard = document.getElementById('crm-card');
+      const crmLockNote = document.getElementById('crm-lock-note');
+
+      if (profile.crm_enabled) {
+        // CRM enabled - make it clickable
+        crmCard.classList.remove('locked');
+        crmLockNote.style.display = 'none';
+      } else {
+        // CRM locked - keep it locked
+        crmCard.classList.add('locked');
+        crmLockNote.style.display = 'block';
+      }
+
+      // Update B2B0 card based on subscription
+      const b2b0Card = document.getElementById('b2b0-card');
+      const b2b0LockNote = document.getElementById('b2b0-lock-note');
+
+      if (subscription && subscription.b2b0_enabled) {
+        // B2B0 enabled - make it clickable
+        b2b0Card.classList.remove('locked');
+        b2b0LockNote.style.display = 'none';
+      } else {
+        // B2B0 locked
+        b2b0Card.classList.add('locked');
+        b2b0LockNote.style.display = 'block';
+      }
+
+      // Show the launcher (don't auto-redirect)
+      return;
+    }
+
+    // Public users: can only access Sales OS (CRM and B2B0 based on subscription)
+    if (normalizedRole === 'public') {
+      console.log('[Launcher] Public user - checking subscription');
+      const crmCard = document.getElementById('crm-card');
+      const crmLockNote = document.getElementById('crm-lock-note');
+      const b2b0Card = document.getElementById('b2b0-card');
+      const b2b0LockNote = document.getElementById('b2b0-lock-note');
+
+      // Check CRM entitlement
+      if (subscription && subscription.crm_enabled) {
+        crmCard.classList.remove('locked');
+        crmLockNote.style.display = 'none';
+      } else {
+        crmCard.classList.add('locked');
+        crmLockNote.style.display = 'block';
+      }
+
+      // Check B2B0 entitlement (independent of CRM)
+      if (subscription && subscription.b2b0_enabled) {
+        b2b0Card.classList.remove('locked');
+        b2b0LockNote.style.display = 'none';
+      } else {
+        b2b0Card.classList.add('locked');
+        b2b0LockNote.style.display = 'block';
+      }
+
+      return;
+    }
+
+    console.log('[Launcher] No auto-redirect rule matched, showing launcher');
+
+  } catch (err) {
+    console.error('[Launcher] Error:', err);
+    alert('An error occurred. Please try again.');
+    window.location.replace('./auth.html');
+  }
+});
+
+function toggleUserMenu() {
+  const dropdown = document.getElementById('user-dropdown');
+  dropdown.classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.user-menu')) {
+    document.getElementById('user-dropdown')?.classList.remove('active');
+  }
+});
+
+function launchApp(appType) {
+  console.log('[Launcher] Launching app:', appType);
+
+  // Check if clicking on locked CRM
+  if (appType === 'crm') {
+    const crmCard = document.getElementById('crm-card');
+    if (crmCard.classList.contains('locked')) {
+      alert('CRM access is locked. Contact your administrator to enable CRM access.');
+      return;
+    }
+  }
+
+  // Check if clicking on locked B2B0
+  if (appType === 'b2b0') {
+    const b2b0Card = document.getElementById('b2b0-card');
+    if (b2b0Card.classList.contains('locked')) {
+      alert('B2B0 access is locked. This is a paid add-on independent of CRM. View pricing to upgrade.');
+      window.location.href = '/pricing.html';
+      return;
+    }
+  }
+
+  let destination;
+  if (appType === 'sales-os') {
+    destination = '/system/index.html';
+  } else if (appType === 'crm') {
+    destination = '/crm/index.html';
+  } else if (appType === 'b2b0') {
+    destination = '/outreach/index.html';
+  }
+
+  if (!destination) return;
+
+  window.location.href = destination;
+}
+
+function viewProfile() {
+  window.location.href = '/crm/profile.html';
+}
+
+async function resetPassword() {
+  if (!currentUser) return;
+
+  const confirmed = confirm(`Send password reset email to ${currentUser.email}?`);
+  if (!confirmed) return;
+
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(
+      currentUser.email,
+      { redirectTo: `${window.location.origin}/app/reset-password.html` }
+    );
+
+    if (error) throw error;
+    alert('✓ Password reset email sent! Check your inbox.');
+  } catch (err) {
+    console.error('Reset password error:', err);
+    alert('Failed to send reset email. Please try again.');
+  }
+}
+
+async function logout() {
+  const confirmed = confirm('Are you sure you want to sign out?');
+  if (!confirmed) return;
+
+  try {
+    await supabaseClient.auth.signOut();
+    window.location.replace('./auth.html');
+  } catch (err) {
+    console.error('Logout error:', err);
+    alert('Failed to sign out. Please try again.');
+  }
+}
+
+function openAdminPanel() {
+  console.log('[Launcher] Opening admin panel');
+  window.location.href = './admin.html';
+}
+</script>
+
+</body>
+</html>

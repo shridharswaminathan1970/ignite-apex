@@ -1,0 +1,119 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+PADDLE-001,Paddle SDK Loaded,Configuration,None,"1. Open /checkout.html
+2. Open browser console
+3. Check: typeof window.Paddle","window.Paddle object exists
+SDK loaded successfully
+No console errors",,Pending,Critical,SDK verification
+PADDLE-002,Vendor ID Configured,Configuration,None,"1. Open checkout.html source
+2. Find PADDLE_VENDOR_ID constant","PADDLE_VENDOR_ID = '80920'
+Correct vendor ID set",,Pending,Critical,Vendor config check
+PADDLE-003,CRM Product IDs Configured,Configuration,None,"1. Review checkout.html
+2. Check product ID mapping","All 6 CRM products exist:
+- crm_team_mini_monthly: pro_01kvz4nkwvdajsq1xyq9vy30hk
+- crm_team_mini_yearly: pro_01kvz4pgjszq5x6e5x94z3e8gk
+- crm_team_midi_monthly: pro_01kvz4qgekwxb7kegr4tmtcgb1
+- crm_team_midi_yearly: pro_01kvz4r5afnp9w3n6psfn2e0jb
+- crm_team_maxi_monthly: pro_01kvz4s0dkb3bw6zhs76bvp9cn
+- crm_team_maxi_yearly: pro_01kvz4skwxdh52r1a5d7zd7dyg",,Pending,Critical,Product mapping
+PADDLE-004,B2B0 Product IDs Configured,Configuration,None,"1. Review checkout.html
+2. Check B2B0 product mapping","All 6 B2B0 products exist:
+(See B2B0-010 for full list)",,Pending,Critical,B2B0 products
+PADDLE-005,Checkout Opens - CRM Mini Monthly,Functional,User on pricing page,"1. Navigate to /pricing.html
+2. Find CRM Team Mini Monthly plan
+3. Click 'Subscribe Now'","1. Paddle checkout modal opens
+2. Plan shown: Team Mini Monthly
+3. Price displayed correctly
+4. Payment form loads",,Pending,Critical,Checkout trigger
+PADDLE-006,Checkout - Test Card Success,Functional,PADDLE-005 checkout open,"1. Fill email: test@example.com
+2. Card: 4242 4242 4242 4242
+3. Expiry: 12/28
+4. CVC: 123
+5. Complete checkout","1. Payment processes
+2. Success confirmation
+3. Webhook sent to backend
+4. Redirected to success page or CRM",,Pending,Critical,Payment success flow
+PADDLE-007,Checkout - Test Card Decline,Negative,Checkout open,"1. Use declined card: 4000 0000 0000 0002
+2. Complete checkout","Payment declined
+Error message shown
+User can retry with different card
+No subscription created",,Pending,High,Payment failure
+PADDLE-008,Webhook Received - Transaction Completed,Integration,Payment successful,"1. Complete checkout (PADDLE-006)
+2. Check Supabase Function logs for paddle-webhook","1. Webhook received
+2. Event type: transaction.completed
+3. Payload processed
+4. Database updated
+5. No errors in logs",,Pending,Critical,Webhook delivery
+PADDLE-009,Webhook Signature Verification,Security,Webhook configured,"1. Send webhook with invalid signature
+2. Check function logs","Webhook rejected
+Error: 'Invalid signature'
+Database NOT updated
+Security check passed",,Pending,Critical,Security test
+PADDLE-010,Webhook - CRM Subscription Activation,Functional,Webhook received for CRM product,"1. Send transaction.completed webhook
+   Product: pro_01kvz4nkwvdajsq1xyq9vy30hk (CRM Mini Monthly)
+2. Check database","org_subscriptions updated:
+- crm_enabled = true
+- status = 'active'
+- plan = 'team_mini'
+- b2b0_enabled unchanged",,Pending,Critical,CRM activation
+PADDLE-011,Webhook - B2B0 Subscription Activation,Functional,Webhook received for B2B0 product,"1. Send transaction.completed webhook
+   Product: pro_01kvz513m4e2q5ezn0r66r7dmy (B2B0 Mini Monthly)
+2. Check database","org_subscriptions updated:
+- b2b0_enabled = true
+- b2b0_plan = 'mini'
+- b2b0_seats = 5
+- crm_enabled unchanged",,Pending,Critical,B2B0 activation
+PADDLE-012,Webhook - Subscription Canceled,Functional,Active subscription exists,"1. Cancel subscription in Paddle dashboard
+2. Webhook sent: subscription.canceled
+3. Check database","org_subscriptions updated:
+- crm_enabled = false (or b2b0_enabled)
+- status = 'canceled'
+- User loses access immediately",,Pending,High,Cancellation flow
+PADDLE-013,Webhook - Subscription Updated (Upgrade),Functional,Mini plan active,"1. User upgrades Mini → Midi
+2. Webhook: subscription.updated
+3. Check database","org_subscriptions updated:
+- plan = 'team_midi' (or b2b0_plan)
+- seats increased
+- Status remains active",,Pending,High,Upgrade flow
+PADDLE-014,Webhook - Subscription Updated (Downgrade),Functional,Maxi plan active,"1. User downgrades Maxi → Mini
+2. Webhook received
+3. Check database","org_subscriptions updated:
+- plan = 'team_mini'
+- seats decreased
+- Status active",,Pending,Medium,Downgrade flow
+PADDLE-015,Webhook - Payment Failed (Past Due),Functional,Active subscription,"1. Simulate failed payment
+2. Webhook: subscription.past_due
+3. Check database","org_subscriptions updated:
+- status = 'past_due'
+- User retains access (grace period)
+- Warning email sent (future)",,Pending,High,Payment failure
+PADDLE-016,User Access After CRM Purchase,Functional,PADDLE-010 passed,"1. User completes CRM purchase
+2. Logout and login again
+3. View launcher","1. CRM card unlocked
+2. Can click and access CRM
+3. No trial countdown shown
+4. Status: Active subscriber",,Pending,Critical,End-to-end purchase
+PADDLE-017,User Access After B2B0 Purchase,Functional,PADDLE-011 passed,"1. User completes B2B0 purchase
+2. Login and view launcher","1. B2B0 card unlocked
+2. Can access B2B0 module
+3. CRM status independent (may be locked)
+4. Proves independence",,Pending,Critical,B2B0 purchase flow
+PADDLE-018,Checkout CSP Headers,Configuration,None,"1. Open /checkout.html
+2. Open DevTools → Network
+3. Check response headers","Content-Security-Policy includes:
+- script-src: https://cdn.paddle.com
+- connect-src: https://*.paddle.com
+- frame-src: https://*.paddle.com
+No CSP errors in console",,Pending,High,CSP configuration
+PADDLE-019,Paddle Dashboard - Webhook Endpoint Listed,Configuration,Access to Paddle dashboard,"1. Login to Paddle
+2. Developer Tools → Notifications
+3. Check webhook endpoints","Endpoint exists:
+URL: .../paddle-webhook
+Events: transaction.*, subscription.*
+Status: Active
+Secret key configured",,Pending,Critical,Paddle config
+PADDLE-020,Paddle Dashboard - Test Event,Integration,Webhook endpoint configured,"1. Paddle Dashboard → Events
+2. Send test webhook event
+3. Check function logs","1. Test event received
+2. Logged in Supabase Functions
+3. Response: 200 OK
+4. No errors",,Pending,High,End-to-end webhook

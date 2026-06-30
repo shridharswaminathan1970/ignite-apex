@@ -1,0 +1,81 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+B2B0-001,B2B0 Card Visible in Launcher,UI,User logged in,"1. Login as any user
+2. Navigate to /app/launcher.html","1. Three module cards displayed:
+   - Sales OS
+   - CRM
+   - B2B0 Outreach Agent
+2. B2B0 card has purple badge
+3. Badge text: '💎 Paid Add-On (7-Day Trial)'",,Pending,Critical,Visual verification
+B2B0-002,B2B0 Card Locked by Default,Functional,User with b2b0_enabled=false,"1. Login as user without B2B0
+2. View launcher","1. B2B0 card shows lock icon
+2. Lock note visible: 'B2B0 Locked - Independent module'
+3. Link to pricing page shown",,Pending,Critical,Tests default lock state
+B2B0-003,B2B0 Card Click When Locked,Functional,B2B0 locked (b2b0_enabled=false),"1. Click on locked B2B0 card","1. Alert shown: 'B2B0 access is locked...'
+2. Redirected to /pricing.html
+3. Can view B2B0 pricing plans",,Pending,High,Tests lock interaction
+B2B0-004,B2B0 Entitlement - DB Column Check,Database,Access to database,"1. Run query: SELECT column_name FROM information_schema.columns WHERE table_name='org_subscriptions' AND column_name LIKE 'b2b0%'","Columns exist:
+- b2b0_enabled (boolean)
+- b2b0_plan (text)
+- b2b0_seats (integer)
+- b2b0_trial_started_at (timestamptz)
+- b2b0_trial_ends_at (timestamptz)",,Pending,Critical,Schema verification
+B2B0-005,B2B0 Independent of CRM - Database,Database,Access to database,"1. Create test subscription:
+   UPDATE org_subscriptions SET crm_enabled=false, b2b0_enabled=true WHERE org_id='test-org'
+2. Query subscription","Record shows:
+crm_enabled = false
+b2b0_enabled = true
+Status = valid",,Pending,Critical,Tests independence
+B2B0-006,Sales OS + B2B0 (No CRM) - Launcher Display,Functional,User with crm_enabled=false AND b2b0_enabled=true,"1. Login as user
+2. View launcher","1. Sales OS: Unlocked
+2. CRM: Locked
+3. B2B0: Unlocked
+All three states work independently",,Pending,Critical,Path B validation
+B2B0-007,B2B0 Unlocked - Click Opens Gate,Functional,User with b2b0_enabled=true,"1. Login as user with B2B0 access
+2. Click B2B0 card","1. Redirected to /outreach/index.html
+2. Gate page loads
+3. Shows access granted or redirects to B2B0 platform",,Pending,High,Tests unlock flow
+B2B0-008,B2B0 Trial Start,Functional,Admin access to database,"1. Simulate B2B0 purchase:
+   UPDATE org_subscriptions SET b2b0_enabled=true, b2b0_trial_started_at=now(), b2b0_trial_ends_at=now() + interval '7 days', b2b0_plan='mini', b2b0_seats=5","1. User can access B2B0
+2. Trial countdown shows 7 days
+3. B2B0 unlocked in launcher",,Pending,High,Tests trial activation
+B2B0-009,B2B0 Trial Expired,Functional,B2B0 trial ended (b2b0_trial_ends_at < now()),"1. Set trial end date to past
+2. Login as user
+3. Try to access B2B0","1. B2B0 locked in launcher
+2. Access denied message
+3. Redirect to pricing
+4. b2b0_enabled = false (updated by system)",,Pending,High,Tests trial expiry
+B2B0-010,B2B0 Paddle Product IDs Configured,Configuration,Access to checkout.html,"1. Open checkout.html
+2. Find B2B0 product ID mapping","All 6 B2B0 products configured:
+- b2b_addon_mini_monthly: pro_01kvz513m4e2q5ezn0r66r7dmy
+- b2b_addon_mini_yearly: pro_01kvz551xqzza92gg9nd2pkt6k
+- b2b_addon_midi_monthly: pro_01kvz579x3c4qcjchx5qykdy2h
+- b2b_addon_midi_yearly: pro_01kvz58krpzkde807gvq2p8xrr
+- b2b_addon_maxi_monthly: pro_01kvz59rfy85ehs0e3vp3ys64b
+- b2b_addon_maxi_yearly: pro_01kvz5aqgmvg7x9va5zz5g5era",,Pending,Critical,Product config check
+B2B0-011,B2B0 Webhook Handler - Product Recognition,Functional,Webhook handler deployed,"1. Send mock Paddle webhook:
+   product_id: pro_01kvz513m4e2q5ezn0r66r7dmy
+   event: transaction.completed
+2. Check database","1. Webhook processes correctly
+2. b2b0_enabled = true
+3. b2b0_plan = 'mini'
+4. b2b0_seats = 5
+5. crm_enabled unchanged",,Pending,Critical,Tests B2B0 webhook logic
+B2B0-012,CRM + B2B0 Both Active,Functional,User with both enabled,"1. Set: crm_enabled=true, b2b0_enabled=true
+2. Login and view launcher","1. Sales OS: Unlocked
+2. CRM: Unlocked
+3. B2B0: Unlocked
+All three accessible",,Pending,High,Tests full stack access
+B2B0-013,B2B0 Lock Note Content,UI,B2B0 locked,"1. View locked B2B0 card","Lock note text:
+'B2B0 Locked - Independent module. Works with or without CRM. View Pricing'
+Link to /pricing.html included",,Pending,Medium,Tests messaging
+B2B0-014,B2B0 Pricing Page Display,UI,None,"1. Navigate to /pricing.html
+2. Scroll to B2B0 section","B2B0 plans displayed:
+- Mini (5 seats)
+- Midi (15 seats)
+- Maxi (50 seats)
+Monthly and yearly pricing shown",,Pending,Medium,Tests pricing display
+B2B0-015,B2B0 SSO Architecture Verification,Architecture,Access to both databases,"1. Check main DB (gokslnrvxqledagcwghq) - contains users, subscriptions, b2b0_enabled flag
+2. Check B2B0 DB (esbadmmbwvdnjuhrbnse) - separate schema","1. Two databases remain separate
+2. No cross-database foreign keys
+3. b2b0_enabled flag in main DB
+4. SSO validates JWT from main auth",,Pending,Critical,Architecture confirmation

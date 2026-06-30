@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accounts — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+.tb-nav a.active{color:var(--amber)}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1)}
+.btn-primary{background:var(--amber);color:#000;padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--amber2)}
+
+.table-container{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2);border-bottom:1px solid var(--b1)}
+th{padding:.75rem 1rem;text-align:left;font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)}
+td{padding:.85rem 1rem;border-bottom:1px solid var(--b1);font-size:.8rem;color:var(--t2)}
+tr:last-child td{border-bottom:none}
+tr:hover{background:var(--s2);cursor:pointer}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--s1);border:1px solid var(--b1);border-radius:12px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:1.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800}
+.modal-close{background:none;border:none;color:var(--t3);font-size:1.5rem;cursor:pointer}
+.modal-body{padding:1.5rem}
+.form-group{margin-bottom:1.25rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:.65rem;color:var(--t1);font-size:.85rem;font-family:inherit}
+.form-input:focus{outline:none;border-color:var(--amber)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.modal-footer{padding:1.5rem;border-top:1px solid var(--b1);display:flex;gap:1rem;justify-content:flex-end}
+.btn-secondary{background:var(--s2);color:var(--t2);padding:.65rem 1.5rem;border-radius:8px;font-size:.8rem;font-weight:700;border:none;cursor:pointer}
+.btn-secondary:hover{background:var(--b1)}
+</style>
+<!-- Trial Banner Component -->
+<script src="../components/trial-banner.js"></script>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <nav class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./leads.html">Leads</a>
+    <a href="./pipeline.html">Pipeline</a>
+    <a href="./accounts.html" class="active">Accounts</a>
+    <a href="./contacts.html">Contacts</a>
+    <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Accounts</h1>
+      <p style="font-size:.85rem;color:var(--t3);margin-top:.5rem">Companies and organizations</p>
+    </div>
+    <button class="btn-primary" onclick="openCreateModal()">+ New Account</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Account Name</th>
+          <th>Industry</th>
+          <th>Country</th>
+          <th>Website</th>
+          <th>Owner</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody id="accounts-table">
+        <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--t3)">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal" id="create-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">New Account</h3>
+      <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="create-form" onsubmit="handleCreate(event)">
+        <div class="form-group">
+          <label class="form-label">Account Name *</label>
+          <input type="text" class="form-input" name="name" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Industry</label>
+            <input type="text" class="form-input" name="industry">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-input" name="country">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Website</label>
+          <input type="url" class="form-input" name="website" placeholder="https://">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Employee Count</label>
+            <select class="form-input" name="employee_count">
+              <option value="">Select...</option>
+              <option value="1-10">1-10</option>
+              <option value="11-50">11-50</option>
+              <option value="51-200">51-200</option>
+              <option value="201-500">201-500</option>
+              <option value="501-1000">501-1000</option>
+              <option value="1000+">1000+</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Annual Revenue</label>
+            <select class="form-input" name="annual_revenue">
+              <option value="">Select...</option>
+              <option value="<$1M"><$1M</option>
+              <option value="$1M-$10M">$1M-$10M</option>
+              <option value="$10M-$50M">$10M-$50M</option>
+              <option value="$50M-$100M">$50M-$100M</option>
+              <option value="$100M+">$100M+</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn-primary" onclick="document.getElementById('create-form').requestSubmit()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script src="./crm-v2-client.js"></script>
+
+<script>
+let allAccounts = [];
+
+// Wait for Supabase client
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) {
+      resolve(window.supabaseClient);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) {
+        clearInterval(interval);
+        resolve(window.supabaseClient);
+      }
+    }, 50);
+  });
+}
+
+// Initialize auth and load data
+(async function init() {
+  try {
+    const sb = await waitForSupabaseClient();
+    console.log('[Accounts] Supabase client ready');
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = '../app/auth.html';
+      return;
+    }
+
+    const { data: profile } = await sb
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profile || !profile.crm_enabled) {
+      window.location.href = '../system/index.html';
+      return;
+    }
+
+    // Set global context
+    window.currentUser = profile;
+    window.currentOrgId = profile.org_id;
+    window.IA_CurrentUser = profile;
+    window.IA_OrgId = profile.org_id;
+
+    console.log('[Accounts] User loaded:', profile.email);
+
+    if (profile.role === 'admin') {
+      document.getElementById('admin-link').style.display = 'inline-block';
+    }
+
+    await loadAccounts();
+  } catch (err) {
+    console.error('[Accounts] Init error:', err);
+    window.location.href = '../app/auth.html';
+  }
+})();
+
+async function loadAccounts() {
+  try {
+    allAccounts = await window.CRMv2.getAccounts();
+    renderAccounts();
+  } catch (err) {
+    console.error('Error loading accounts:', err);
+  }
+}
+
+function renderAccounts() {
+  if (allAccounts.length === 0) {
+    document.getElementById('accounts-table').innerHTML = `
+      <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--t3)">No accounts found</td></tr>
+    `;
+    return;
+  }
+
+  const html = allAccounts.map(account => `
+    <tr onclick="viewAccount('${account.id}')">
+      <td><strong>${account.name}</strong></td>
+      <td>${account.industry || '—'}</td>
+      <td>${account.country || '—'}</td>
+      <td>${account.website ? `<a href="${account.website}" target="_blank" onclick="event.stopPropagation()">${account.website}</a>` : '—'}</td>
+      <td>${account.account_owner_name || '—'}</td>
+      <td>${formatDate(account.created_at)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('accounts-table').innerHTML = html;
+}
+
+function openCreateModal() {
+  document.getElementById('create-modal').classList.add('active');
+}
+
+function closeCreateModal() {
+  document.getElementById('create-modal').classList.remove('active');
+  document.getElementById('create-form').reset();
+}
+
+async function handleCreate(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+
+  const account = {
+    name: formData.get('name'),
+    industry: formData.get('industry'),
+    country: formData.get('country'),
+    website: formData.get('website'),
+    employee_count: formData.get('employee_count'),
+    annual_revenue: formData.get('annual_revenue')
+  };
+
+  try {
+    await window.CRMv2.createAccount(account);
+    closeCreateModal();
+    await loadAccounts();
+  } catch (err) {
+    console.error('Error creating account:', err);
+    alert('Failed to create account');
+  }
+}
+
+function viewAccount(accountId) {
+  // For now, just alert - in full version would open detail view
+  alert('Account detail view - to be implemented');
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString();
+}
+</script>
+
+</body>
+</html>

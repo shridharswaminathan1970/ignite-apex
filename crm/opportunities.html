@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opportunities — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+.tb-nav a.active{color:var(--amber)}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1)}
+
+.filters{display:flex;gap:1rem;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap}
+.filter-btn{background:var(--s2);color:var(--t2);padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:600;border:1px solid var(--b1);cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:var(--t2)}
+.filter-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
+
+.table-container{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2);border-bottom:1px solid var(--b1)}
+th{padding:.75rem 1rem;text-align:left;font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)}
+td{padding:.85rem 1rem;border-bottom:1px solid var(--b1);font-size:.8rem;color:var(--t2)}
+tr:last-child td{border-bottom:none}
+tr:hover{background:var(--s2);cursor:pointer}
+
+.chip{display:inline-block;padding:.25rem .6rem;border-radius:5px;font-size:.7rem;font-weight:700}
+.chip.commit{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.chip.best{background:#2D1F00;color:var(--amber);border:1px solid var(--amber)}
+.chip.pipeline-plus{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+.chip.pipeline{background:var(--b2);color:var(--t3);border:1px solid var(--t3)}
+.chip.disqualified{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+
+.prob{font-weight:700}
+.prob-90{color:var(--green)}
+.prob-65{color:var(--amber)}
+.prob-40{color:var(--blue)}
+.prob-20{color:var(--t3)}
+.prob-0{color:var(--red)}
+</style>
+<!-- Trial Banner Component -->
+<script src="../components/trial-banner.js"></script>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <nav class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./leads.html">Leads</a>
+    <a href="./opportunities.html" class="active">Opportunities</a>
+    <a href="./tasks.html">Tasks</a>
+    <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <h1 class="page-title">Opportunities</h1>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all" onclick="filterOpps('all')">All</button>
+    <button class="filter-btn" data-filter="COMMIT" onclick="filterOpps('COMMIT')">Commit (90%)</button>
+    <button class="filter-btn" data-filter="BEST CASE" onclick="filterOpps('BEST CASE')">Best Case (65%)</button>
+    <button class="filter-btn" data-filter="PIPELINE+" onclick="filterOpps('PIPELINE+')">Pipeline+ (40%)</button>
+    <button class="filter-btn" data-filter="PIPELINE ONLY" onclick="filterOpps('PIPELINE ONLY')">Pipeline (20%)</button>
+    <button class="filter-btn" data-filter="DISQUALIFIED" onclick="filterOpps('DISQUALIFIED')">Disqualified</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Prospect</th>
+          <th>Stage</th>
+          <th>Verdict</th>
+          <th>Probability</th>
+          <th>T2 Score</th>
+          <th>T3 Score</th>
+          <th>Last Activity</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody id="opps-table-body">
+        <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--t3)">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script src="./crm-client.js"></script>
+
+<script>
+let allOpps = [];
+let currentFilter = 'all';
+
+document.addEventListener('ia:ready', async (event) => {
+  if (!event.detail.online) {
+    window.location.href = '../app/auth.html';
+    return;
+  }
+
+  // Show admin link if user is admin
+  if (event.detail.user && event.detail.user.role === 'admin') {
+    document.getElementById('admin-link').style.display = 'inline-block';
+  }
+
+  await loadOpportunities();
+});
+
+async function loadOpportunities() {
+  try {
+    const { data, error } = await window.IAdb.supabase
+      .from('deals')
+      .select('*, users(name)')
+      .eq('org_id', window.IAdb.orgId)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+    allOpps = data || [];
+    renderOpportunities();
+  } catch (err) {
+    console.error('Error loading opportunities:', err);
+  }
+}
+
+function renderOpportunities() {
+  let filtered = allOpps;
+  if (currentFilter !== 'all') {
+    filtered = allOpps.filter(o => o.forecast_category === currentFilter);
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('opps-table-body').innerHTML = `
+      <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--t3)">No opportunities found</td></tr>
+    `;
+    return;
+  }
+
+  const html = filtered.map(opp => {
+    const verdictClass = (opp.forecast_category || 'PIPELINE ONLY')
+      .toLowerCase()
+      .replace(' ', '-')
+      .replace('+', '-plus');
+
+    const probClass = `prob-${opp.probability || 0}`;
+
+    return `
+      <tr onclick="window.location.href='./opportunity-detail.html?id=${opp.id}'">
+        <td><strong>${opp.prospect}</strong></td>
+        <td>${opp.ignite_stage || '—'}</td>
+        <td><span class="chip ${verdictClass}">${opp.forecast_category || 'PIPELINE ONLY'}</span></td>
+        <td><span class="prob ${probClass}">${opp.probability || 0}%</span></td>
+        <td>${opp.t2_yes || 0}/10</td>
+        <td>${opp.t3_yes || 0}/5</td>
+        <td>${opp.last_activity_date ? formatDate(opp.last_activity_date) : 'Never'}</td>
+        <td>${opp.users?.name || 'Unassigned'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('opps-table-body').innerHTML = html;
+}
+
+function filterOpps(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+  renderOpportunities();
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString();
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://*.supabase.co https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paddle.com; img-src 'self' data: https:; frame-src https://cdn.paddle.com https://*.paddle.com;">
+<title>Checkout — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:3rem 2rem}
+.page-header{text-align:center;margin-bottom:3rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--t1);margin-bottom:1rem}
+.page-subtitle{font-size:1rem;color:var(--t2)}
+
+.checkout-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:2rem;margin-bottom:2rem}
+@media(max-width:768px){.checkout-grid{grid-template-columns:1fr}}
+
+.section{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem}
+.section-title{font-size:1.2rem;font-weight:700;color:var(--t1);margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--b1)}
+
+.plan-card{background:var(--s2);border:2px solid var(--amber);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.plan-name{font-size:1.5rem;font-weight:800;color:var(--amber);margin-bottom:.5rem}
+.plan-price{font-size:2rem;font-weight:800;color:var(--t1);margin-bottom:.25rem}
+.plan-price span{font-size:1rem;color:var(--t3);font-weight:400}
+.plan-billing{font-size:.85rem;color:var(--t3);margin-bottom:1rem}
+.plan-features{list-style:none;margin-top:1rem}
+.plan-features li{padding:.5rem 0;border-bottom:1px solid var(--b1);font-size:.9rem;color:var(--t2);display:flex;align-items:center;gap:.75rem}
+.plan-features li:last-child{border-bottom:none}
+.plan-features li::before{content:'✓';color:var(--green);font-weight:700;font-size:1.1rem}
+
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid var(--b1)}
+.summary-row:last-child{border-bottom:none;padding-top:1.5rem;font-size:1.2rem;font-weight:700}
+.summary-label{font-size:.9rem;color:var(--t2)}
+.summary-value{font-size:1rem;font-weight:600;color:var(--t1)}
+
+.btn-primary{background:var(--amber);color:#000;border:none;padding:1rem 2rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;text-align:center;text-decoration:none;display:block}
+.btn-primary:hover{background:#FCD34D;transform:translateY(-2px);box-shadow:0 4px 12px rgba(245,158,11,.3)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.security-note{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:1rem;margin-top:1.5rem;font-size:.8rem;color:var(--t3);text-align:center}
+.security-note::before{content:'🔒';margin-right:.5rem}
+
+.loading{text-align:center;padding:3rem;color:var(--t3)}
+.error{background:#1F0202;border:1px solid var(--red);border-radius:8px;padding:1rem;color:var(--red);margin-bottom:1.5rem}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX</div>
+  <a href="./pricing.html" style="font-size:.75rem;color:var(--t2);text-decoration:none">← Back to Pricing</a>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <h1 class="page-title">Complete Your Subscription</h1>
+    <p class="page-subtitle">Secure checkout powered by Paddle</p>
+  </div>
+
+  <div id="loading" class="loading">Loading...</div>
+  <div id="error" style="display:none"></div>
+
+  <div id="checkout-content" style="display:none">
+    <div class="checkout-grid">
+      <!-- Left: Plan Details -->
+      <div class="section">
+        <h2 class="section-title">Your Selection</h2>
+        <div id="plan-display" class="plan-card">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="addon-display" style="display:none">
+          <!-- B2B Outreach addon if selected -->
+        </div>
+      </div>
+
+      <!-- Right: Order Summary -->
+      <div class="section">
+        <h2 class="section-title">Order Summary</h2>
+        <div id="order-summary">
+          <!-- Populated by JS -->
+        </div>
+
+        <button id="checkout-btn" class="btn-primary" onclick="openPaddleCheckout()">
+          Proceed to Payment
+        </button>
+
+        <div class="security-note">
+          Secure payment processing by Paddle. All major payment methods accepted. Cancel anytime.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="./supabase-client.js"></script>
+
+<!-- Paddle.js Billing API (v2) -->
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+
+<script>
+// Paddle Configuration
+const PADDLE_VENDOR_ID = '80920'; // Your Paddle Seller ID (correct one)
+const PADDLE_ENVIRONMENT = 'sandbox'; // Change to 'production' when ready to go live
+
+// Paddle Product IDs - Live products from Paddle dashboard
+const PADDLE_PRODUCTS = {
+  'team_mini_monthly': 'pro_01kvz45gjxznc53m7g7fpfmrtn',
+  'team_mini_yearly': 'pro_01kvz4r9wnq4fwrekw2n4tmw9q',
+  'team_midi_monthly': 'pro_01kvz4wa3zbdkp65jmnm8d57my',
+  'team_midi_yearly': 'pro_01kvz4xg9yjh1tm8vsreh45pgv',
+  'team_maxi_monthly': 'pro_01kvz4yh7nphwp914t2yqgcmhm',
+  'team_maxi_yearly': 'pro_01kvz4zea83smzwg0xn0bt1jd1',
+  'b2b_addon_mini_monthly': 'pro_01kvz513m4e2q5ezn0r66r7dmy',
+  'b2b_addon_mini_yearly': 'pro_01kvz551xqzza92gg9nd2pkt6k',
+  'b2b_addon_midi_monthly': 'pro_01kvz579x3c4qcjchx5qykdy2h',
+  'b2b_addon_midi_yearly': 'pro_01kvz58krpzkde807gvq2p8xrr',
+  'b2b_addon_maxi_monthly': 'pro_01kvz59rfy85ehs0e3vp3ys64b',
+  'b2b_addon_maxi_yearly': 'pro_01kvz5aqgmvg7x9va5zz5g5era'
+};
+
+// Pricing (matches pricing.html)
+const PRICING = {
+  team_mini: { monthly: 9, yearly: 100, users: 3 },
+  team_midi: { monthly: 15, yearly: 195, users: 10 },
+  team_maxi: { monthly: 30, yearly: 320, users: 50 },
+  b2b_addon_mini: { monthly: 6, yearly: 160 },
+  b2b_addon_midi: { monthly: 9, yearly: 250 },
+  b2b_addon_maxi: { monthly: 12, yearly: 500 }
+};
+
+let currentUser = null;
+let selectedPlan = null;
+let selectedBilling = 'monthly';
+let hasAddon = false;
+
+(async function init() {
+  try {
+    // Initialize Paddle Billing API (v2)
+    Paddle.Initialize({
+      token: PADDLE_VENDOR_ID,
+      environment: PADDLE_ENVIRONMENT
+    });
+
+    // Get auth and check CRM access
+    const sb = window.supabaseClient;
+    const { data: { session } } = await sb.auth.getSession();
+
+    if (!session) {
+      window.location.href = './app/auth.html';
+      return;
+    }
+
+    const { data: user } = await sb.from('users').select('*, organisations(*)').eq('id', session.user.id).single();
+    currentUser = user;
+
+    // Get URL params
+    const params = new URLSearchParams(window.location.search);
+    selectedPlan = params.get('plan'); // 'team_mini', 'team_midi', 'team_maxi'
+    selectedBilling = params.get('billing') || 'monthly';
+    hasAddon = params.get('addon') === 'true';
+
+    if (!selectedPlan) {
+      window.location.href = './pricing.html';
+      return;
+    }
+
+    renderCheckout();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('checkout-content').style.display = 'block';
+
+  } catch (err) {
+    console.error('[Checkout] Init error:', err);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').innerHTML = `<div class="error">Error: ${err.message}</div>`;
+    document.getElementById('error').style.display = 'block';
+  }
+})();
+
+function renderCheckout() {
+  const pricing = PRICING[selectedPlan];
+  const price = selectedBilling === 'monthly' ? pricing.monthly : pricing.yearly;
+  const planName = selectedPlan.replace('team_', 'Team ').replace('_', ' ').toUpperCase();
+
+  // Render plan card
+  document.getElementById('plan-display').innerHTML = `
+    <div class="plan-name">${planName}</div>
+    <div class="plan-price">$${price}<span>/${selectedBilling === 'monthly' ? 'month' : 'year'}</span></div>
+    <div class="plan-billing">Billed ${selectedBilling}</div>
+    <ul class="plan-features">
+      <li>Up to ${pricing.users} users</li>
+      <li>Full CRM Access</li>
+      <li>Sales OS (always free)</li>
+      <li>IGNITE-APEX Methodology</li>
+      <li>AI Coaching</li>
+      <li>Unlimited Deals & Contacts</li>
+    </ul>
+  `;
+
+  // Render addon if selected
+  if (hasAddon) {
+    const addonKey = `b2b_addon_${selectedPlan.replace('team_', '')}`;
+    const addonPricing = PRICING[addonKey];
+    const addonPrice = selectedBilling === 'monthly' ? addonPricing.monthly : addonPricing.yearly;
+
+    document.getElementById('addon-display').style.display = 'block';
+    document.getElementById('addon-display').innerHTML = `
+      <div class="plan-card" style="border-color:var(--blue)">
+        <div class="plan-name" style="color:var(--blue)">B2B Outreach Add-on</div>
+        <div class="plan-price">$${addonPrice}<span>/${selectedBilling === 'monthly' ? 'month' : 'year'}</span></div>
+        <ul class="plan-features">
+          <li>LinkedIn integration</li>
+          <li>Email sequences</li>
+          <li>Outreach analytics</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  // Render order summary
+  const subtotal = price + (hasAddon ? (selectedBilling === 'monthly' ? PRICING[`b2b_addon_${selectedPlan.replace('team_', '')}`].monthly : PRICING[`b2b_addon_${selectedPlan.replace('team_', '')}`].yearly) : 0);
+  const total = subtotal; // Paddle handles tax
+
+  document.getElementById('order-summary').innerHTML = `
+    <div class="summary-row">
+      <span class="summary-label">${planName} (${selectedBilling})</span>
+      <span class="summary-value">$${price}</span>
+    </div>
+    ${hasAddon ? `
+      <div class="summary-row">
+        <span class="summary-label">B2B Outreach Add-on</span>
+        <span class="summary-value">$${selectedBilling === 'monthly' ? PRICING[`b2b_addon_${selectedPlan.replace('team_', '')}`].monthly : PRICING[`b2b_addon_${selectedPlan.replace('team_', '')}`].yearly}</span>
+      </div>
+    ` : ''}
+    <div class="summary-row">
+      <span class="summary-label">Subtotal</span>
+      <span class="summary-value">$${subtotal}</span>
+    </div>
+    <div class="summary-row" style="font-size:.85rem;color:var(--t3)">
+      <span class="summary-label">Tax (calculated at checkout)</span>
+      <span class="summary-value">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Total</span>
+      <span class="summary-value" style="color:var(--amber);font-size:1.5rem">$${total}</span>
+    </div>
+  `;
+}
+
+function openPaddleCheckout() {
+  const productKey = `${selectedPlan}_${selectedBilling}`;
+  const productId = PADDLE_PRODUCTS[productKey];
+
+  if (!productId || productId === 'YOUR_PRODUCT_ID') {
+    alert('Paddle integration not yet configured. Please contact administrator.');
+    return;
+  }
+
+  // Build custom data to identify the subscription
+  const customData = {
+    user_id: currentUser.id,
+    org_id: currentUser.org_id,
+    plan: selectedPlan,
+    billing: selectedBilling,
+    addon: hasAddon
+  };
+
+  // Open Paddle Checkout (Billing API v2)
+  Paddle.Checkout.open({
+    items: [{ priceId: productId, quantity: 1 }],
+    customer: { email: currentUser.email },
+    customData: customData,
+    settings: {
+      successUrl: window.location.origin + '/checkout-success.html',
+      closeUrl: window.location.origin + '/pricing.html'
+    }
+  });
+}
+
+// Paddle Billing API v2 handles callbacks via webhook
+// On successful checkout, Paddle will:
+// 1. Send webhook to our Edge Function (paddle-webhook)
+// 2. Edge Function updates org_subscriptions table
+// 3. successUrl redirects user to checkout-success.html
+</script>
+
+</body>
+</html>

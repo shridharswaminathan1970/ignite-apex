@@ -1,0 +1,87 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+EMAIL-001,Resend API Key Configured,Configuration,Access to Supabase secrets,"1. Check: supabase secrets list
+2. Find RESEND_API_KEY","RESEND_API_KEY exists
+Value starts with 're_'
+Not empty",,Pending,Critical,Secret verification
+EMAIL-002,Resend Domain Verified,Configuration,Access to Resend dashboard,"1. Login to resend.com
+2. Check Domains section","Domain 'shaamelz.com' listed
+Status: Verified (green checkmark)
+DNS records configured",,Pending,Critical,Domain setup
+EMAIL-003,Send Email Function Deployed,Configuration,Access to Supabase,"1. Run: supabase functions list
+2. Find send-email","Function 'send-email' exists
+Status: Deployed
+Last updated: recent timestamp",,Pending,Critical,Function deployment
+EMAIL-004,Send Email Function - Basic Test,Functional,EMAIL-001 & EMAIL-003 passed,"1. Call: POST /functions/v1/send-email
+   Body: {to: 'your-email@test.com', subject: 'Test', html: '<p>Test</p>'}
+2. Check inbox","1. Response: {success: true, messageId: '...'}
+2. Email received within 10 seconds
+3. From: IGNITE-APEX <noreply@shaamelz.com>
+4. Content renders correctly",,Pending,Critical,Basic email send
+EMAIL-005,Send Email Function - Invalid API Key,Negative,Wrong API key set,"1. Temporarily set wrong RESEND_API_KEY
+2. Call send-email function","Response: {success: false, error: '...'}
+HTTP 500
+Email NOT sent",,Pending,High,Error handling
+EMAIL-006,Send Email Function - Missing Parameters,Negative,Function deployed,"1. Call send-email with missing 'to' field
+2. Or missing subject/html","Error response
+Email NOT sent
+Clear error message",,Pending,Medium,Input validation
+EMAIL-007,Registration Approval Email Template,Email,Registration approved,"1. Approve user registration (REG-008)
+2. Trigger email sending
+3. Check inbox","Email received:
+- Subject: '✅ Your IGNITE-APEX Account is Ready!'
+- Welcome message
+- Password-set link (CTA)
+- Features listed (Sales OS, CRM, B2B0)
+- Professional HTML design
+- Mobile responsive",,Pending,Critical,Welcome email
+EMAIL-008,Registration Approval Email - CTA Works,Functional,EMAIL-007 received,"1. Click 'Set My Password' button in email","Redirected to password reset page
+Link valid
+Can set password successfully",,Pending,High,Email link functionality
+EMAIL-009,Trial Reminder Day 120 Template,Email,Day 120 email triggered,"1. Trigger Day 120 reminder
+2. Check inbox","Email received:
+- Subject: '⏰ Your IGNITE-APEX CRM Trial Expired...'
+- Mentions 21 days expired
+- Friendly tone
+- CTA: View Pricing
+- Reminder schedule shown",,Pending,Critical,Day 120 content
+EMAIL-010,Trial Reminder Day 130 Template,Email,Day 130 email triggered,"1. Trigger Day 130 reminder
+2. Check inbox","Email received:
+- Subject: '⚠️ Action Required...'
+- Urgent tone
+- Lists consequences
+- CTA: Subscribe Now
+- Warning about 10 days",,Pending,Critical,Day 130 content
+EMAIL-011,Trial Reminder Day 140 Template,Email,Day 140 email triggered,"1. Trigger Day 140 reminder
+2. Check inbox","Email received:
+- Subject: '🚨 FINAL WARNING...'
+- Critical/alarming tone
+- Red color theme
+- Large CTA button
+- States 'last email'
+- Consequences clearly listed",,Pending,Critical,Day 140 final warning
+EMAIL-012,Admin Notification Template,Email,New registration submitted,"1. User submits registration (REG-001)
+2. Check Super Duper Admin inbox (muhammad.shaamel@gmail.com)","Email received:
+- Subject: '🔔 New Registration Request'
+- User details table:
+  - Name
+  - Email
+  - Phone
+  - Country
+  - Company
+- CTA: Review & Approve → /app/admin.html
+- Professional layout",,Pending,High,Admin notification
+EMAIL-013,Email Template - Mobile Responsive,UI,Any email sent,"1. Send test email
+2. Open on mobile device (or use responsive tester)
+3. Check rendering","Email renders correctly:
+- Text readable
+- Buttons clickable
+- No horizontal scroll
+- Images scale properly
+- Layout adapts to small screen",,Pending,Medium,Mobile compatibility
+EMAIL-014,Email Delivery Speed,Performance,Send email function,"1. Trigger email send
+2. Note timestamp
+3. Check inbox arrival time","Email delivered within:
+- < 5 seconds: Excellent
+- < 30 seconds: Good
+- < 2 minutes: Acceptable
+Logs timestamp of send",,Pending,Medium,Performance check

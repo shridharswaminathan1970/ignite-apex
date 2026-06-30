@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNITE_APEX · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--ad:#2D1F00;
+  --green:#10B981;--gd:#021F12;
+  --blue:#3B82F6;--red:#EF4444;--rd:#1F0202;
+  --purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'Outfit',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0}
+
+/* ── LOGIN GATE ───────────────────────────────────────────── */
+#login-gate{position:fixed;inset:0;z-index:9999;background:rgba(8,9,13,.98);display:flex;align-items:center;justify-content:center;padding:1.5rem}
+#login-gate.hidden{display:none}
+.login-box{background:var(--s1);border:1px solid var(--b1);border-radius:18px;width:100%;max-width:380px;overflow:hidden}
+.login-head{background:linear-gradient(135deg,#0D0A00,#1A1200);padding:2rem;text-align:center;border-bottom:1px solid var(--b1)}
+.login-logo{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--amber);margin-bottom:.2rem}
+.login-sub{font-size:.62rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3)}
+.login-body{padding:1.75rem 1.75rem 2rem}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.4rem}
+.field input{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.65rem .9rem;font-size:.85rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border .15s}
+.field input:focus{border-color:var(--amber)}
+.field input::placeholder{color:var(--t3)}
+.btn{padding:.75rem 1.25rem;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all .15s}
+.btn-full{width:100%}
+.btn-amber{background:var(--amber);color:#000}
+.btn-amber:hover{background:var(--amber2)}
+.btn-green{background:var(--green);color:#000}
+.btn-green:hover{background:#34D399}
+.btn-ghost{background:transparent;border:1px solid var(--b2);color:var(--t2)}
+.btn-ghost:hover{border-color:var(--t3);color:var(--t1)}
+.btn-red{background:var(--rd);border:1px solid var(--red);color:#FCA5A5}
+.btn-red:hover{background:var(--red);color:#fff}
+.btn-sm{padding:.4rem .85rem;font-size:.75rem;border-radius:7px}
+.err{background:var(--rd);border:1px solid var(--red);border-radius:7px;padding:.6rem .85rem;font-size:.75rem;color:#FCA5A5;margin-bottom:1rem;display:none}
+.err.show{display:block}
+
+/* ── LAYOUT ───────────────────────────────────────────────── */
+#admin-panel{display:none;min-height:100vh}
+#admin-panel.visible{display:block}
+nav{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--amber)}
+.nav-logo span{color:var(--t3);font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-left:.75rem}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+
+/* ── SUMMARY CARDS ────────────────────────────────────────── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem}
+@media(max-width:700px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+.sum-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.25rem 1.5rem;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sum-card.amber::before{background:var(--amber)}
+.sum-card.green::before{background:var(--green)}
+.sum-card.blue::before{background:var(--blue)}
+.sum-card.red::before{background:var(--red)}
+.sum-label{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.sum-val{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1}
+.sum-card.amber .sum-val{color:var(--amber)}
+.sum-card.green .sum-val{color:var(--green)}
+.sum-card.blue .sum-val{color:var(--blue)}
+.sum-card.red .sum-val{color:var(--red)}
+.sum-sub{font-size:.7rem;color:var(--t3);margin-top:.3rem}
+
+/* ── PANELS ───────────────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+@media(max-width:760px){.grid-2{grid-template-columns:1fr}}
+.panel{background:var(--s1);border:1px solid var(--b1);border-radius:14px;overflow:hidden;margin-bottom:1.5rem}
+.panel-head{padding:1rem 1.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.panel-title{font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2)}
+.panel-body{padding:1.5rem}
+
+/* ── CODE TABLE ───────────────────────────────────────────── */
+.code-table{width:100%;border-collapse:collapse}
+.code-table th{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--b2)}
+.code-table td{padding:.6rem .75rem;font-size:.82rem;border-bottom:1px solid var(--b1);vertical-align:middle}
+.code-table tr:last-child td{border-bottom:none}
+.code-mono{font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:1px;color:var(--amber)}
+.code-mono.green{color:var(--green)}
+.badge{display:inline-block;padding:.18rem .55rem;border-radius:4px;font-size:.62rem;font-weight:700;letter-spacing:.5px}
+.badge.active{background:var(--gd);color:var(--green);border:1px solid var(--green)}
+.badge.used{background:var(--s2);color:var(--t3);border:1px solid var(--b2)}
+.badge.trial{background:var(--ad);color:var(--amber);border:1px solid var(--amber)}
+.badge.expired{background:var(--rd);color:#FCA5A5;border:1px solid var(--red)}
+.badge.licensed{background:#0A0F25;color:#93C5FD;border:1px solid var(--blue)}
+
+/* ── GENERATE FORM ────────────────────────────────────────── */
+.gen-row{display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem}
+.gen-field{flex:1;min-width:150px}
+.gen-field label{display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.4rem}
+.gen-field input,.gen-field select{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.6rem .85rem;font-size:.82rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border .15s}
+.gen-field input:focus,.gen-field select:focus{border-color:var(--amber)}
+.gen-field select option{background:var(--s2)}
+
+/* ── CONFIG BLOCK ─────────────────────────────────────────── */
+.config-block{background:var(--bg);border:1px solid var(--b2);border-radius:10px;padding:1.25rem;font-family:'DM Mono',monospace;font-size:.75rem;color:#6EE7B7;line-height:1.8;white-space:pre;overflow-x:auto;margin-top:0}
+.copy-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem}
+.copy-hint{font-size:.72rem;color:var(--t3);line-height:1.5}
+
+/* ── REGISTERED USERS ─────────────────────────────────────── */
+.user-row{display:flex;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--b1);flex-wrap:wrap}
+.user-row:last-child{border-bottom:none}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#000;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:.85rem;font-weight:600;color:var(--t1)}
+.user-email{font-size:.72rem;color:var(--t3)}
+.user-meta{font-size:.68rem;color:var(--t3);margin-top:.15rem}
+
+/* ── TOAST ────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:.65rem 1.5rem;border-radius:9px;font-size:.82rem;font-weight:700;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* ── SECTION HEADER ───────────────────────────────────────── */
+.sec-head{margin-bottom:1.75rem}
+.sec-label{font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:.35rem}
+.sec-title{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--t1)}
+
+/* ── DIVIDER ──────────────────────────────────────────────── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--b2),transparent);margin:2rem 0}
+
+/* ── SETTINGS ─────────────────────────────────────────────── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--b1);gap:1rem;flex-wrap:wrap}
+.setting-row:last-child{border-bottom:none}
+.setting-info .setting-name{font-size:.85rem;font-weight:600;color:var(--t1)}
+.setting-info .setting-desc{font-size:.72rem;color:var(--t3);margin-top:.15rem}
+.setting-ctrl{display:flex;align-items:center;gap:.65rem}
+.setting-ctrl input[type=number]{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:.4rem .7rem;font-size:.85rem;color:var(--t1);font-family:'DM Mono',monospace;outline:none;width:75px;text-align:center}
+.setting-ctrl input[type=number]:focus{border-color:var(--amber)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div id="login-gate">
+  <div class="login-box">
+    <div class="login-head">
+      <div class="login-logo">IGNITE_APEX</div>
+      <div class="login-sub">Admin Dashboard · Secure Access</div>
+    </div>
+    <div class="login-body">
+      <div class="err" id="admin-err"></div>
+      <div class="field">
+        <label>Admin Password</label>
+        <input type="password" id="admin-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter') doAdminLogin()">
+      </div>
+      <button class="btn btn-amber btn-full" onclick="doAdminLogin()">Sign In to Admin →</button>
+      <p style="font-size:.68rem;color:var(--t3);text-align:center;margin-top:1rem">
+        Default password: <span style="font-family:'DM Mono',monospace;color:var(--amber)">admin2026</span><br>
+        Change it in Settings after logging in.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <nav>
+    <div class="nav-logo">IGNITE_APEX <span>Admin Dashboard</span></div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <a href="../" style="font-size:.75rem;color:var(--t3);text-decoration:none">← Back to site</a>
+      <button class="btn btn-ghost btn-sm" onclick="doAdminLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- SUMMARY -->
+    <div class="summary-grid" id="summary-grid">
+      <div class="sum-card amber"><div class="sum-label">Invite Codes</div><div class="sum-val" id="sum-codes">0</div><div class="sum-sub">Total active</div></div>
+      <div class="sum-card green"><div class="sum-label">Licence Keys</div><div class="sum-val" id="sum-keys">0</div><div class="sum-sub">Total issued</div></div>
+      <div class="sum-card blue"><div class="sum-label">Registered Users</div><div class="sum-val" id="sum-users">—</div><div class="sum-sub">On this device</div></div>
+      <div class="sum-card red"><div class="sum-label">Trial Days</div><div class="sum-val" id="sum-trial">30</div><div class="sum-sub">Before lock</div></div>
+    </div>
+
+    <!-- GENERATE CODES -->
+    <div class="sec-head">
+      <div class="sec-label">Access Control</div>
+      <div class="sec-title">Generate Invite Codes &amp; Licence Keys</div>
+    </div>
+
+    <div class="grid-2">
+      <!-- INVITE CODES -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Invite Codes</span>
+          <button class="btn btn-amber btn-sm" onclick="generateInviteCode()">+ Generate Code</button>
+        </div>
+        <div class="panel-body">
+          <div class="gen-row">
+            <div class="gen-field">
+              <label>Custom prefix (optional)</label>
+              <input type="text" id="invite-prefix" placeholder="e.g. BETA, VIP, CORP" maxlength="6" style="text-transform:uppercase">
+            </div>
+            <button class="btn btn-amber btn-sm" onclick="generateInviteCode()">Generate</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="code-table" id="invite-table">
+              <thead><tr><th>Code</th><th>Created</th><th>Status</th><th></th></tr></thead>
+              <tbody id="invite-tbody"></tbody>
+            </table>
+          </div>
+          <p style="font-size:.7rem;color:var(--t3);margin-top:.85rem">Share these codes with new users to allow registration. Each code can be used once.</p>
+        </div>
+      </div>
+
+      <!-- LICENCE KEYS -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Licence Keys</span>
+          <button class="btn btn-green btn-sm" onclick="generateLicenceKey()">+ Generate Key</button>
+        </div>
+        <div class="panel-body">
+          <div class="gen-row">
+            <div class="gen-field">
+              <label>Customer reference (optional)</label>
+              <input type="text" id="key-ref" placeholder="e.g. ACME, JOHN, NYP" maxlength="8" style="text-transform:uppercase">
+            </div>
+            <button class="btn btn-green btn-sm" onclick="generateLicenceKey()">Generate</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="code-table" id="key-table">
+              <thead><tr><th>Key</th><th>Created</th><th>Status</th><th></th></tr></thead>
+              <tbody id="key-tbody"></tbody>
+            </table>
+          </div>
+          <p style="font-size:.7rem;color:var(--t3);margin-top:.85rem">Issue to paying subscribers ($4.50/user/month). Each key permanently unlocks the app for one registered account.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG BLOCK -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">App Configuration Block</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyConfig()">Copy to Clipboard</button>
+      </div>
+      <div class="panel-body">
+        <div class="copy-row">
+          <p class="copy-hint">Copy this block and paste it into <strong style="color:var(--t2)">app/index.html</strong> replacing the existing <code style="color:var(--amber)">AUTH_CONFIG</code> object. Then redeploy to Netlify.</p>
+        </div>
+        <div class="config-block" id="config-block"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- REGISTERED USERS (from same device) -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Registered Users <span style="font-size:.62rem;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0"> · Detected on this device</span></span>
+        <span style="font-size:.68rem;color:var(--t3)">Users who registered on the same browser/device</span>
+      </div>
+      <div class="panel-body" id="users-panel">
+        <p style="font-size:.8rem;color:var(--t3)">No registered users found on this device. Users who register on the same browser will appear here.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SETTINGS -->
+    <div class="sec-head">
+      <div class="sec-label">Settings</div>
+      <div class="sec-title">Admin Configuration</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-body">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Free Trial Duration</div>
+            <div class="setting-desc">Number of days new users get before the app locks and requires a licence key</div>
+          </div>
+          <div class="setting-ctrl">
+            <input type="number" id="setting-trial" min="1" max="365" value="30">
+            <button class="btn btn-amber btn-sm" onclick="saveSetting('trial')">Save</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Admin Password</div>
+            <div class="setting-desc">Change the password used to access this admin dashboard</div>
+          </div>
+          <div class="setting-ctrl">
+            <input type="password" id="setting-pw" placeholder="New password" style="width:160px;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:.4rem .7rem;font-size:.82rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none">
+            <button class="btn btn-amber btn-sm" onclick="saveSetting('pw')">Change</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Reset All Data</div>
+            <div class="setting-desc">Delete all generated codes, keys and settings. Cannot be undone.</div>
+          </div>
+          <div class="setting-ctrl">
+            <button class="btn btn-red btn-sm" onclick="resetAll()">Reset Everything</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /admin-panel -->
+
+<div id="toast">Copied!</div>
+
+<script>
+// ═══ STORAGE KEYS ══════════════════════════════════════════════════════════════
+const SK = {
+  pw:     'ia_admin_pw',
+  codes:  'ia_admin_codes',
+  keys:   'ia_admin_keys',
+  trial:  'ia_admin_trial',
+  auth:   'ia_admin_authed',
+};
+
+const DEFAULT_PW = 'admin2026';
+
+// ═══ ADMIN LOGIN ════════════════════════════════════════════════════════════════
+function getAdminPw(){ return localStorage.getItem(SK.pw) || DEFAULT_PW; }
+
+function doAdminLogin(){
+  const pw = document.getElementById('admin-pw').value;
+  const err = document.getElementById('admin-err');
+  err.classList.remove('show');
+  if(!pw){ err.textContent='Enter the admin password.'; err.classList.add('show'); return; }
+  if(pw !== getAdminPw()){ err.textContent='Incorrect password.'; err.classList.add('show'); return; }
+  sessionStorage.setItem(SK.auth, '1');
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('admin-panel').classList.add('visible');
+  renderAll();
+}
+
+function doAdminLogout(){
+  sessionStorage.removeItem(SK.auth);
+  location.reload();
+}
+
+// ═══ DATA HELPERS ══════════════════════════════════════════════════════════════
+function getCodes(){ try{ return JSON.parse(localStorage.getItem(SK.codes)||'[]'); }catch(e){ return []; } }
+function getKeys(){  try{ return JSON.parse(localStorage.getItem(SK.keys) ||'[]'); }catch(e){ return []; } }
+function getTrialDays(){ return parseInt(localStorage.getItem(SK.trial)||'30'); }
+function saveCodes(c){ localStorage.setItem(SK.codes, JSON.stringify(c)); }
+function saveKeys(k){  localStorage.setItem(SK.keys,  JSON.stringify(k)); }
+
+function randomSegment(n=4){ return Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g,'').substring(0,n).padEnd(n,'X'); }
+
+// ═══ GENERATE ══════════════════════════════════════════════════════════════════
+function generateInviteCode(){
+  const prefix = (document.getElementById('invite-prefix').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').substring(0,6)||'APEX';
+  const code = prefix + randomSegment(4) + randomSegment(2);
+  const codes = getCodes();
+  codes.push({ code, created: Date.now(), used: false, usedBy: null });
+  saveCodes(codes);
+  document.getElementById('invite-prefix').value = '';
+  renderAll();
+  toast('Invite code generated: ' + code);
+}
+
+function generateLicenceKey(){
+  const ref = (document.getElementById('key-ref').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').substring(0,8)||'USER';
+  const year = new Date().getFullYear();
+  const key = 'IA-' + year + '-' + ref + '-' + randomSegment(4);
+  const keys = getKeys();
+  keys.push({ key, created: Date.now(), activated: false, activatedBy: null });
+  saveKeys(keys);
+  document.getElementById('key-ref').value = '';
+  renderAll();
+  toast('Licence key generated: ' + key);
+}
+
+function deleteCode(idx){
+  if(!confirm('Delete this invite code?')) return;
+  const codes = getCodes();
+  codes.splice(idx, 1);
+  saveCodes(codes);
+  renderAll();
+}
+
+function deleteKey(idx){
+  if(!confirm('Delete this licence key?')) return;
+  const keys = getKeys();
+  keys.splice(idx, 1);
+  saveKeys(keys);
+  renderAll();
+}
+
+function copyCode(text){
+  navigator.clipboard.writeText(text).then(()=>toast('Copied: ' + text)).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('Copied: ' + text);
+  });
+}
+
+// ═══ RENDER ════════════════════════════════════════════════════════════════════
+function fmtDate(ts){ return new Date(ts).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'}); }
+
+function renderInviteCodes(){
+  const codes = getCodes();
+  const tbody = document.getElementById('invite-tbody');
+  if(!codes.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:1.25rem;font-size:.78rem">No invite codes yet. Generate one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = codes.map((c,i)=>`
+    <tr>
+      <td><span class="code-mono" style="cursor:pointer" onclick="copyCode('${c.code}')" title="Click to copy">${c.code}</span></td>
+      <td style="color:var(--t3);font-size:.72rem">${fmtDate(c.created)}</td>
+      <td><span class="badge ${c.used?'used':'active'}">${c.used?'Used':'Available'}</span></td>
+      <td style="text-align:right;display:flex;gap:.4rem;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="copyCode('${c.code}')">Copy</button>
+        <button class="btn btn-red btn-sm" onclick="deleteCode(${i})">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderLicenceKeys(){
+  const keys = getKeys();
+  const tbody = document.getElementById('key-tbody');
+  if(!keys.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:1.25rem;font-size:.78rem">No licence keys yet. Generate one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = keys.map((k,i)=>`
+    <tr>
+      <td><span class="code-mono green" style="cursor:pointer" onclick="copyCode('${k.key}')" title="Click to copy">${k.key}</span></td>
+      <td style="color:var(--t3);font-size:.72rem">${fmtDate(k.created)}</td>
+      <td><span class="badge ${k.activated?'licensed':'active'}">${k.activated?'Activated':'Available'}</span></td>
+      <td style="text-align:right;display:flex;gap:.4rem;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="copyCode('${k.key}')">Copy</button>
+        <button class="btn btn-red btn-sm" onclick="deleteKey(${i})">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderConfigBlock(){
+  const codes = getCodes().filter(c=>!c.used).map(c=>"'"+c.code+"'");
+  const keys  = getKeys().map(k=>"'"+k.key+"'");
+  const trial = getTrialDays();
+  const block = `const AUTH_CONFIG = {\n  inviteCodes: [${codes.join(', ')||"'APEX2026'"}],\n  licenceKeys:  [${keys.join(', ')||"'IA-2026-EXAMPLE-0000'"}],\n  trialDays:   ${trial}\n};`;
+  document.getElementById('config-block').textContent = block;
+}
+
+function renderSummary(){
+  const codes = getCodes();
+  const keys  = getKeys();
+  document.getElementById('sum-codes').textContent = codes.filter(c=>!c.used).length;
+  document.getElementById('sum-keys').textContent  = keys.length;
+  document.getElementById('sum-trial').textContent = getTrialDays();
+}
+
+function renderUsers(){
+  // Try to read the user stored by the app (same localStorage key)
+  const AUTH_KEY = 'igniteapex_auth_v1';
+  const container = document.getElementById('users-panel');
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    if(!raw){ container.innerHTML='<p style="font-size:.8rem;color:var(--t3)">No registered users found on this device.</p>'; document.getElementById('sum-users').textContent='0'; return; }
+    const user = JSON.parse(raw);
+    const days = Math.floor((Date.now()-user.registeredAt)/(1000*60*60*24));
+    const trialLeft = Math.max(0, getTrialDays()-days);
+    const status = user.licenceKey ? 'licensed' : (trialLeft<=0?'expired':trialLeft<=5?'trial':'trial');
+    const statusLabel = user.licenceKey ? 'Licensed' : (trialLeft<=0?'Expired':'Trial · '+trialLeft+'d left');
+    const initial = (user.name||user.email).charAt(0).toUpperCase();
+    document.getElementById('sum-users').textContent = '1';
+    container.innerHTML = `
+      <div class="user-row">
+        <div class="user-avatar">${initial}</div>
+        <div class="user-info">
+          <div class="user-name">${user.name||'—'}</div>
+          <div class="user-email">${user.email}</div>
+          <div class="user-meta">Registered ${fmtDate(user.registeredAt)} · Invite: <span style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--amber)">${user.inviteCode||'—'}</span>${user.licenceKey?' · Key: <span style="font-family:\'DM Mono\',monospace;font-size:.68rem;color:var(--green)">'+user.licenceKey+'</span>':''}</div>
+        </div>
+        <span class="badge ${status}">${statusLabel}</span>
+      </div>`;
+  } catch(e){ container.innerHTML='<p style="font-size:.8rem;color:var(--t3)">Could not read user data.</p>'; }
+}
+
+function renderAll(){
+  renderInviteCodes();
+  renderLicenceKeys();
+  renderConfigBlock();
+  renderSummary();
+  renderUsers();
+  document.getElementById('setting-trial').value = getTrialDays();
+}
+
+// ═══ SETTINGS ══════════════════════════════════════════════════════════════════
+function saveSetting(type){
+  if(type==='trial'){
+    const v = parseInt(document.getElementById('setting-trial').value)||30;
+    localStorage.setItem(SK.trial, v);
+    toast('Trial duration saved: ' + v + ' days');
+    renderAll();
+  } else if(type==='pw'){
+    const pw = document.getElementById('setting-pw').value;
+    if(!pw||pw.length<4){ toast('Password too short (min 4 chars)'); return; }
+    localStorage.setItem(SK.pw, pw);
+    document.getElementById('setting-pw').value = '';
+    toast('Admin password updated');
+  }
+}
+
+function resetAll(){
+  if(!confirm('Delete ALL codes, keys and settings? This cannot be undone.')) return;
+  [SK.codes, SK.keys, SK.trial, SK.pw].forEach(k=>localStorage.removeItem(k));
+  renderAll();
+  toast('All data reset');
+}
+
+// ═══ COPY CONFIG ════════════════════════════════════════════════════════════════
+function copyConfig(){
+  const text = document.getElementById('config-block').textContent;
+  navigator.clipboard.writeText(text).then(()=>toast('Config block copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);toast('Config block copied!');
+  });
+}
+
+// ═══ TOAST ══════════════════════════════════════════════════════════════════════
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ═══ SEED DEFAULT CODES ON FIRST INSTALL ════════════════════════════════════════
+(function seedDefaults(){
+  const existingCodes = getCodes();
+  if(existingCodes.length === 0){
+    const defaults = [
+      'IGNITE2026','APEX2026','SHAAMELZ2026','TRIAL2026','SAAS2026',
+      'LAUNCH2026','DEMAND2026','QUALIFY2026','FORECAST2026','CEMENT2026'
+    ];
+    const seeded = defaults.map(code => ({
+      code, created: Date.now(), used: false, usedBy: null, seeded: true
+    }));
+    localStorage.setItem(SK.codes, JSON.stringify(seeded));
+  }
+})();
+
+// ═══ INIT ═══════════════════════════════════════════════════════════════════════
+if(sessionStorage.getItem(SK.auth)==='1'){
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('admin-panel').classList.add('visible');
+  renderAll();
+}
+</script>
+</body>
+</html>

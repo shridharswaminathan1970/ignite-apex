@@ -1,0 +1,75 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+DB-001,All Required Tables Exist,Database,Access to database,"1. Run: SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name","Tables exist:
+- users
+- organisations
+- org_subscriptions
+- registration_requests
+- company_registration_requests
+- (other app tables)",,Pending,Critical,Schema completeness
+DB-002,Users Table Schema,Database,Access to database,"1. Check columns: SELECT column_name, data_type FROM information_schema.columns WHERE table_name='users'","Required columns exist:
+- id (uuid)
+- email (text, unique)
+- name (text)
+- role (user_role enum)
+- org_id (uuid, FK to organisations)
+- created_at (timestamptz)
+- crm_enabled (boolean) - may be on subscription
+- account_type (text)",,Pending,Critical,Users schema
+DB-003,Organisations Table Schema,Database,Access to database,"1. Check org table columns","Required columns:
+- id (uuid)
+- name (text)
+- address (text, nullable for 'NA' orgs)
+- created_at (timestamptz)",,Pending,Critical,Orgs schema
+DB-004,Org Subscriptions Table Schema,Database,Access to database,"1. Check org_subscriptions columns","Required columns:
+- id (uuid)
+- org_id (uuid, FK)
+- status (text)
+- plan (text)
+- max_users (integer)
+- trial_started_at (timestamptz, nullable)
+- trial_ends_at (timestamptz, nullable)
+- crm_enabled (boolean)
+- b2b0_enabled (boolean)
+- b2b0_plan (text, nullable)
+- b2b0_seats (integer, nullable)
+- b2b0_trial_started_at (timestamptz, nullable)
+- b2b0_trial_ends_at (timestamptz, nullable)
+- trial_reminders_sent (jsonb)
+- created_at, updated_at",,Pending,Critical,Subscription schema
+DB-005,Foreign Key Constraints,Database,Access to database,"1. Check FK: SELECT constraint_name, table_name, column_name FROM information_schema.key_column_usage WHERE constraint_name LIKE '%_fkey'","Foreign keys exist:
+- users.org_id → organisations.id
+- org_subscriptions.org_id → organisations.id
+- registration_requests.approved_by → users.id
+- company_registration_requests.approved_by → users.id",,Pending,High,Referential integrity
+DB-006,Unique Constraints,Database,Access to database,"1. Check unique constraints
+2. Test duplicate insert","Unique constraints enforced:
+- users.email (unique)
+- registration_requests.email (unique)
+- Duplicate inserts fail with constraint error",,Pending,High,Data uniqueness
+DB-007,RLS Policies Enabled,Security,Access to database,"1. Check: SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname='public'","RLS enabled on sensitive tables:
+- users (rowsecurity = true)
+- org_subscriptions (true)
+- registration_requests (true)
+- company_registration_requests (true)",,Pending,Critical,Security policies
+DB-008,RLS Policy - Anon Can Insert Registration,Security,RLS enabled,"1. Use anon key to insert into registration_requests
+2. Try to SELECT (should fail)","1. INSERT succeeds (anon can submit)
+2. SELECT fails (anon cannot read)
+3. Only authenticated super_duper_admin can read",,Pending,Critical,RLS insert policy
+DB-009,RLS Policy - User Can Read Own Data,Security,User authenticated,"1. Login as user
+2. Query: SELECT * FROM users WHERE id = auth.uid()","1. Can read own user record
+2. Cannot read other users (RLS blocks)
+3. Can read own org subscription",,Pending,High,RLS read policy
+DB-010,Default Values Applied,Database,Fresh record insertion,"1. Insert minimal user record
+2. Check default values applied","Defaults set:
+- created_at = now()
+- role = default (if set)
+- account_type = default
+- status = 'pending' (for requests)",,Pending,Medium,Default values
+DB-011,Timestamp Auto-Updates,Database,Update existing record,"1. Update a record
+2. Check updated_at timestamp","updated_at changes to current timestamp
+Auto-updated by trigger or default",,Pending,Medium,Timestamp triggers
+DB-012,Data Consistency - Orphaned Records,Database,After user/org deletion,"1. Delete test organisation
+2. Check for orphaned users or subscriptions","1. Cascade delete configured OR
+2. Soft delete maintains references
+3. No broken FK references
+4. Data integrity maintained",,Pending,High,Cascade behavior

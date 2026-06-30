@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNITE_APEX — Universal SaaS Sales System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--s3:#1A1E28;
+  --b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--ad:#2D1F00;
+  --green:#10B981;--gd:#021F12;
+  --blue:#3B82F6;--bd:#020F2A;
+  --red:#EF4444;--rd:#1F0202;
+  --purple:#8B5CF6;--pd:#160A2E;
+  --teal:#06B6D4;--td:#021820;
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+
+/* ──── TOPBAR ──── */
+.topbar{background:var(--s1);border-bottom:1px solid var(--b1);height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;position:sticky;top:0;z-index:400}
+.tb-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--t1);letter-spacing:.5px}
+.tb-logo em{color:var(--amber);font-style:normal}
+.tb-sep{width:1px;height:22px;background:var(--b2)}
+.tb-sub{font-size:.65rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.65rem}
+.tb-product-badge{background:var(--ad);border:1px solid var(--amber);color:var(--amber2);font-size:.68rem;font-weight:700;letter-spacing:.5px;padding:.25rem .65rem;border-radius:20px;display:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-prospect{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:.38rem .8rem;font-size:.8rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;width:190px;transition:border .2s}
+.tb-prospect:focus{border-color:var(--amber)}
+.tb-prospect::placeholder{color:var(--t3)}
+.tb-config-btn{background:var(--amber);color:#000;border:none;border-radius:7px;padding:.38rem .85rem;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;letter-spacing:.3px;transition:all .2s}
+.tb-config-btn:hover{background:var(--amber2)}
+
+/* ──── SETUP SCREEN ──── */
+#setup-screen{min-height:calc(100vh - 52px);padding:3rem 2rem;max-width:860px;margin:0 auto}
+.setup-hero{text-align:center;margin-bottom:3rem}
+.setup-eyebrow{font-size:.62rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:.75rem}
+.setup-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.05;margin-bottom:.5rem}
+.setup-title em{color:var(--amber);font-style:normal}
+.setup-desc{font-size:.92rem;color:var(--t2);line-height:1.7;max-width:560px;margin:0 auto}
+
+.setup-steps{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:2.5rem;flex-wrap:wrap}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--b2);transition:background .3s}
+.step-dot.active{background:var(--amber);width:24px;border-radius:4px}
+.step-dot.done{background:var(--green)}
+
+.setup-panel{background:var(--s1);border:1px solid var(--b1);border-radius:14px;overflow:hidden;margin-bottom:1.25rem}
+.sp-head{padding:1.1rem 1.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem}
+.sp-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace}
+.sp-title{font-size:.88rem;font-weight:700;color:var(--t1)}
+.sp-sub{font-size:.75rem;color:var(--t3);margin-top:.1rem}
+.sp-body{padding:1.25rem 1.5rem}
+
+.form-row{display:grid;gap:.75rem;margin-bottom:.75rem}
+.form-row.two{grid-template-columns:1fr 1fr}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.form-row.four{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:700px){.form-row.two,.form-row.three,.form-row.four{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.form-row.two,.form-row.three,.form-row.four{grid-template-columns:1fr}}
+.fg label{display:block;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.3rem}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--s2);border:1.5px solid var(--b2);border-radius:8px;padding:.5rem .75rem;font-size:.85rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--amber)}
+.fg textarea{resize:vertical;min-height:70px;line-height:1.5}
+.fg select option{background:var(--s2)}
+.fg-hint{font-size:.68rem;color:var(--t3);margin-top:.3rem;line-height:1.4;font-style:italic}
+
+/* 4U BLOCKS */
+.four-u-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+@media(max-width:600px){.four-u-grid{grid-template-columns:1fr}}
+.u-block{border-radius:10px;padding:1rem 1.1rem;border:1.5px solid}
+.u-block.unworkable{background:#1A0800;border-color:#EF4444}
+.u-block.unavoidable{background:#00101A;border-color:#3B82F6}
+.u-block.urgent{background:#1A0F00;border-color:var(--amber)}
+.u-block.underserved{background:#080018;border-color:var(--purple)}
+.u-badge{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem;display:block}
+.u-block.unworkable .u-badge{color:#EF4444}
+.u-block.unavoidable .u-badge{color:#60A5FA}
+.u-block.urgent .u-badge{color:var(--amber2)}
+.u-block.underserved .u-badge{color:#A78BFA}
+.u-title{font-size:.82rem;font-weight:700;color:var(--t1);margin-bottom:.3rem}
+.u-block textarea{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;width:100%;padding:.5rem .65rem;font-size:.8rem;font-family:'Outfit',sans-serif;color:var(--t2);outline:none;resize:vertical;min-height:60px;transition:border .2s;line-height:1.5}
+.u-block.unworkable textarea:focus{border-color:#EF4444}
+.u-block.unavoidable textarea:focus{border-color:#3B82F6}
+.u-block.urgent textarea:focus{border-color:var(--amber)}
+.u-block.underserved textarea:focus{border-color:var(--purple)}
+
+/* KPI TARGETS */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+@media(max-width:600px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi-block{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:.85rem 1rem}
+.kpi-block label{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:.3rem}
+.kpi-block input{width:100%;background:var(--bg);border:1.5px solid var(--b2);border-radius:7px;padding:.45rem .65rem;font-size:.85rem;color:var(--t1);font-family:'DM Mono',monospace;outline:none;transition:border .2s}
+.kpi-block input:focus{border-color:var(--amber)}
+.kpi-block .kpi-unit{font-size:.62rem;color:var(--t3);margin-top:.2rem;font-style:italic}
+
+.launch-btn{width:100%;background:var(--amber);color:#000;border:none;border-radius:10px;padding:.9rem;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;letter-spacing:.5px;transition:all .2s;margin-top:.5rem}
+.launch-btn:hover{background:var(--amber2);transform:translateY(-1px)}
+.launch-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.validation-msg{font-size:.75rem;color:#EF4444;margin-top:.5rem;display:none}
+
+/* ──── MAIN APP ──── */
+#app-screen{display:none}
+.sidenav{position:fixed;left:0;top:52px;bottom:0;width:196px;background:var(--s1);border-right:1px solid var(--b1);overflow-y:auto;z-index:200;padding:.85rem 0}
+.nav-section{font-size:.55rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3);padding:.3rem 1.1rem;margin-top:.35rem}
+.nav-item{display:flex;align-items:center;gap:.55rem;padding:.52rem 1.1rem;cursor:pointer;transition:all .15s;border-left:2px solid transparent;color:var(--t3);font-size:.76rem;font-weight:600}
+.nav-item:hover{background:var(--s2);color:var(--t2)}
+.nav-item.active{border-left-color:var(--amber);color:var(--amber);background:var(--s2)}
+.nav-item.done{color:var(--green)}
+.nav-item.done .ndot{background:var(--green)}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--b2);flex-shrink:0;transition:background .2s}
+.nav-item.active .ndot{background:var(--amber)}
+.nav-prog{margin:.65rem 1.1rem 0;height:2px;background:var(--b2);border-radius:2px;overflow:hidden}
+.nav-prog-fill{height:100%;background:var(--amber);border-radius:2px;transition:width .4s}
+.nav-prog-txt{font-size:.52rem;color:var(--t3);padding:.2rem 1.1rem;letter-spacing:1px}
+
+.main{margin-left:196px;min-height:calc(100vh - 52px)}
+.module{display:none;animation:fadeUp .25s ease}
+.module.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ──── MODULE HEADER ──── */
+.mh{padding:1.75rem 2.5rem 1.5rem;border-bottom:1px solid var(--b1);position:relative;overflow:hidden}
+.mh::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-color, var(--amber))}
+.mh-eye{font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:.35rem;color:var(--t3)}
+.mh-title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;line-height:1.1;margin-bottom:.3rem}
+.mh-desc{font-size:.86rem;color:var(--t2);line-height:1.6;max-width:620px}
+.mh-badge{position:absolute;top:1.5rem;right:2rem;text-align:right}
+.mh-badge-val{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1}
+.mh-badge-label{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-top:.15rem}
+
+/* ──── BODY ──── */
+.mb{padding:1.75rem 2.5rem;max-width:1020px}
+.sec-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.2rem}
+.sec-sub{font-size:.8rem;color:var(--t2);line-height:1.6;margin-bottom:1.1rem}
+.divider{height:1px;background:linear-gradient(90deg,var(--b2),transparent);margin:1.5rem 0}
+
+/* ──── PANEL ──── */
+.panel{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.ph{display:flex;align-items:center;gap:.65rem;padding:.9rem 1.2rem;border-bottom:1px solid var(--b1)}
+.ph-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.ph-name{font-size:.85rem;font-weight:700;color:var(--t1)}
+.ph-tag{margin-left:auto;font-size:.6rem;font-weight:700;letter-spacing:1px;padding:.18rem .5rem;border-radius:5px;text-transform:uppercase}
+.pb{padding:1.1rem 1.2rem}
+
+/* ──── 4U SUMMARY ──── */
+.u-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem}
+@media(max-width:700px){.u-summary-grid{grid-template-columns:1fr}}
+.us-card{border-radius:9px;padding:.85rem 1rem;border:1px solid}
+.us-card.unworkable{background:var(--rd);border-color:#EF4444}
+.us-card.unavoidable{background:var(--bd);border-color:#3B82F6}
+.us-card.urgent{background:var(--ad);border-color:var(--amber)}
+.us-card.underserved{background:var(--pd);border-color:var(--purple)}
+.us-label{font-size:.58px;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:.3rem;font-size:.58rem}
+.us-card.unworkable .us-label{color:#EF4444}
+.us-card.unavoidable .us-label{color:#60A5FA}
+.us-card.urgent .us-label{color:var(--amber2)}
+.us-card.underserved .us-label{color:#A78BFA}
+.us-text{font-size:.82rem;color:var(--t1);line-height:1.5}
+
+/* ──── ICP SCORE ──── */
+.icp-row{display:grid;grid-template-columns:1fr 120px 1fr;gap:.75rem;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--b1)}
+.icp-row:last-child{border-bottom:none}
+.icp-crit{font-size:.82rem;font-weight:600;color:var(--t1);margin-bottom:.15rem}
+.icp-hint{font-size:.7rem;color:var(--t3);line-height:1.3}
+.icp-wt{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--t3);text-align:center}
+.icp-sel{background:var(--s2);border:1.5px solid var(--b2);border-radius:7px;padding:.38rem .55rem;font-size:.78rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;cursor:pointer;transition:border .2s;width:100%}
+.icp-sel:focus{border-color:var(--amber)}
+.icp-sel option{background:var(--s2)}
+.score-disp{background:var(--bg);border:1px solid var(--b1);border-radius:10px;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;margin-top:.75rem}
+.score-num{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;line-height:1}
+.score-verd{font-size:.7rem;font-weight:700;letter-spacing:.5px;padding:.28rem .65rem;border-radius:20px}
+
+/* ──── LAYERS ──── */
+.layer-block{border-radius:10px;padding:1rem 1.1rem;margin-bottom:.65rem;border:1.5px solid}
+.lb-num{font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.25rem}
+.lb-title{font-size:.92rem;font-weight:700;margin-bottom:.35rem}
+.lb-prompt{font-size:.75rem;color:var(--t3);margin-bottom:.45rem;line-height:1.5}
+.lb-prompt strong{color:var(--t2);font-style:normal}
+.layer-ta{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.07);border-radius:7px;padding:.55rem .75rem;font-size:.82rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:58px;outline:none;transition:border .2s;line-height:1.5}
+.lb1 .layer-ta:focus{border-color:#EF4444}
+.lb2 .layer-ta:focus{border-color:#3B82F6}
+.lb3 .layer-ta:focus{border-color:var(--green)}
+.layer-done{display:none;font-size:.6rem;font-weight:700;letter-spacing:1px;padding:.18rem .5rem;border-radius:5px;margin-top:.35rem;text-transform:uppercase}
+.layer-done.show{display:inline-block}
+
+/* ──── CHECKLIST ──── */
+.chk{display:flex;align-items:flex-start;gap:.6rem;padding:.5rem 0;border-bottom:1px solid var(--b1);cursor:pointer}
+.chk:last-child{border-bottom:none}
+.chkbox{width:17px;height:17px;border-radius:4px;border:2px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:2px;font-size:.6rem;color:#fff;background:transparent}
+.chkbox.on{background:var(--green);border-color:var(--green)}
+.chk-txt{font-size:.82rem;color:var(--t2);line-height:1.5}
+.chk-txt strong{color:var(--t1);display:block;font-size:.83rem;margin-bottom:.1rem}
+.chk.done .chk-txt{color:var(--t3);text-decoration:line-through}
+.gate-bar{border-radius:8px;padding:.8rem 1.1rem;margin-top:.65rem;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:.6rem;border:1px solid}
+.gate-bar.pass{background:var(--gd);border-color:var(--green);color:var(--green)}
+.gate-bar.fail{background:var(--rd);border-color:#EF4444;color:#EF4444}
+.gate-bar.partial{background:var(--ad);border-color:var(--amber);color:var(--amber)}
+
+/* ──── OBJECTIONS ──── */
+.obj-card{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:.85rem 1rem;margin-bottom:.6rem;cursor:pointer;border-left:3px solid #EF4444;transition:border-color .2s}
+.obj-card.open{border-left-color:var(--amber)}
+.obj-q{font-size:.85rem;font-weight:700;color:var(--t1);margin-bottom:.25rem}
+.obj-real{font-size:.73rem;color:var(--t3);font-style:italic;margin-bottom:.5rem}
+.obj-script{background:var(--bg);border-radius:7px;padding:.6rem .8rem;font-size:.8rem;color:var(--t2);line-height:1.5;border-left:2px solid var(--amber);display:none;margin-top:.35rem}
+.obj-card.open .obj-script{display:block}
+
+/* ──── BQ ──── */
+.bq{background:var(--s2);border:1px solid var(--b1);border-radius:9px;margin-bottom:.55rem;overflow:hidden}
+.bq-hd{display:flex;align-items:flex-start;gap:.6rem;padding:.8rem 1rem;cursor:pointer}
+.bq-n{font-family:'DM Mono',monospace;font-size:.62rem;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;background:var(--ad);color:var(--amber)}
+.bq-q{font-size:.82rem;font-weight:600;color:var(--t1);flex:1;line-height:1.4}
+.bq-s{font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:8px;flex-shrink:0;margin-top:2px;background:var(--s3);color:var(--t3)}
+.bq-bd{padding:0 1rem 1rem 2.6rem;display:none}
+.bq-bd.open{display:block}
+.bq-ta{width:100%;background:var(--bg);border:1.5px solid var(--b2);border-radius:7px;padding:.5rem .7rem;font-size:.78rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:50px;outline:none;margin-bottom:.45rem;transition:border .2s;line-height:1.5}
+.bq-ta:focus{border-color:var(--amber)}
+.bq-btns{display:flex;gap:.45rem}
+.bqb{padding:.28rem .6rem;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'Outfit',sans-serif;transition:all .15s}
+.bqb.y{border-color:var(--green);color:var(--green);background:transparent}
+.bqb.y.on,.bqb.y:hover{background:var(--green);color:#fff}
+.bqb.n{border-color:#EF4444;color:#EF4444;background:transparent}
+.bqb.n.on,.bqb.n:hover{background:#EF4444;color:#fff}
+.bq-result{background:var(--bg);border:1px solid var(--b1);border-radius:9px;padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+.bq-score{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--t1)}
+
+/* ──── STATS ──── */
+.stats-row{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1.1rem}
+.stat{background:var(--s1);border:1px solid var(--b1);border-radius:9px;padding:.75rem 1rem;flex:1;min-width:90px;text-align:center}
+.stat-v{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:.2rem}
+.stat-l{font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
+
+/* ──── ROI ──── */
+.roi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem}
+@media(max-width:600px){.roi-grid{grid-template-columns:1fr 1fr}}
+.roi-card{background:var(--bg);border:1px solid var(--b1);border-radius:9px;padding:.8rem .9rem;text-align:center}
+.roi-v{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;line-height:1;margin-bottom:.2rem}
+.roi-l{font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)}
+.roi-n{font-size:.68rem;color:var(--t3);margin-top:.2rem;line-height:1.3}
+
+/* ──── CLOSING TIERS ──── */
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+@media(max-width:700px){.tier-grid{grid-template-columns:1fr}}
+.tier{border-radius:10px;overflow:hidden;border:1.5px solid}
+.tier.good{border-color:var(--b2)}
+.tier.better{border-color:var(--amber)}
+.tier.best{border-color:var(--b2)}
+.tier-head{padding:.7rem .9rem}
+.tier.good .tier-head{background:var(--s3)}
+.tier.better .tier-head{background:var(--ad)}
+.tier.best .tier-head{background:var(--s3)}
+.tier-name{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.2rem}
+.tier.better .tier-name{color:var(--amber)}
+.tier-price{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;line-height:1}
+.tier-body{background:var(--s2);padding:.8rem .9rem}
+.tier-feats{list-style:none;display:flex;flex-direction:column;gap:.3rem;margin-bottom:.6rem}
+.tier-feats li{font-size:.75rem;color:var(--t2);display:flex;gap:.4rem;align-items:flex-start;line-height:1.4}
+.tier-feats li::before{content:'✓';flex-shrink:0;font-size:.68rem;color:var(--green);margin-top:1px}
+.tier-rec{font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:5px;display:inline-block}
+.tier.better .tier-rec{background:var(--ad);color:var(--amber2)}
+
+/* ──── CEMENT ──── */
+.cement-layer{background:var(--s1);border:1px solid var(--b1);border-radius:11px;margin-bottom:.75rem;overflow:hidden}
+.cl-head{display:flex;align-items:center;gap:.65rem;padding:.85rem 1.1rem;border-bottom:1px solid var(--b1)}
+.cl-num{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;width:30px;flex-shrink:0}
+.cl-info h3{font-size:.85rem;font-weight:700;color:var(--t1)}
+.cl-info p{font-size:.7rem;color:var(--t3);margin-top:.1rem}
+.cl-prog{margin-left:auto;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--t3)}
+.cl-body{padding:.9rem 1.1rem}
+
+/* ──── RITUAL ──── */
+.ritual-row{display:flex;align-items:flex-start;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--b1)}
+.ritual-row:last-child{border-bottom:none}
+.rt-time{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber);width:60px;flex-shrink:0;margin-top:2px}
+.rt-body{flex:1}
+.rt-name{font-size:.83rem;font-weight:700;color:var(--t1);margin-bottom:.12rem}
+.rt-desc{font-size:.72rem;color:var(--t3);line-height:1.4}
+.rt-chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;background:transparent;margin-top:2px;font-size:.65rem;color:transparent}
+.rt-chk.on{background:var(--green);border-color:var(--green);color:#fff}
+
+/* ──── INFO BOXES ──── */
+.info{border-radius:8px;padding:.8rem .95rem;margin-bottom:.75rem;border-left:3px solid;font-size:.79rem;line-height:1.6}
+.info.amber{background:var(--ad);border-color:var(--amber);color:#C4830A}
+.info.green{background:var(--gd);border-color:var(--green);color:var(--green)}
+.info.red{background:var(--rd);border-color:#EF4444;color:#EF4444}
+.info.blue{background:var(--bd);border-color:#3B82F6;color:#60A5FA}
+.info strong{font-weight:700;color:inherit}
+
+/* ──── MOD NAV ──── */
+.mod-nav{display:flex;justify-content:space-between;align-items:center;padding:1.5rem 2.5rem;border-top:1px solid var(--b1);background:var(--s1);margin-top:1.5rem}
+.btn{padding:.55rem 1.1rem;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all .2s;letter-spacing:.3px}
+.btn-primary{background:var(--amber);color:#000}
+.btn-primary:hover{background:var(--amber2)}
+.btn-ghost{background:transparent;color:var(--t3);border:1.5px solid var(--b2)}
+.btn-ghost:hover{color:var(--t1);border-color:var(--b2)}
+
+/* ──── TWO COL ──── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.input-field{width:100%;background:var(--s2);border:1.5px solid var(--b2);border-radius:8px;padding:.5rem .75rem;font-size:.83rem;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border .2s;margin-bottom:.5rem}
+.input-field:focus{border-color:var(--amber)}
+.ta-field{width:100%;background:var(--s2);border:1.5px solid var(--b2);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:58px;outline:none;transition:border .2s;line-height:1.5}
+.ta-field:focus{border-color:var(--amber)}
+.field-label{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.3rem;display:block}
+
+/* ──── SIGNAL ──── */
+.signal{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:.8rem .95rem;margin-bottom:.55rem;display:flex;gap:.7rem}
+.sig-icon{font-size:.95rem;flex-shrink:0;margin-top:2px}
+.sig-title{font-size:.82rem;font-weight:700;color:var(--t1);margin-bottom:.18rem}
+.sig-body{font-size:.74rem;color:var(--t3);line-height:1.4;margin-bottom:.25rem}
+.sig-action{font-size:.7rem;font-weight:700;color:var(--amber);line-height:1.4}
+
+/* ──── CLOSING ──── */
+.close-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+@media(max-width:700px){.close-cards{grid-template-columns:1fr}}
+.close-card{border:1.5px solid var(--b1);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s}
+.close-card:hover{border-color:var(--amber)}
+.close-card.selected{border-color:var(--amber);box-shadow:0 0 0 2px rgba(245,158,11,.2)}
+.cc-head{padding:.75rem .9rem}
+.cc-head h3{font-size:.85rem;font-weight:700;color:#fff}
+.cc-body{padding:.9rem;background:var(--s2)}
+.cc-desc{font-size:.78rem;color:var(--t2);line-height:1.5;margin-bottom:.65rem}
+.cc-script{background:var(--bg);border-radius:7px;padding:.6rem .75rem;font-size:.76rem;color:var(--t2);line-height:1.5;font-style:italic;border-left:2px solid var(--amber)}
+
+/* ═══ AUTH GATE ═══════════════════════════════════════════════════════════════ */
+#auth-gate{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(8,9,13,.97);
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem;
+  backdrop-filter:blur(4px);
+}
+#auth-gate.hidden{display:none}
+
+.auth-box{
+  background:#0F1117;border:1px solid #1E2333;border-radius:18px;
+  width:100%;max-width:440px;overflow:hidden;
+}
+.auth-header{
+  background:linear-gradient(135deg,#1A1000,#0D0800);
+  padding:2rem 2rem 1.5rem;border-bottom:1px solid #1E2333;text-align:center;
+}
+.auth-logo{
+  font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#F59E0B;
+  letter-spacing:1px;margin-bottom:.25rem;
+}
+.auth-logo em{color:#fff;font-style:normal}
+.auth-tagline{font-size:.7rem;color:#4A5268;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+
+.auth-tabs{display:flex;border-bottom:1px solid #1E2333}
+.auth-tab{
+  flex:1;padding:.9rem;font-size:.78rem;font-weight:700;text-align:center;
+  cursor:pointer;color:#4A5268;border-bottom:2px solid transparent;
+  transition:all .15s;background:transparent;border-top:none;border-left:none;border-right:none;
+  font-family:'Outfit',sans-serif;
+}
+.auth-tab.active{color:#F59E0B;border-bottom-color:#F59E0B;background:#0A0800}
+
+.auth-panel{display:none;padding:1.75rem 2rem 2rem}
+.auth-panel.active{display:block}
+
+.auth-field{margin-bottom:1rem}
+.auth-field label{
+  display:block;font-size:.62rem;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:#4A5268;margin-bottom:.4rem;
+}
+.auth-field input{
+  width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;
+  padding:.65rem .9rem;font-size:.85rem;color:#EEF0F8;
+  font-family:'Outfit',sans-serif;outline:none;transition:border .15s;
+}
+.auth-field input:focus{border-color:#F59E0B}
+.auth-field input::placeholder{color:#2A3048}
+
+.auth-btn{
+  width:100%;padding:.75rem;border-radius:9px;font-size:.88rem;font-weight:700;
+  cursor:pointer;border:none;font-family:'Outfit',sans-serif;
+  transition:all .15s;margin-top:.5rem;
+}
+.auth-btn.primary{background:#F59E0B;color:#000}
+.auth-btn.primary:hover{background:#FCD34D}
+.auth-btn.green{background:#10B981;color:#000}
+.auth-btn.green:hover{background:#34D399}
+
+.auth-error{
+  background:#1F0202;border:1px solid #EF4444;border-radius:7px;
+  padding:.65rem .85rem;font-size:.75rem;color:#FCA5A5;
+  margin-bottom:1rem;display:none;
+}
+.auth-error.show{display:block}
+
+.auth-hint{font-size:.7rem;color:#4A5268;line-height:1.5;margin-top:.85rem;text-align:center}
+.auth-hint a{color:#F59E0B;cursor:pointer;text-decoration:none}
+
+.auth-field .field-hint{font-size:.65rem;color:#2A3048;margin-top:.3rem}
+
+/* Trial badge shown in topbar after login */
+.trial-badge{
+  font-size:.65rem;font-weight:700;padding:.25rem .6rem;border-radius:5px;
+  display:inline-flex;align-items:center;gap:.35rem;
+}
+.trial-badge.active{background:#021F12;color:#10B981;border:1px solid #10B981}
+.trial-badge.expiring{background:#2D1F00;color:#F59E0B;border:1px solid #F59E0B}
+.trial-badge.expired{background:#1F0202;color:#EF4444;border:1px solid #EF4444}
+
+/* Licence gate overlay */
+#licence-gate{
+  position:fixed;inset:0;z-index:9998;
+  background:rgba(8,9,13,.98);
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem;
+}
+#licence-gate.hidden{display:none}
+.licence-box{
+  background:#0F1117;border:1px solid #EF4444;border-radius:18px;
+  width:100%;max-width:420px;padding:2.5rem 2rem;text-align:center;
+}
+.licence-icon{font-size:2.5rem;margin-bottom:1rem}
+.licence-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#EEF0F8;margin-bottom:.5rem}
+.licence-desc{font-size:.82rem;color:#8892AA;line-height:1.65;margin-bottom:1.75rem}
+.licence-field{
+  width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;
+  padding:.75rem 1rem;font-size:.95rem;color:#EEF0F8;
+  font-family:'DM Mono',monospace;outline:none;text-align:center;
+  letter-spacing:2px;transition:border .15s;margin-bottom:.85rem;
+}
+.licence-field:focus{border-color:#F59E0B}
+.licence-field::placeholder{color:#2A3048;letter-spacing:0;font-family:'Outfit',sans-serif;font-size:.82rem}
+.licence-error{font-size:.75rem;color:#FCA5A5;margin-bottom:.75rem;display:none}
+.licence-error.show{display:block}
+.licence-hint{font-size:.7rem;color:#4A5268;margin-top:1rem;line-height:1.6}
+
+/* User indicator in topbar */
+.user-pill{
+  display:flex;align-items:center;gap:.5rem;padding:.3rem .75rem;
+  background:#141720;border:1px solid #1E2333;border-radius:20px;cursor:pointer;
+  transition:border-color .15s;
+}
+.user-pill:hover{border-color:#272E42}
+.user-avatar{
+  width:22px;height:22px;border-radius:50%;background:#F59E0B;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:800;color:#000;flex-shrink:0;
+}
+.user-name{font-size:.72rem;font-weight:600;color:#8892AA;max-width:100px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script>
+// ─── IGNITE_APEX SHARED DATA BRIDGE (inline) ─────────────────────────────
+const IA = {
+  CONFIG_KEY: 'ignite_apex_config',
+  save(key, data){ try{ localStorage.setItem(key, JSON.stringify(data)); return true; }catch(e){ return false; } },
+  load(key){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):null; }catch(e){ return null; } },
+  saveConfig(cfg){ this.save(this.CONFIG_KEY, {...cfg, _savedAt: Date.now()}); },
+  loadConfig(){ return this.load(this.CONFIG_KEY); },
+  timeSince(ts){ if(!ts) return 'unknown time'; const s=Math.floor((Date.now()-ts)/1000); if(s<60) return s+'s ago'; if(s<3600) return Math.floor(s/60)+'m ago'; return Math.floor(s/3600)+'h ago'; }
+};
+
+// ═══ AUTH SYSTEM (Supabase-backed, localStorage offline fallback) ══════════════
+
+const AUTH_KEY = 'igniteapex_auth_v1';
+
+function _cacheSession(user) {
+  try { localStorage.setItem(AUTH_KEY, JSON.stringify({ email: user.email, name: user.name || '', role: user.role || 'admin', orgId: user.orgId || null, cachedAt: Date.now() })); } catch(e) {}
+}
+function _getCachedSession() {
+  try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch(e) { return null; }
+}
+function _clearCachedSession() {
+  try { localStorage.removeItem(AUTH_KEY); } catch(e) {}
+}
+
+function authTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearAuthErrors() {
+  document.querySelectorAll('.auth-error').forEach(e => e.classList.remove('show'));
+}
+
+// ── Sign In ───────────────────────────────────────────────────────────────────
+async function doLogin() {
+  clearAuthErrors();
+  const email    = (document.getElementById('login-email').value || '').trim().toLowerCase();
+  const password = document.getElementById('login-password').value || '';
+  if (!email || !password) { showAuthError('login-error', 'Please enter your email and password.'); return; }
+  const btn = document.querySelector('#panel-login .auth-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in\u2026'; }
+  try {
+    if (window.IA_Auth) {
+      const res = await IA_Auth.signIn(email, password);
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In \u2192'; }
+      if (!res.ok) { showAuthError('login-error', res.error); return; }
+      const cur  = window.IAdb && window.IAdb.currentUser;
+      const user = { email, name: (cur && cur.name) || email.split('@')[0], role: (cur && cur.role) || 'admin', orgId: (cur && cur.org_id) || null };
+      _cacheSession(user);
+      onAuthSuccess(user);
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In \u2192'; }
+      const cached = _getCachedSession();
+      if (!cached || cached.email !== email) { showAuthError('login-error', 'Cannot reach server. No offline session found for this email.'); return; }
+      onAuthSuccess(cached);
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In \u2192'; }
+    showAuthError('login-error', 'Sign in failed. Please check your connection and try again.');
+  }
+}
+
+// ── Register ──────────────────────────────────────────────────────────────────
+async function doRegister() {
+  clearAuthErrors();
+  const name     = (document.getElementById('reg-name').value    || '').trim();
+  const orgName  = (document.getElementById('reg-org').value     || '').trim();
+  const email    = (document.getElementById('reg-email').value   || '').trim().toLowerCase();
+  const password = document.getElementById('reg-password').value || '';
+  if (!name)    { showAuthError('reg-error', 'Please enter your name.'); return; }
+  if (!orgName) { showAuthError('reg-error', 'Please enter your organisation name.'); return; }
+  if (!email || !email.includes('@')) { showAuthError('reg-error', 'Please enter a valid email address.'); return; }
+  if (password.length < 8) { showAuthError('reg-error', 'Password must be at least 8 characters.'); return; }
+  const btn = document.querySelector('#panel-register .auth-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating account\u2026'; }
+  try {
+    const res = await IA_Auth.signUp(email, password, orgName, name);
+    if (!res.ok) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Account \u2192'; }
+      showAuthError('reg-error', res.error);
+      return;
+    }
+    if (res.data && res.data.pending) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Account \u2192'; }
+      document.getElementById('panel-register').innerHTML = `<div style="text-align:center;padding:1.5rem 0"><div style="font-size:2.5rem;margin-bottom:.75rem">&#128231;</div><div style="font-size:.95rem;font-weight:700;color:#EEF0F8;margin-bottom:.5rem">Check your email</div><div style="font-size:.8rem;color:#8892AA;line-height:1.6">${res.data.message}</div></div>`;
+      return;
+    }
+    const cur  = window.IAdb && window.IAdb.currentUser;
+    const user = { email, name, role: 'admin', orgId: (res.data && res.data.orgId) || (cur && cur.org_id) || null };
+    _cacheSession(user);
+    onAuthSuccess(user);
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Create Account \u2192'; }
+    showAuthError('reg-error', 'Registration failed. Please check your connection and try again.');
+  }
+}
+
+// ── Sign Out ──────────────────────────────────────────────────────────────────
+async function doLogout() {
+  _clearCachedSession();
+  if (window.IA_Auth) await IA_Auth.signOut();
+  location.reload();
+}
+
+// ── Licence gate stub (kept so existing HTML references still work) ───────────
+function doActivateLicence() {
+  document.getElementById('licence-gate').classList.add('hidden');
+  const cached = _getCachedSession();
+  if (cached) showAppWithUser(cached);
+}
+
+// ── Post-auth ─────────────────────────────────────────────────────────────────
+function onAuthSuccess(user) {
+  document.getElementById('auth-gate').classList.add('hidden');
+  showAppWithUser(user);
+}
+
+function showAppWithUser(user) {
+  const pill = document.getElementById('auth-user-pill');
+  if (pill) {
+    const initial    = (user.name || user.email).charAt(0).toUpperCase();
+    const roleLabel  = user.role === 'manager' ? 'Manager' : user.role === 'rep' ? 'Rep' : 'Admin';
+    pill.innerHTML   = `<span class="trial-badge active">${roleLabel}</span><div class="user-pill" title="Signed in as ${user.email}" onclick="doLogout()"><div class="user-avatar">${initial}</div><div class="user-name">${user.name || user.email}</div></div>`;
+    pill.style.display      = 'flex';
+    pill.style.alignItems   = 'center';
+    pill.style.gap          = '.65rem';
+  }
+}
+
+// ── Init on page load ─────────────────────────────────────────────────────────
+// Wait for ia:ready (fired by supabase-client.js after db.init() completes)
+// so Supabase is fully initialised before we check the session.
+document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('ia:ready', async function(e) {
+    const online = e.detail && e.detail.online;
+    if (online) {
+      try {
+        const res = await IA_Auth.getUser();
+        if (res.ok && res.data) {
+          const u    = res.data;
+          const user = { email: u.email, name: u.name || u.email.split('@')[0], role: u.role || 'admin', orgId: u.org_id || null };
+          _cacheSession(user);
+          document.getElementById('auth-gate').classList.add('hidden');
+          showAppWithUser(user);
+          return;
+        }
+      } catch(e) {}
+    }
+    // Offline or no active session — try cached session
+    const cached = _getCachedSession();
+    if (cached) {
+      document.getElementById('auth-gate').classList.add('hidden');
+      showAppWithUser(cached);
+    }
+    // else: stay on auth gate
+  });
+});
+
+
+// ─── DEAL COMPLETE ────────────────────────────────────────────────────────────
+function completeDeal() {
+  const prospect = (document.getElementById('prospect-name')||{}).value || 'This Account';
+  document.getElementById('complete-prospect').textContent = prospect || '—';
+  document.getElementById('complete-product').textContent = cfg.product || '—';
+  document.getElementById('complete-icp').textContent = cfg.icpName || '—';
+  document.querySelectorAll('.module').forEach(m => m.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('mod-complete').style.display = 'block';
+  document.getElementById('progress-bar').style.width = '100%';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function startNewDeal() {
+  const pn = document.getElementById('prospect-name');
+  if(pn) pn.value = '';
+  document.querySelectorAll('.chkbox').forEach(b => { b.classList.remove('checked'); const item = b.closest('.chk'); if(item) item.classList.remove('done'); });
+  ['layer1','layer2','layer3'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  Object.keys(layerFilled).forEach(k => layerFilled[k] = false);
+  Object.keys(bqAnswers).forEach(k => delete bqAnswers[k]);
+  ['debrief-won','debrief-diff','debrief-root','debrief-next'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  doneModules.clear();
+  updateProgress();
+  goMod('ignite');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const ni = document.getElementById('nav-ignite');
+  if(ni) ni.classList.add('active');
+}
+function expandAccount() {
+  const currentProspect = (document.getElementById('prospect-name')||{}).value || '';
+  startNewDeal();
+  const pn = document.getElementById('prospect-name');
+  if(pn) pn.value = currentProspect;
+  updateProspectRefs();
+}
+
+// CEMENT SCORE
+const CEMENT_LAYERS = [
+  {id:'cement1-checks',label:'Outcome Ownership',total:3,color:'#EF4444'},
+  {id:'cement2-checks',label:'Stakeholder Expansion',total:3,color:'#3B82F6'},
+  {id:'cement3-checks',label:'Knowledge Accumulation',total:3,color:'#10B981'},
+  {id:'cement4-checks',label:'Root Cause Expansion',total:3,color:'#F59E0B'},
+  {id:'cement5-checks',label:'Advocacy Engineering',total:4,color:'#8B5CF6'},
+];
+function updateCementScore(){
+  let done=0,total=16;
+  const ls=[];
+  CEMENT_LAYERS.forEach(layer=>{
+    const el=document.getElementById(layer.id);
+    const checked=el?el.querySelectorAll('.check-box.checked').length:0;
+    done+=checked;
+    ls.push({...layer,done:checked});
+  });
+  const pct=Math.round(done/total*100);
+  const pe=document.getElementById('cement-score-pct');
+  if(!pe)return;
+  pe.textContent=pct+'%';
+  document.getElementById('cement-score-fraction').textContent=done+' / '+total+' actions';
+  const bar=document.getElementById('cement-score-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>=75?'#10B981':pct>=50?'#F59E0B':'#C4A96E';
+  const lbl=document.getElementById('cement-score-label');
+  const labels=['Getting started - keep going','Foundation laid - push deeper','Strong momentum - stay consistent','Excellent CEMENT - near strategic partner','Fully cemented - this account is yours for 5 years'];
+  lbl.textContent=labels[Math.min(4,Math.floor(pct/25))];
+  lbl.style.color=pct>=75?'#10B981':pct>=50?'#F59E0B':'#4A3D2C';
+  const layerEl=document.getElementById('cement-layer-scores');
+  if(layerEl)layerEl.innerHTML=ls.map(l=>'<div style="display:flex;align-items:center;gap:.5rem"><div style="width:90px;font-size:.65rem;color:#4A3D2C;font-weight:600">'+l.label+'</div><div style="flex:1;height:5px;background:#1A1510;border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:'+l.color+';width:'+Math.round(l.done/l.total*100)+'%"></div></div><div style="font-size:.65rem;color:'+(l.done===l.total?l.color:'#4A3D2C')+';font-family:monospace;width:28px;text-align:right">'+l.done+'/'+l.total+'</div></div>').join('');
+}
+
+// GENERATE REPORT
+function generateReport(){
+  const prospect=(document.getElementById("prospect-name")||{}).value||'Not specified';
+  const rDate=new Date().toLocaleDateString('en-SG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const igniteChecks=document.querySelectorAll('#ignite-checks .check-box.checked');
+  const igPct=Math.round(igniteChecks.length/5*100);
+  const igniteOpener=drafts['ignite-opener']||'';
+  const igniteItems=['Missionary over Mercenary','Comfort with the Long Arc','Education as Primary Weapon','Category-Level Rejection Reframe','Personal Credibility as Sales Asset'];
+  const ignSt=[...document.querySelectorAll('#ignite-checks .check-box')].map((b,i)=>({label:igniteItems[i],done:b.classList.contains('checked')}));
+  const icpScore=parseInt((document.getElementById('icp-score')||{}).textContent)||0;
+  const icpVerdict=(document.getElementById('icp-verdict')||{}).textContent||'Not scored';
+  const icpLabels=['Budget Authority','Pain Intensity','Strategic Fit','Timeline','Competitor Exposure'];
+  const icpRows=['icp1','icp2','icp3','icp4','icp5'].map((id,i)=>{const el=document.getElementById(id);return{label:icpLabels[i],val:el?el.value:'0',text:el?(el.selectedOptions[0]?.text||'Not scored'):'Not scored'};});
+  const layer1=(document.getElementById('layer1')||{}).value||'';
+  const layer2=(document.getElementById('layer2')||{}).value||'';
+  const layer3=(document.getElementById('layer3')||{}).value||'';
+  const pain=drafts['pain']||'';const impact=drafts['impact']||'';const roi=drafts['roi']||'';
+  const champion=drafts['champion']||'';const chAction=drafts['champion-action']||'';
+  const veto=drafts['veto']||'';const vetoAction=drafts['veto-action']||'';
+  const probeLayers=[layer1,layer2,layer3].filter(Boolean).length;
+  const bqQs=['Decision maker named and confirmed aware?','Prospect invested time/resources/capital?','Time-bound consequence if no action?','Why they would NOT buy — surfaced?','Deal survives champion departure?','Specific next action, owner and date named?','Would you bet your own money on this closing?'];
+  const bqRows=bqQs.map((q,i)=>({q,ans:bqAnswers[i+1]||null,text:drafts['bq'+(i+1)]||''}));
+  const bqYes=Object.values(bqAnswers).filter(v=>v==='yes').length;
+  const bqVerdict=bqYes===7?'COMMIT FORECAST':bqYes>=5?'BEST CASE':bqYes>0?'PIPELINE ONLY':'Not scored';
+  const bqColor=bqYes===7?'#065F46':bqYes>=5?'#D97706':'#DC2626';
+  let cDone=0;
+  const cDet=CEMENT_LAYERS.map(layer=>{
+    const el=document.getElementById(layer.id);
+    const checked=el?el.querySelectorAll('.check-box.checked').length:0;
+    cDone+=checked;
+    const items=el?[...el.querySelectorAll('.check-text strong')].map((s,i)=>({label:s.textContent,done:(el.querySelectorAll('.check-box')[i]||{}).classList&&el.querySelectorAll('.check-box')[i].classList.contains('checked')||false})):[];
+    return{...layer,done:checked,items};
+  });
+  const cPct=Math.round(cDone/16*100);
+
+  const recs=[];
+  if(igPct<100)recs.push({type:'warn',stage:'IGNITE',text:'Only '+igPct+'% of mindset prerequisites confirmed. A rep not fully equipped for demand generation will over-push and manufacture urgency — which collapses deals at late stage.'});
+  if(icpScore<70)recs.push({type:'risk',stage:'ATTRACT',text:'ICP score of '+icpScore+'/100 is below the 70-point gate. This deal should not have advanced to PROBE without re-evaluation of fit.'});
+  if(!layer3)recs.push({type:'risk',stage:'PROBE',text:'Layer 3 Root Cause not captured. Without the prospect naming the root cause in their own words, you are pitching — not solving. Return to discovery.'});
+  if(!roi)recs.push({type:'warn',stage:'PROBE',text:'ROI not quantified. Every proposal without an agreed ROI number fails on value justification. Confirm a dollar figure the prospect will defend internally.'});
+  if(!champion)recs.push({type:'warn',stage:'PROBE',text:'Champion identity not recorded. Without a named internal advocate, this deal collapses when your contact is unavailable.'});
+  if(bqYes<5)recs.push({type:'risk',stage:'EXECUTE',text:'Brutal Qualifier score: '+bqYes+'/7. This deal does not belong in commit forecast. Return to PROBE or disqualify.'});
+  if(cPct<50)recs.push({type:'info',stage:'CEMENT',text:'CEMENT score: '+cPct+'%. The post-sale relationship is not yet cemented. Expansion revenue requires layers 3-5. Schedule a 90-day review and identify the next root cause.'});
+  if(recs.length===0)recs.push({type:'pass',stage:'ALL',text:'All critical gates passed. This deal is fully qualified, root cause diagnosed, and CEMENT underway. Focus on Advocacy Engineering (Layer 5) to generate referrals.'});
+
+  // ── AI SCRIPT GENERATION ─────────────────────────────────────────────────────
+  // Parse ROI numbers from the impact text to compute specific figures
+  function extractNumber(str) {
+    if(!str) return null;
+    const m = str.match(/[\$SGD\s]*([\d,]+(?:\.\d+)?)\s*[Kk]?/);
+    if(!m) return null;
+    let n = parseFloat(m[1].replace(/,/g,''));
+    if(str.toLowerCase().includes('k') || (m[0] && m[0].toLowerCase().includes('k'))) n *= 1000;
+    return n;
+  }
+  function fmtNum(n) {
+    if(!n) return null;
+    if(n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+    if(n >= 1000) return '$' + Math.round(n/1000) + 'K';
+    return '$' + n.toLocaleString();
+  }
+
+  const impactNum = extractNumber(impact);
+  const roiNum = extractNumber(roi);
+  const annualImpact = impactNum || (roiNum ? roiNum * 3 : null);
+  const solutionCost = roiNum ? roiNum * 0.3 : (annualImpact ? annualImpact * 0.1 : null);
+  const paybackMonths = (solutionCost && annualImpact) ? Math.max(1, Math.round(solutionCost / (annualImpact/12))) : null;
+  const yr1Return = annualImpact ? fmtNum(annualImpact - (solutionCost||0)) : null;
+  const roiMultiple = (solutionCost && annualImpact) ? Math.round(annualImpact / solutionCost) : null;
+
+  const rootCauseShort = layer3 ? layer3.split('.')[0].substring(0,120) : null;
+  const layer1Short = layer1 ? layer1.split('.')[0].substring(0,100) : null;
+  const impactShort = impact ? impact.split(';')[0].substring(0,120) : null;
+  const champName = champion || 'your champion';
+  const vetoName = veto || 'the sceptic in the room';
+  const prod = 'our solution';
+
+  const scripts = [];
+
+  // ── 1. OPENING NEXT MEETING (2 scripts) ──────────────────────────────────────
+  if(rootCauseShort) {
+    scripts.push({
+      title: 'Opening Next Meeting — Script 1 (Anchor to Root Cause)',
+      script: `"When we last spoke, you told me that the real issue is not the surface problem — it is that ${rootCauseShort}. That stayed with me. I have been thinking about exactly how we address that at the root level, not just the symptom. In the next 30 minutes I would like to walk you through three things: first, how we close that specific gap; second, what two other organisations in ${layer1Short ? 'a similar situation to yours — ' + layer1Short.substring(0,60) : 'your sector'} — did in the first 90 days; and third, what the first step looks like if you decide to move forward. Does that agenda make sense?"`
+    });
+    scripts.push({
+      title: 'Opening Next Meeting — Script 2 (Consequence Escalation)',
+      script: `"I want to start this meeting differently. Last time you described [${rootCauseShort}]. I ran the numbers on what that looks like at 12 months — ${annualImpact ? 'that is approximately ' + fmtNum(annualImpact) + ' in compounding loss' : 'the compounding cost grows significantly the longer this sits unresolved'}. I am not here to manufacture urgency — the urgency already exists in your numbers. What I want to show you today is the shortest path from where you are now to where you need to be. Can I start there?"`
+    });
+  } else {
+    scripts.push({
+      title: 'Opening Next Meeting — Script 1',
+      script: `"I want to start this conversation at the root level, not the symptom. Based on our last discussion, the issue is not a product gap — it is a structural one that your current tools were not designed to solve. I have prepared a focused agenda: the root cause, two comparable cases, and the first step. Thirty minutes. Does that work?"`
+    });
+    scripts.push({
+      title: 'Opening Next Meeting — Script 2',
+      script: `"Before I present anything, I want to check in on one thing — has anything changed internally since we last spoke? Sometimes the urgency shifts, sometimes a new stakeholder enters the picture. I ask because the proposal I have prepared is built specifically around what you described as the real problem, and I want to make sure it still maps to where your priorities are today."`
+    });
+  }
+
+  // ── 2. ROI CONFIRMATION CLOSE (2 scripts) ────────────────────────────────────
+  if(impactShort && annualImpact) {
+    scripts.push({
+      title: 'ROI Confirmation Close — Script 1 (Anchor the Number)',
+      script: `"You told me that ${impactShort}. When I model that out over 12 months, that is ${fmtNum(annualImpact)} in recoverable loss — and that is a conservative estimate. Our solution addresses that at the root level. ${solutionCost ? 'The investment is in the region of ' + fmtNum(solutionCost) + ' — which means you are looking at a ' + (roiMultiple ? roiMultiple + 'x return' : 'strong return') + ' in year one' : 'The investment pays for itself within the first quarter'}. ${paybackMonths ? 'Payback in approximately ' + paybackMonths + (paybackMonths === 1 ? ' month' : ' months') + '.' : ''} Given that, would you say the ROI case is strong enough to take to your economic buyer today — or is there a number gap I need to close first?"`
+    });
+    scripts.push({
+      title: 'ROI Confirmation Close — Script 2 (The Two-Number Test)',
+      script: `"Let me put two numbers in front of you and ask you to pick the one that feels more defensible internally. Option A: you continue as-is — ${fmtNum(annualImpact)} in ongoing annual loss with no resolution path. Option B: you invest${solutionCost ? ' approximately ' + fmtNum(solutionCost) : ''} now and recover ${yr1Return ? yr1Return : 'the majority of that loss'} in year one${paybackMonths ? ', with full payback by month ' + paybackMonths : ''}. Which number would your CFO rather defend in the next budget review?"`
+    });
+  } else {
+    scripts.push({
+      title: 'ROI Confirmation Close — Script 1',
+      script: `"Before we move to proposal I want to make sure we are anchored on the same number. You described the impact — now I want to put a specific dollar figure on it together, because the proposal is built around that ROI case, and I want it to be a number you are comfortable defending internally. What figure would make this a clear yes for your economic buyer?"`
+    });
+    scripts.push({
+      title: 'ROI Confirmation Close — Script 2',
+      script: `"Here is a simple test: if we solve exactly what you described as the root cause, and the return in year one is at least 3x the investment — would that clear your internal approval bar? I ask because I want to size the proposal to a number that triggers action, not one that gets sent back for re-justification."`
+    });
+  }
+
+  // ── 3. CHAMPION SCRIPTS (2 scripts) ──────────────────────────────────────────
+  scripts.push({
+    title: `Champion Activation — Script 1 (Arming ${champName})`,
+    script: `"${champName}, you have done the hard work of getting this on the agenda internally. I want to make sure you walk into that conversation fully armed. I am going to prepare three things specifically for you: a one-page summary of the root cause in the language you used — not our language; a conservative ROI model${annualImpact ? ' showing the ' + fmtNum(annualImpact) + ' recovery case' : ''}; and a clear answer to the two objections I expect will come up. Can we spend 20 minutes this week so I can brief you before you brief them?"`
+  });
+  scripts.push({
+    title: `Champion Activation — Script 2 (Internal Briefing Prep)`,
+    script: `"${champName}, I want to ask you something directly. When you brief [the economic buyer] on this, what is the one question you are most worried they will ask — and you are not sure how to answer? I have been in enough of these conversations to know that the deals that stall, stall on one specific objection that was not prepared for. Tell me what it is and I will make sure you have the answer before you walk in."`
+  });
+
+  // ── 4. VETO PLAYER SCRIPTS (2 scripts) ───────────────────────────────────────
+  scripts.push({
+    title: `Handling ${vetoName} — Script 1 (Request Direct Access)`,
+    script: `"I have heard that ${vetoName} has reservations, and I respect that — it usually means they are engaged and taking this seriously. The worst thing I can do is have that concern filtered through three layers of conversation. Would you be willing to set up a 20-minute call directly between the two of us? Not a demo, not a pitch — just a conversation where I answer their specific concern directly and they can ask me whatever they need to. The deals that fail at this stage are the ones where the sceptic never gets a direct answer."`
+  });
+  scripts.push({
+    title: `Handling ${vetoName} — Script 2 (Reframe the Concern)`,
+    script: `"Here is what I have found: when someone like ${vetoName} pushes back on this type of solution, it is almost never about the solution itself — it is about a prior failure. They have seen something like this promised before and it did not deliver. If that is the case here, I would rather know exactly what failed so I can show them specifically how this is different. Can you find out what they are actually worried about — not the surface objection, but the real one underneath it?"`
+  });
+
+  // ── 5. EXPANSION OPENER (2 scripts) ──────────────────────────────────────────
+  scripts.push({
+    title: 'Expansion Opener — Script 1 (Root Cause Chain)',
+    script: `"Now that${rootCauseShort ? ' [' + rootCauseShort.substring(0,80) + '...] is being addressed' : ' the first phase is underway'}, there is something I want to explore with you. In my experience, when we solve this particular root cause, the next one that surfaces is almost always in the area of [data visibility / stakeholder adoption / cross-department consistency — whichever applies]. I have started seeing early signs of that pattern in what you have shared. Would you be open to a 30-minute diagnostic — just us, no agenda, no commitment — to map out what that next layer looks like for you specifically?"`
+  });
+  scripts.push({
+    title: 'Expansion Opener — Script 2 (Expansion as Natural Progression)',
+    script: `"I want to be upfront with you. The reason I am bringing this up now — while things are going well — is that expansion conversations are always easier before the need becomes urgent. I am not here to sell you something new. I am here because the work we have done together has given me a clearer picture of your organisation than any new vendor could build in 12 months. The next area I think deserves attention is [the department / workflow / integration layer that was mentioned during PROBE]. I would rather surface it now as a strategic conversation than wait until it becomes a crisis. Can I come back to you with a short brief on what I am seeing?"`
+  });
+
+
+  const slides=[
+    {num:1,title:'Executive Summary',layout:'Title + 4-column KPI strip',content:'Account: '+prospect+' | ICP: '+icpScore+'/100 | Qualifier: '+bqVerdict+' | CEMENT: '+cPct+'%'},
+    {num:2,title:'The Problem We Solved Together',layout:'2-column: Their words (left) vs Your solution bridge (right)',content:'Layer 1: '+(layer1.substring(0,80)||'TBC')+' | Root Cause: '+(layer3.substring(0,80)||'TBC')},
+    {num:3,title:'The ROI Case',layout:'Large number hero + 3 impact pillars below',content:'Pain: '+(pain.substring(0,60)||'TBC')+' | Impact: '+(impact.substring(0,60)||'TBC')+' | ROI: '+(roi.substring(0,60)||'TBC')},
+    {num:4,title:'Implementation Roadmap',layout:'Timeline bar: Month 1-3 / 3-9 / 6-18 / 12-24 / 18-36',content:'Map to CEMENT layers. Show completed actions and what comes next.'},
+    {num:5,title:'Expansion Opportunity',layout:'Current state to Next root cause to New solution',content:'Use Layer 3 root cause as the bridge to the next problem in this account.'},
+    {num:6,title:'Strategic Partner Dashboard',layout:'Scorecard grid: Outcome / Stakeholder / Knowledge / Advocacy',content:'Current CEMENT score: '+cPct+'% across '+cDone+'/16 actions.'},
+  ];
+
+  const H='<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>IGNITE_APEX Report - '+prospect+'</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}:root{--ink:#1A1510;--ink2:#3D3428;--ink3:#6B5E4E;--ink4:#9C8D7A;--cream:#F8F5EF;--cream2:#F0EBE1;--border:#DDD5C8;--amber:#D97706;--amber2:#F59E0B;--forest:#065F46;--forest-light:#D1FAE5;--red:#DC2626;--blue:#1E40AF;--purple:#6B21A8;}html,body{background:var(--cream);font-family:"Outfit",sans-serif;color:var(--ink);font-size:10pt}.page{max-width:820px;margin:0 auto;padding:2rem 2.5rem}@media print{.page{padding:.5cm 1cm;max-width:100%}.no-print{display:none}.pb{page-break-before:always}}.cover{background:var(--ink);border-radius:16px;padding:3rem;margin-bottom:2rem}.cover-logo{font-family:"Playfair Display",serif;font-size:2.5rem;font-weight:900;color:#F59E0B;margin-bottom:.2rem}.cover-sub{font-size:.75rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#4A3D2C;margin-bottom:1.5rem}.cover-prospect{font-family:"Playfair Display",serif;font-size:1.8rem;font-weight:900;color:#F8F5EF;margin-bottom:.2rem}.cover-date{font-size:.7rem;color:#4A3D2C;margin-bottom:1.5rem}.ck-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}.ck{background:rgba(255,255,255,.06);border-radius:8px;padding:.75rem 1rem;border:1px solid rgba(255,255,255,.08)}.ck-val{font-family:"Playfair Display",serif;font-size:1.5rem;font-weight:900;color:#F59E0B;line-height:1;margin-bottom:.2rem}.ck-label{font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4A3D2C}.section{margin-bottom:2rem}.sec-label{font-size:.55rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:.3rem}.sec-title{font-family:"Playfair Display",serif;font-size:1.2rem;font-weight:900;color:var(--ink);margin-bottom:.85rem;border-bottom:2px solid var(--amber2);padding-bottom:.3rem}.sec-sub{font-size:.78rem;color:var(--ink3);line-height:1.6;margin-bottom:.85rem}.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.85rem 1.1rem;margin-bottom:.5rem}.card.pass{border-color:#065F46;background:#D1FAE5}.card.warn{border-color:var(--amber2);background:#FFFBEB}.card.risk{border-color:var(--red);background:#FEE2E2}.card.info{border-color:var(--blue);background:#DBEAFE}.cl{font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.2rem}.card.pass .cl{color:#065F46}.card.warn .cl{color:var(--amber)}.card.risk .cl{color:var(--red)}.card.info .cl{color:var(--blue)}.ct{font-size:.78rem;color:var(--ink2);line-height:1.6}.g2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}.stat{background:#fff;border:1px solid var(--border);border-radius:8px;padding:.65rem .85rem;text-align:center}.stat-v{font-family:"Playfair Display",serif;font-size:1.4rem;font-weight:900;color:var(--amber);line-height:1}.stat-l{font-size:.55rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink4);margin-top:.15rem}table{width:100%;border-collapse:collapse;font-size:.75rem;margin-bottom:.65rem}th{padding:.45rem .65rem;text-align:left;font-size:.52rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink4);border-bottom:2px solid var(--border);background:var(--cream2)}td{padding:.45rem .65rem;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:top;line-height:1.5}tr:last-child td{border-bottom:none}.chk-row{display:flex;align-items:flex-start;gap:.5rem;padding:.25rem 0;font-size:.75rem}.done .ci::after{content:"\u2713";color:#065F46}.not-done .ci::after{content:"\u25CB";color:var(--border)}.ci{flex-shrink:0;font-size:.75rem;margin-top:1px}.done .ct2{color:#065F46;font-weight:600}.not-done .ct2{color:var(--ink4)}.sb{background:var(--cream2);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:.85rem 1rem;margin:.65rem 0;font-size:.78rem;color:var(--ink2);line-height:1.65;font-style:italic}.st{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.35rem;font-style:normal}.sc{background:#fff;border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;margin-bottom:.5rem;display:flex;gap:.85rem;align-items:flex-start}.sn{font-family:"Playfair Display",serif;font-size:1.4rem;font-weight:900;color:var(--border);line-height:1;width:24px;flex-shrink:0}.si h4{font-size:.78rem;font-weight:700;color:var(--ink);margin-bottom:.2rem}.si .lay{font-size:.65rem;color:var(--amber);font-weight:600;margin-bottom:.25rem}.si .con{font-size:.72rem;color:var(--ink3);line-height:1.5}.pw{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:.3rem}.pf{height:100%;border-radius:4px}.footer{text-align:center;padding:1.5rem 0;border-top:1px solid var(--border);margin-top:2rem}.footer p{font-size:.62rem;color:var(--ink4);line-height:1.7}</style></head><body><div class="page">';
+
+  let R=H;
+  R+='<div class="cover"><div class="cover-logo">IGNITE_APEX</div><div class="cover-sub">Deal Intelligence Briefing</div><div class="cover-prospect">'+prospect+'</div><div class="cover-date">Generated: '+rDate+'</div><div class="ck-grid"><div class="ck"><div class="ck-val">'+igPct+'%</div><div class="ck-label">IGNITE</div></div><div class="ck"><div class="ck-val">'+icpScore+'/100</div><div class="ck-label">ICP Score</div></div><div class="ck"><div class="ck-val">'+bqYes+'/7</div><div class="ck-label">7Q Qualifier</div></div><div class="ck"><div class="ck-val">'+cPct+'%</div><div class="ck-label">CEMENT</div></div></div></div>';
+
+  // Exec summary
+  R+='<div class="section"><div class="sec-label">Section 1</div><div class="sec-title">Executive Summary</div><div class="g4"><div class="stat"><div class="stat-v">'+igPct+'%</div><div class="stat-l">IGNITE</div></div><div class="stat"><div class="stat-v">'+probeLayers+'/3</div><div class="stat-l">Probe Layers</div></div><div class="stat"><div class="stat-v">'+bqYes+'/7</div><div class="stat-l">7Q Score</div></div><div class="stat"><div class="stat-v">'+cPct+'%</div><div class="stat-l">CEMENT</div></div></div><div style="margin-top:.85rem;padding:.85rem;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:.8rem;color:var(--ink2);line-height:1.7"><strong>Forecast Verdict:</strong> <span style="color:'+bqColor+';font-weight:700">'+bqVerdict+'</span> &nbsp;|&nbsp; <strong>ICP Gate:</strong> '+(icpScore>=70?'<span style="color:#065F46">Qualified ('+icpScore+'/100)</span>':'<span style="color:#DC2626">Below 70 gate ('+icpScore+'/100)</span>')+' &nbsp;|&nbsp; <strong>Root Cause:</strong> '+(layer3?'<span style="color:#065F46">Captured (Layer 3)</span>':'<span style="color:#DC2626">Not captured</span>')+'</div></div>';
+
+  R+='<div class="pb"></div>';
+
+  // IGNITE
+  R+='<div class="section"><div class="sec-label">Section 2 - Entry Gate</div><div class="sec-title">IGNITE - Demand Creation Readiness</div><div class="sec-sub">5 mindset prerequisites. All must be genuinely held.</div>'+ignSt.map(item=>'<div class="chk-row '+(item.done?'done':'not-done')+'"><div class="ci"></div><div class="ct2">'+item.label+'</div></div>').join('')+(igniteOpener?'<div class="sb"><div class="st">Reframe Opener</div>'+igniteOpener+'</div>':'<div class="card warn"><div class="cl">Gap</div><div class="ct">Reframe opener not drafted.</div></div>')+'</div>';
+
+  // ATTRACT
+  R+='<div class="section"><div class="sec-label">Section 3 - Gate 1</div><div class="sec-title">ATTRACT - ICP Qualification Score</div><div class="sec-sub">Minimum 70/100 to pursue. '+(icpScore>=70?'PASS: '+icpScore+'/100':'FAIL: '+icpScore+'/100 - below gate')+'</div><table><thead><tr><th>Criterion</th><th>Score</th><th>Assessment</th></tr></thead><tbody>'+icpRows.map(r=>'<tr><td style="font-weight:600">'+r.label+'</td><td style="font-weight:700;color:'+(parseInt(r.val)>=15?'#065F46':parseInt(r.val)>=8?'#D97706':'#DC2626')+'">'+r.val+' pts</td><td>'+r.text+'</td></tr>').join('')+'<tr style="background:var(--cream2)"><td style="font-weight:700">TOTAL</td><td style="font-weight:900;font-size:1rem;color:'+(icpScore>=70?'#065F46':'#DC2626')+'">'+icpScore+'</td><td style="font-weight:700;color:'+(icpScore>=70?'#065F46':'#DC2626')+'">'+icpVerdict+'</td></tr></tbody></table></div>';
+
+  R+='<div class="pb"></div>';
+
+  // PROBE
+  R+='<div class="section"><div class="sec-label">Section 4 - Gate 2 - 70% of the Sale</div><div class="sec-title">PROBE - Root Cause Diagnosis</div><div class="sec-sub">The deal is closed when the prospect names the root cause in their own words at Layer 3.</div><div class="g3" style="margin-bottom:.85rem"><div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:.85rem"><div style="font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#D97706;margin-bottom:.4rem">Layer 1 - Symptom</div><div style="font-size:.75rem;color:#92400E;line-height:1.6">'+(layer1||'<em style="color:#9C8D7A">Not captured</em>')+'</div></div><div style="background:#DBEAFE;border:1px solid #93C5FD;border-radius:8px;padding:.85rem"><div style="font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1D4ED8;margin-bottom:.4rem">Layer 2 - Structural Cause</div><div style="font-size:.75rem;color:#1E3A8A;line-height:1.6">'+(layer2||'<em style="color:#9C8D7A">Not captured</em>')+'</div></div><div style="background:#D1FAE5;border:1px solid #6EE7B7;border-radius:8px;padding:.85rem"><div style="font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#047857;margin-bottom:.4rem">Layer 3 - Root Cause</div><div style="font-size:.75rem;color:#064E3B;line-height:1.6;font-weight:600">'+(layer3||'<em style="color:#9C8D7A">Not captured - critical gap</em>')+'</div></div></div>';
+  R+='<div class="g3" style="margin-bottom:.85rem"><div class="card"><div class="cl" style="color:#DC2626">Pain</div><div class="ct">'+(pain||'Not recorded')+'</div></div><div class="card"><div class="cl" style="color:#D97706">Impact</div><div class="ct">'+(impact||'Not recorded')+'</div></div><div class="card"><div class="cl" style="color:#065F46">ROI</div><div class="ct">'+(roi||'Not agreed')+'</div></div></div>';
+  R+='<div class="g2"><div class="card"><div class="cl" style="color:#6B21A8">Champion</div><div class="ct"><strong>'+(champion||'Not identified')+'</strong>'+(chAction?'<br><br>'+chAction:'')+'</div></div><div class="card"><div class="cl" style="color:#DC2626">Veto Player</div><div class="ct"><strong>'+(veto||'Not identified')+'</strong>'+(vetoAction?'<br><br>'+vetoAction:'')+'</div></div></div></div>';
+
+  R+='<div class="pb"></div>';
+
+  // EXECUTE
+  R+='<div class="section"><div class="sec-label">Section 5 - Gate 3</div><div class="sec-title">EXECUTE - Brutal 7-Question Qualifier</div><div class="sec-sub">Verdict: <strong style="color:'+bqColor+'">'+bqVerdict+'</strong> ('+bqYes+'/7 confirmed)</div><table><thead><tr><th>#</th><th>Question</th><th>Status</th><th>Evidence</th></tr></thead><tbody>'+bqRows.map((r,i)=>'<tr><td style="font-weight:700;color:var(--ink4)">'+(i+1)+'</td><td>'+r.q+'</td><td style="font-weight:700;white-space:nowrap">'+(r.ans==='yes'?'<span style="color:#065F46">Yes</span>':r.ans==='no'?'<span style="color:#DC2626">No</span>':'<span style="color:#9C8D7A">-</span>')+'</td><td style="font-size:.7rem">'+(r.text||'-')+'</td></tr>').join('')+'</tbody></table><div style="background:'+(bqYes>=7?'#D1FAE5':bqYes>=5?'#FEF3C7':'#FEE2E2')+';border:1px solid '+(bqYes>=7?'#10B981':bqYes>=5?'#F59E0B':'#EF4444')+';border-radius:8px;padding:.85rem;font-size:.8rem;font-weight:700;color:'+bqColor+'">'+bqVerdict+': '+(bqYes===7?'All 7 confirmed. Belongs in commit.':bqYes>=5?'Best case only.':'Remove from forecast. Return to PROBE.')+'</div></div>';
+
+  // CEMENT
+  R+='<div class="pb"></div><div class="section"><div class="sec-label">Section 6 - Post-Sale</div><div class="sec-title">CEMENT - Stickiness Score: '+cPct+'% ('+cDone+'/16)</div><div class="sec-sub">Expansion revenue costs 5-7x less than a new logo. Each layer makes displacement harder.</div>'+cDet.map(layer=>'<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;margin-bottom:.5rem"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem"><div style="font-size:.75rem;font-weight:700">'+layer.label+'</div><div style="font-size:.68rem;font-weight:700;color:'+(layer.done===layer.total?'#065F46':'#9C8D7A')+'">'+layer.done+'/'+layer.total+'</div></div><div class="pw"><div class="pf" style="width:'+Math.round(layer.done/layer.total*100)+'%;background:'+layer.color+'"></div></div>'+layer.items.map(item=>'<div class="chk-row '+(item.done?'done':'not-done')+'"><div class="ci"></div><div class="ct2">'+item.label+'</div></div>').join('')+'</div>').join('')+'</div>';
+
+  R+='<div class="pb"></div>';
+
+  // RECOMMENDATIONS
+  R+='<div class="section"><div class="sec-label">Section 7</div><div class="sec-title">Recommendations</div><div class="sec-sub">Based on gaps identified across all stages for '+prospect+'.</div>'+recs.map(r=>'<div class="card '+r.type+'"><div class="cl">'+r.stage+' - '+(r.type==='pass'?'Clear':r.type==='warn'?'Watch':r.type==='risk'?'Risk':'Info')+'</div><div class="ct">'+r.text+'</div></div>').join('')+'</div>';
+
+  // SCRIPTS
+  R+='<div class="section"><div class="sec-label">Section 8</div><div class="sec-title">Next Step Scripts</div><div class="sec-sub">AI-generated from your captured deal data across all stages. Two scripts per situation — use verbatim or adapt to your voice. All placeholders resolved using your actual inputs.</div>'+scripts.map(s=>'<div style="background:var(--cream2);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:.85rem 1rem;margin:.65rem 0"><div style="font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem;font-style:normal">'+s.title+'</div><div style="font-size:.82rem;color:var(--ink2);line-height:1.75;font-style:italic">'+s.script+'</div></div>').join('')+'</div>';
+
+  // PPT SLIDES
+  R+='<div class="pb"></div><div class="section"><div class="sec-label">Section 9</div><div class="sec-title">Presentation Slide Layouts</div><div class="sec-sub">Suggested slide architecture with content pre-populated from your deal data.</div>'+slides.map(s=>'<div class="sc"><div class="sn">'+s.num+'</div><div class="si"><h4>'+s.title+'</h4><div class="lay">Layout: '+s.layout+'</div><div class="con">'+s.content+'</div></div></div>').join('')+'</div>';
+
+  R+='<div class="footer"><p><strong>IGNITE_APEX Sales Operating System</strong> - Deal Briefing Report<br>Account: '+prospect+' - Generated: '+rDate+'<br>All data sourced from deal inputs captured across IGNITE > ATTRACT > PROBE > EXECUTE > CEMENT stages.</p><button onclick="window.print()" style="margin-top:1rem;background:#D97706;color:#fff;border:none;padding:.6rem 1.5rem;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif" class="no-print">Print / Save as PDF</button><p style="font-size:.58rem;color:#9C8D7A;margin-top:.4rem">Tip: Open this file in Chrome, press Ctrl+P, choose "Save as PDF"</p></div></div></body></html>';
+
+  // Use Blob download — no popup blocker issues
+  const blob = new Blob([R], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeProspect = (prospect || 'deal').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+  a.href = url;
+  a.download = 'IGNITE_APEX_Report_' + safeProspect + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+</script>
+<script>
+// ─── FORM PERSISTENCE ──────────────────────────────────────────────────────
+const FIELD_IDS = ['s-product','s-value-prop','s-category','s-motion','s-differentiator',
+  's-icp-name','s-industry','s-size','s-buyer-title','s-champion-title',
+  's-geo','s-deal-size','s-triggers','u-unworkable','u-unavoidable','u-urgent','u-underserved',
+  'k-time','k-cost','k-revenue','k-speed','k-impl','k-payback','s-competitors','s-pricing'];
+
+function saveFormToStorage(){
+  const data = {};
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) data[id] = el.value;
+  });
+  try { localStorage.setItem('igniteapex_cfg', JSON.stringify(data)); } catch(e){}
+}
+
+function restoreFormFromStorage(){
+  try {
+    const saved = localStorage.getItem('igniteapex_cfg');
+    if(!saved) return;
+    const data = JSON.parse(saved);
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if(el && data[id]) el.value = data[id];
+    });
+  } catch(e){}
+}
+
+// Attach autosave to all form fields on load
+function attachFormAutosave(){
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', saveFormToStorage);
+  });
+}
+
+
+
+</script>
+</head>
+<body>
+
+<!-- ═══ AUTH GATE ══════════════════════════════════════════════════════════════ -->
+<div id="auth-gate">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="auth-logo">IGNITE<em>_</em>APEX</div>
+      <div class="auth-tagline">Sales Operating System · Secure Access</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="authTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="authTab('register')">Register</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="auth-error" id="login-error"></div>
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="auth-btn primary" onclick="doLogin()">Sign In →</button>
+      <p class="auth-hint">No account? <a onclick="authTab('register')">Create a free account</a></p>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="auth-panel" id="panel-register">
+      <div class="auth-error" id="reg-error"></div>
+      <div class="auth-field">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your name">
+      </div>
+      <div class="auth-field">
+        <label>Organisation Name</label>
+        <input type="text" id="reg-org" placeholder="e.g. Acme Sales Team" autocomplete="organization">
+        <div class="field-hint">Creates your team workspace. You can invite reps later from the admin panel.</div>
+      </div>
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter') doRegister()">
+      </div>
+      <button class="auth-btn green" onclick="doRegister()">Create Account &#x2192;</button>
+      <p class="auth-hint">Already registered? <a onclick="authTab('login')">Sign in here</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LICENCE GATE ════════════════════════════════════════════════════════════ -->
+<div id="licence-gate" class="hidden">
+  <div class="licence-box">
+    <div class="licence-icon">🔒</div>
+    <div class="licence-title">Free Trial Ended</div>
+    <p class="licence-desc">Your 30-day free trial has expired. Enter your licence key to continue accessing IGNITE_APEX Sales OS. To get a licence key, subscribe at $4.50/user/month.</p>
+    <div class="auth-error" id="licence-error" style="margin-bottom:.75rem"></div>
+    <input class="licence-field" id="licence-input" placeholder="Enter licence key (e.g. IA-2026-XXXX-XXXX)" onkeydown="if(event.key==='Enter') doActivateLicence()">
+    <button class="auth-btn primary" style="width:100%;padding:.75rem" onclick="doActivateLicence()">Activate Licence Key →</button>
+    <p class="licence-hint">
+      Need a licence key? Visit <strong style="color:#F59E0B">shaamelz.com</strong> to subscribe.<br>
+      Signed in as: <span id="licence-user-email" style="color:#8892AA"></span> · 
+      <a style="color:#4A5268;cursor:pointer;text-decoration:none" onclick="doLogout()">Sign out</a>
+    </p>
+  </div>
+</div>
+
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">IGNITE<em>_</em>APEX</div>
+  <div class="tb-sep"></div>
+  <div class="tb-sub">Universal SaaS Sales System</div>
+  <div class="tb-right">
+    <div class="tb-product-badge" id="tb-product-badge"></div>
+    <input class="tb-prospect" id="prospect-name" placeholder="Prospect / account name…" oninput="updateProspectRefs()">
+    <button class="tb-config-btn" onclick="showSetup()" id="reconfig-btn" style="display:none">⚙ Reconfigure</button>
+    <div id="auth-user-pill" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SETUP SCREEN
+══════════════════════════════════════════════════ -->
+  <div style="display:flex;gap:.65rem">
+    <button onclick="restoreAndLaunch()" style="background:#10B981;color:#000;border:none;padding:.4rem 1rem;border-radius:6px;font-weight:700;font-size:.78rem;cursor:pointer">Restore & Launch</button>
+    <button onclick="dismissRestore()" style="background:transparent;color:#6B7280;border:1px solid #374151;padding:.4rem .75rem;border-radius:6px;font-size:.78rem;cursor:pointer">Start Fresh</button>
+  </div>
+</div>
+<div id="setup-screen">
+  <div class="setup-hero">
+    <span class="setup-eyebrow">One-Time Configuration · Any SaaS Product</span>
+    <div class="setup-title">Configure Your <em>Sales System</em></div>
+    <p class="setup-desc">Enter your product, define your ICP, and map the 4U qualification framework. The entire IGNITE_APEX system will run from these inputs — discovery questions, objection scripts, ROI logic, and closing strategy all generated from what you define here.</p>
+  </div>
+
+  <!-- STEP 1: PRODUCT -->
+  <div class="setup-panel">
+    <div class="sp-head">
+      <div class="sp-num" style="background:#1A1000;color:var(--amber)">1</div>
+      <div><div class="sp-title">Product Definition</div><div class="sp-sub">What are you selling and to whom?</div></div>
+    </div>
+    <div class="sp-body">
+      <div class="form-row two">
+        <div class="fg"><label>Product / Platform Name</label><input id="s-product" placeholder="e.g. Salesforce, HubSpot, your product…"><div class="fg-hint">The name your prospect will recognise</div></div>
+        <div class="fg"><label>One-Line Value Proposition</label><input id="s-value-prop" placeholder="e.g. No-code mobile app builder using natural language AI"><div class="fg-hint">What it does in plain language — not marketing copy</div></div>
+      </div>
+      <div class="form-row two">
+        <div class="fg"><label>Product Category</label>
+          <select id="s-category">
+            <option value="">Select category…</option>
+            <option>No-Code / Low-Code Platform</option>
+            <option>CRM / Sales Enablement</option>
+            <option>ERP / Business Management</option>
+            <option>HR / Workforce Management</option>
+            <option>Marketing Automation</option>
+            <option>Data Analytics / BI</option>
+            <option>Cybersecurity</option>
+            <option>DevOps / Infrastructure</option>
+            <option>Collaboration / Productivity</option>
+            <option>E-Learning / EdTech</option>
+            <option>FinTech / Payments</option>
+            <option>Customer Success</option>
+            <option>Other SaaS</option>
+          </select>
+        </div>
+        <div class="fg"><label>Sales Motion</label>
+          <select id="s-motion">
+            <option value="">Select…</option>
+            <option value="demand-gen">Demand Generation (prospect doesn't know they need it)</option>
+            <option value="category-aware">Category Aware (knows the problem, not your solution)</option>
+            <option value="solution-aware">Solution Aware (evaluating vendors actively)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>Main Differentiator vs Competitors</label><input id="s-differentiator" placeholder="e.g. Only platform that builds apps using natural language — no coding, no templates required"><div class="fg-hint">The one thing no competitor can honestly claim</div></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: ICP -->
+  <div class="setup-panel">
+    <div class="sp-head">
+      <div class="sp-num" style="background:#021F12;color:var(--green)">2</div>
+      <div><div class="sp-title">Ideal Customer Profile (ICP)</div><div class="sp-sub">Define the exact profile of a high-probability prospect</div></div>
+    </div>
+    <div class="sp-body">
+      <div class="form-row two">
+        <div class="fg"><label>ICP Name / Segment Label</label><input id="s-icp-name" placeholder="e.g. Educational Institutions, ERP Resellers, ISVs…"><div class="fg-hint">What you call this customer segment internally</div></div>
+        <div class="fg"><label>Primary Industry / Vertical</label><input id="s-industry" placeholder="e.g. Higher Education, Manufacturing, Financial Services…"></div>
+      </div>
+      <div class="form-row three">
+        <div class="fg"><label>Company / Institution Size</label>
+          <select id="s-size">
+            <option value="">Select…</option>
+            <option>1–50 employees / students</option>
+            <option>51–200 employees / students</option>
+            <option>201–500 employees / students</option>
+            <option>501–1,000 employees / students</option>
+            <option>1,000–5,000 employees / students</option>
+            <option>5,000+ employees / students</option>
+            <option>All sizes</option>
+          </select>
+        </div>
+        <div class="fg"><label>Primary Buyer Title</label><input id="s-buyer-title" placeholder="e.g. VP of IT, Head of Curriculum, CTO…"></div>
+        <div class="fg"><label>Secondary Buyer / Champion</label><input id="s-champion-title" placeholder="e.g. Programme Manager, IT Manager…"></div>
+      </div>
+      <div class="form-row two">
+        <div class="fg"><label>Geography / Market</label><input id="s-geo" placeholder="e.g. Singapore, ASEAN, SEA + India, APAC…"></div>
+        <div class="fg"><label>Typical Deal Value (USD)</label>
+          <select id="s-deal-size">
+            <option value="">Select range…</option>
+            <option value="0-10k">Under $10,000</option>
+            <option value="10-50k">$10,000 – $50,000</option>
+            <option value="50-150k">$50,000 – $150,000</option>
+            <option value="150-500k">$150,000 – $500,000</option>
+            <option value="500k+">$500,000+</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>3 Trigger Events That Create Buying Windows</label><textarea id="s-triggers" placeholder="e.g. 1. New academic year budget planning (Sep–Oct)  2. Digital transformation mandate from ministry  3. New department head appointed with modernisation mandate"></textarea><div class="fg-hint">External events that signal a prospect is ready to consider a solution</div></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 4U FRAMEWORK -->
+  <div class="setup-panel">
+    <div class="sp-head">
+      <div class="sp-num" style="background:#160A2E;color:var(--purple)">3</div>
+      <div><div class="sp-title">4U Qualification Framework</div><div class="sp-sub">The 4 conditions that make a prospect truly ready to buy — the foundation of all discovery and qualification in this system</div></div>
+    </div>
+    <div class="sp-body">
+      <div class="four-u-grid">
+        <div class="u-block unworkable">
+          <span class="u-badge">🔴 Unworkable</span>
+          <div class="u-title">What is visibly broken in their current situation?</div>
+          <textarea id="u-unworkable" placeholder="e.g. Their IT teams spend 6–12 months building mobile apps that are outdated by the time they launch. Business units can't get apps fast enough to respond to market changes — the current process is fundamentally broken…"></textarea>
+        </div>
+        <div class="u-block unavoidable">
+          <span class="u-badge">🔵 Unavoidable</span>
+          <div class="u-title">What external force means they cannot ignore this?</div>
+          <textarea id="u-unavoidable" placeholder="e.g. AI-native competitors are shipping features in days. Ministry digital transformation mandates require mobile-first delivery by 2026. Student expectations have shifted to mobile-first entirely…"></textarea>
+        </div>
+        <div class="u-block urgent">
+          <span class="u-badge">🟡 Urgent</span>
+          <div class="u-title">Why must this be solved NOW and not in 12 months?</div>
+          <textarea id="u-urgent" placeholder="e.g. The next academic intake begins in January — institutions that don't have mobile-enabled programmes by then will lose enrolment to competitors who do. Budget cycle closes in Q4…"></textarea>
+        </div>
+        <div class="u-block underserved">
+          <span class="u-badge">🟣 Underserved</span>
+          <div class="u-title">Why does no current solution adequately solve it?</div>
+          <textarea id="u-underserved" placeholder="e.g. Traditional low-code tools still require developer knowledge. Off-the-shelf apps don't map to their specific workflows. Custom development is too slow and expensive. There's a genuine gap between what exists and what they need…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: KPIs -->
+  <div class="setup-panel">
+    <div class="sp-head">
+      <div class="sp-num" style="background:var(--bd);color:#60A5FA">4</div>
+      <div><div class="sp-title">Target KPIs & ROI Metrics</div><div class="sp-sub">The measurable outcomes your solution delivers — used in discovery, proposals and closing</div></div>
+    </div>
+    <div class="sp-body">
+      <div class="kpi-grid">
+        <div class="kpi-block"><label>Time Saved Per Week</label><input id="k-time" placeholder="e.g. 20 hours"><div class="kpi-unit">Hours saved per user/team/week</div></div>
+        <div class="kpi-block"><label>Cost Reduction</label><input id="k-cost" placeholder="e.g. 40%"><div class="kpi-unit">% or $ reduction in current spend</div></div>
+        <div class="kpi-block"><label>Revenue Impact</label><input id="k-revenue" placeholder="e.g. $200K"><div class="kpi-unit">New revenue or protected revenue</div></div>
+        <div class="kpi-block"><label>Speed Improvement</label><input id="k-speed" placeholder="e.g. 10x faster"><div class="kpi-unit">Speed vs current method</div></div>
+        <div class="kpi-block"><label>Implementation Time</label><input id="k-impl" placeholder="e.g. 2 weeks"><div class="kpi-unit">Time to first value</div></div>
+        <div class="kpi-block"><label>Payback Period</label><input id="k-payback" placeholder="e.g. 90 days"><div class="kpi-unit">Time to ROI breakeven</div></div>
+      </div>
+      <div class="fg" style="margin-top:.75rem"><label>Top 3 Competitor Alternatives (comma-separated)</label><input id="s-competitors" placeholder="e.g. OutSystems, AppGyver, MIT App Inventor, Custom Dev, Microsoft PowerApps…"><div class="fg-hint">What prospects use today or compare you against</div></div>
+      <div class="fg" style="margin-top:.75rem"><label>Pricing Tiers (optional — used in closing section)</label><textarea id="s-pricing" placeholder="e.g. Starter: $8,000/yr — 50 users, core features&#10;Professional: $25,000/yr — 200 users, AI + analytics (RECOMMENDED)&#10;Enterprise: $80,000/yr — Unlimited, custom integration, dedicated support"></textarea></div>
+    </div>
+  </div>
+
+  <div class="validation-msg" id="validation-msg">⚠ Please fill in all required fields: Product Name, Value Proposition, ICP Name, Industry, Buyer Title, and all 4U statements.</div>
+  <button class="launch-btn" onclick="launchSystem()">Launch My IGNITE_APEX Sales System →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     APP SCREEN
+══════════════════════════════════════════════════ -->
+<div id="app-screen">
+  <div class="sidenav">
+    <div class="nav-prog-txt">System Progress</div>
+    <div class="nav-prog"><div class="nav-prog-fill" id="nav-fill" style="width:0%"></div></div>
+    <div class="nav-section">Entry Gate</div>
+    <div class="nav-item active" onclick="goMod('ignite')" id="nav-ignite"><div class="ndot"></div>IGNITE</div>
+    <div class="nav-section">The Sale</div>
+    <div class="nav-item" onclick="goMod('attract')" id="nav-attract"><div class="ndot"></div>A — Attract</div>
+    <div class="nav-item" onclick="goMod('probe')" id="nav-probe"><div class="ndot"></div>P — Probe</div>
+    <div class="nav-item" onclick="goMod('execute')" id="nav-execute"><div class="ndot"></div>E — Execute</div>
+    <div class="nav-section">The Rep</div>
+    <div class="nav-item" onclick="goMod('excel')" id="nav-excel"><div class="ndot"></div>X — Excel</div>
+    <div class="nav-section">Post-Sale</div>
+    <div class="nav-item" onclick="goMod('cement')" id="nav-cement"><div class="ndot"></div>C — Cement</div>
+    <div class="nav-item" onclick="completeDeal()" id="nav-complete" style="border-top:1px solid var(--b1);margin-top:.5rem;padding-top:.85rem"><div class="ndot" style="background:var(--green)"></div><span style="color:var(--green)">✓ Deal Complete</span></div>
+  </div>
+
+  <div class="main">
+
+  <!-- ══ IGNITE ══ -->
+  <div class="module active" id="mod-ignite">
+    <div class="mh" style="--accent-color:var(--amber)">
+      <div class="mh-eye">Layer Zero · Prerequisite Gate</div>
+      <div class="mh-title">IGNITE — Demand Creation Mindset</div>
+      <div class="mh-desc" id="ig-desc">Before this system can work, you must be equipped for this market. Check every prerequisite. These are not attitudes to perform — they must be genuinely held.</div>
+      <div class="mh-badge"><div class="mh-badge-val" style="color:var(--amber)">REP</div><div class="mh-badge-label">Qualifies Here</div></div>
+    </div>
+    <div class="mb">
+
+      <!-- 4U SUMMARY -->
+      <div class="sec-title">Your 4U Qualification Foundation</div>
+      <div class="sec-sub">These are the four conditions that make a prospect truly qualified. Every discovery question, every objection, and every close is built on this foundation.</div>
+      <div class="u-summary-grid" id="u-summary"></div>
+
+      <div class="divider"></div>
+
+      <!-- MINDSET PREREQUISITES -->
+      <div class="sec-title">5 Mindset Prerequisites</div>
+      <div class="sec-sub" id="ig-prereq-sub">Check all five before advancing to ATTRACT. A rep missing any one of these will default to pitching — which kills demand before it starts.</div>
+      <div class="panel">
+        <div class="pb" id="ignite-checks">
+          <div class="chk" onclick="toggleChk(this,'ignite')"><div class="chkbox"></div><div class="chk-txt"><strong>Missionary over Mercenary</strong>I believe in <span class="prod-ref">this product</span> deeply enough that my conviction is contagious. I am not here to hit a number — I am here to change an outcome for this prospect.</div></div>
+          <div class="chk" onclick="toggleChk(this,'ignite')"><div class="chkbox"></div><div class="chk-txt"><strong>Comfort with the Long Arc</strong>I am prepared to invest 3–6 months in this relationship. The <span class="u-unworkable-ref">current broken situation</span> took years to create — it takes time to earn the right to fix it.</div></div>
+          <div class="chk" onclick="toggleChk(this,'ignite')"><div class="chkbox"></div><div class="chk-txt"><strong>Education Before Pitch</strong>I can explain why <span class="u-unavoidable-ref">the unavoidable force</span> means this prospect cannot stay still — in 90 seconds, without mentioning <span class="prod-ref">my product</span>.</div></div>
+          <div class="chk" onclick="toggleChk(this,'ignite')"><div class="chkbox"></div><div class="chk-txt"><strong>Category-Level Rejection Reframe</strong>Early resistance is normal. Most prospects haven't yet felt the urgency I'm describing. "Not yet" at the category level is not personal rejection — it is my diagnostic starting point.</div></div>
+          <div class="chk" onclick="toggleChk(this,'ignite')"><div class="chkbox"></div><div class="chk-txt"><strong>Personal Credibility as Asset</strong>I show up as a trusted advisor with a point of view. Before they buy <span class="prod-ref">this solution</span>, they must buy into me. Order-takers cannot generate demand.</div></div>
+        </div>
+        <div class="gate-bar fail" id="ignite-gate"><span>⚠</span><span>Check all 5 prerequisites before advancing to ATTRACT.</span></div>
+      </div>
+
+      <!-- REFRAME OPENER -->
+      <div class="divider"></div>
+      <div class="sec-title">Your Reframe Opener for <span class="prospect-ref">this prospect</span></div>
+      <div class="sec-sub">Write a non-obvious insight about their world that creates genuine curiosity — without mentioning your product. This is how you earn the right to be heard in a demand generation market.</div>
+      <div class="panel" id="reframe-panel">
+        <div class="ph"><div class="ph-icon" style="background:var(--ad)">💡</div><div class="ph-name">Generated Reframe Opener (edit to personalise)</div></div>
+        <div class="pb">
+          <div class="info amber" id="reframe-generated"></div>
+          <label class="field-label">Your personalised version for <span class="prospect-ref">this prospect</span></label>
+          <textarea class="ta-field" id="reframe-custom" placeholder="Rewrite the opener above in your own voice for this specific prospect…"></textarea>
+        </div>
+      </div>
+
+      <div class="mod-nav">
+        <button class="btn btn-ghost" onclick="showSetup()">← Reconfigure</button>
+        <button class="btn btn-primary" onclick="goMod('attract')">Continue to ATTRACT →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ATTRACT ══ -->
+  <div class="module" id="mod-attract">
+    <div class="mh" style="--accent-color:var(--amber)">
+      <div class="mh-eye">Gate 1 · ICP Qualification</div>
+      <div class="mh-title">ATTRACT — Qualify with Precision</div>
+      <div class="mh-desc">Score <span class="prospect-ref">this prospect</span> before investing time. Every ICP criterion is built from your 4U framework. Minimum 70/100 to advance. Below 70 — walk away.</div>
+      <div class="mh-badge"><div class="mh-badge-val" style="color:var(--amber)">+10%</div><div class="mh-badge-label">Pipeline Uplift</div></div>
+    </div>
+    <div class="mb">
+
+      <div class="sec-title">ICP Score — <span class="icp-ref">Your ICP</span></div>
+      <div class="sec-sub">Each criterion maps directly to one of your 4U conditions. A high score means the 4U conditions are present in this prospect's reality.</div>
+      <div class="panel">
+        <div class="pb" id="icp-matrix">
+          <!-- Generated by JS -->
+        </div>
+        <div class="score-disp" style="margin:0 1.2rem 1.2rem">
+          <div>
+            <div style="font-size:.6rem;font-weight:700;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:.2rem">ICP Score</div>
+            <div class="score-num" id="icp-score" style="color:var(--amber)">0<span style="font-size:1.3rem;color:var(--t3)">/100</span></div>
+          </div>
+          <div style="text-align:right">
+            <div class="score-verd" id="icp-verdict" style="background:var(--s3);color:var(--t3)">Score your prospect</div>
+            <div style="font-size:.65rem;color:var(--t3);margin-top:.3rem">Minimum 70 to advance</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRIGGER EVENTS -->
+      <div class="divider"></div>
+      <div class="sec-title">Warm Signal Triggers</div>
+      <div class="sec-sub">These are the events that signal a prospect has entered a buying window. React within 48 hours of any trigger.</div>
+      <div class="panel"><div class="pb" id="trigger-list"></div></div>
+
+      <!-- STEALTH SIGNALS -->
+      <div class="divider"></div>
+      <div class="sec-title">Stealth Intelligence — Read Before You Invest</div>
+      <div class="sec-sub">These signals mean a prospect is leading you into a deal that was never real. Detect them early or pay for it in months of wasted pipeline.</div>
+      <div class="signal"><div class="sig-icon">⚡</div><div><div class="sig-title">Enthusiasm Without Commitment</div><div class="sig-body">Praises your solution but never asks a commercial question. Real buyers ask about pricing, timelines, and implementation because they intend to act.</div><div class="sig-action">→ Test: "If this solves what you described, what would the approval process look like?" Watch how they respond.</div></div></div>
+      <div class="signal"><div class="sig-icon">🎭</div><div><div class="sig-title">The Meeting That Goes Too Well</div><div class="sig-body">Zero objections. Total agreement. Everyone nodding. Real buyers push back because they are genuinely evaluating. A room that agrees with everything has already decided against you.</div><div class="sig-action">→ Kill signal: No hard questions in a complex sale means they are not evaluating you.</div></div></div>
+      <div class="signal"><div class="sig-icon">🌫️</div><div><div class="sig-title">Precision Language Test</div><div class="sig-body">Decision makers who are serious use specific language: budgets, dates, names, use cases. Vague language ("soon", "we're exploring") is not a communication style — it is non-commitment.</div><div class="sig-action">→ Ask: "What would need to be true for this to be a Q2 priority?" Specific answer = moving. Vague answer = not committed.</div></div></div>
+      <div class="signal"><div class="sig-icon">👤</div><div><div class="sig-title">The Hidden Veto Player</div><div class="sig-body">Someone with significant influence has not been introduced to you. Often the CFO, a prior-failure survivor, or a technical gatekeeper.</div><div class="sig-action">→ Ask your champion: "Who in your organisation would be most sceptical about this?" If they say "everyone is on board" — push harder.</div></div></div>
+
+      <div class="mod-nav">
+        <button class="btn btn-ghost" onclick="goMod('ignite')">← IGNITE</button>
+        <button class="btn btn-primary" onclick="goMod('probe')">Continue to PROBE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROBE ══ -->
+  <div class="module" id="mod-probe">
+    <div class="mh" style="--accent-color:#3B82F6">
+      <div class="mh-eye">Gate 2 · The Heart of the Sale</div>
+      <div class="mh-title">PROBE — Root Cause Diagnosis</div>
+      <div class="mh-desc">70% of the sale happens here. You are not pitching. You are diagnosing — going three layers deep until <span class="prospect-ref">your prospect</span> articulates the root cause in their own words. That moment is when the sale is effectively closed.</div>
+      <div class="mh-badge"><div class="mh-badge-val" style="color:#60A5FA">70%</div><div class="mh-badge-label">Of the Sale</div></div>
+    </div>
+    <div class="mb">
+
+      <div class="info amber"><strong>The 70% Rule:</strong> Do not advance to EXECUTE until Layer 3 is complete and <span class="prospect-ref">your prospect</span> has named the root cause in their own words. Conviction built in PROBE makes the close in EXECUTE a formality.</div>
+
+      <!-- DISCOVERY QUESTIONS -->
+      <div class="sec-title">Discovery Questions — Built from Your 4U Framework</div>
+      <div class="sec-sub">Use these questions in sequence. Each maps to a specific 4U condition. Record their exact answers below each question.</div>
+      <div id="discovery-questions"></div>
+
+      <div class="divider"></div>
+
+      <!-- 3-LAYER DIAGNOSTIC -->
+      <div class="sec-title">3-Layer Root Cause Diagnostic</div>
+      <div class="sec-sub">Work through all three layers. The diagnostic is only complete when <span class="prospect-ref">your prospect</span> names Layer 3 themselves — in their own words, unprompted.</div>
+
+      <div class="layer-block lb1" style="background:#100208;border-color:#EF4444">
+        <div class="lb-num" style="color:#EF4444">LAYER 1 — SYMPTOM (Unworkable)</div>
+        <div class="lb-title" style="color:#FCA5A5">What is the stated problem?</div>
+        <div class="lb-prompt" id="l1-prompt">Ask: <strong>"What's your biggest challenge with [area] right now? How long has this been an issue?"</strong></div>
+        <textarea class="layer-ta" id="layer1" oninput="checkLayer(1,this.value)" placeholder="Record their exact words describing the surface problem…"></textarea>
+        <div class="layer-done" id="l1-done" style="background:#1A0303;color:#EF4444;border:1px solid #EF4444">Layer 1 captured ✓</div>
+      </div>
+      <div class="layer-block lb2" style="background:#020B1A;border-color:#3B82F6">
+        <div class="lb-num" style="color:#60A5FA">LAYER 2 — STRUCTURAL CAUSE (Unavoidable)</div>
+        <div class="lb-title" style="color:#93C5FD">What process or structural failure created this symptom?</div>
+        <div class="lb-prompt" id="l2-prompt">Ask: <strong>"What has already been tried to solve this — and why did it fail? What in the organisation allows this to persist?"</strong></div>
+        <textarea class="layer-ta" id="layer2" oninput="checkLayer(2,this.value)" placeholder="Record the deeper structural failure behind the symptom…"></textarea>
+        <div class="layer-done" id="l2-done" style="background:#020B1A;color:#60A5FA;border:1px solid #3B82F6">Layer 2 captured ✓</div>
+      </div>
+      <div class="layer-block lb3" style="background:#021A0E;border-color:var(--green)">
+        <div class="lb-num" style="color:var(--green)">LAYER 3 — ROOT CAUSE (Urgent + Underserved)</div>
+        <div class="lb-title" style="color:#6EE7B7">What decision or assumption allowed this failure to persist?</div>
+        <div class="lb-prompt" id="l3-prompt">Ask: <strong>"If you're honest — what would have to change at leadership level for this to really be fixed? What assumption has the organisation been making that is no longer true?"</strong></div>
+        <textarea class="layer-ta" id="layer3" oninput="checkLayer(3,this.value)" placeholder="Record their EXACT words when they name the root cause themselves — in their own language. This is the moment."></textarea>
+        <div class="layer-done" id="l3-done" style="background:#021A0E;color:var(--green);border:1px solid var(--green)">✓ Root cause captured — the sale is effectively closed. Advance to EXECUTE.</div>
+      </div>
+      <div class="gate-bar fail" id="probe-gate"><span>⚠</span><span>Complete all 3 layers. Layer 3 must contain their own words — not your interpretation.</span></div>
+
+      <div class="divider"></div>
+
+      <!-- ROI LADDER -->
+      <div class="sec-title">Pain → Impact → ROI Ladder</div>
+      <div class="sec-sub">Build the ROI case with them — not for them. Record their agreed numbers. Do not advance to EXECUTE until a ROI figure is confirmed in their own words.</div>
+      <div class="two-col">
+        <div>
+          <div class="panel" style="border-color:#EF444444">
+            <div class="ph"><div class="ph-icon" style="background:var(--rd)">🔴</div><div class="ph-name" style="color:#EF4444">PAIN — What's broken?</div></div>
+            <div class="pb"><textarea class="ta-field" style="border-color:#EF444444" placeholder="Their exact words about the pain…"></textarea></div>
+          </div>
+          <div class="panel" style="border-color:var(--amber)44">
+            <div class="ph"><div class="ph-icon" style="background:var(--ad)">🟡</div><div class="ph-name" style="color:var(--amber)">IMPACT — What does it cost?</div></div>
+            <div class="pb"><textarea class="ta-field" style="border-color:var(--amber)44" placeholder="Quantified impact: time lost, revenue missed, cost incurred per month/year…"></textarea></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="border-color:var(--green)44;height:100%">
+            <div class="ph"><div class="ph-icon" style="background:var(--gd)">🟢</div><div class="ph-name" style="color:var(--green)">ROI — What's it worth to fix?</div></div>
+            <div class="pb">
+              <textarea class="ta-field" style="min-height:80px;border-color:var(--green)44" placeholder="Agreed ROI figure in their own words: 'If we solve this, that's worth $X in year one…'"></textarea>
+              <div class="info green" style="margin-top:.65rem;margin-bottom:0"><strong>Rule:</strong> Do not proceed to EXECUTE until the prospect confirms an ROI figure. This is the conviction point that makes the close a formality.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAMPION TEST -->
+      <div class="divider"></div>
+      <div class="sec-title">Champion vs. Sponsor Intelligence</div>
+      <div class="sec-sub">A champion fights for you when you're not in the room. A sponsor likes you when you're present. Identify which one you have.</div>
+      <div class="panel">
+        <div class="pb">
+          <div class="two-col">
+            <div>
+              <label class="field-label">Champion name & role</label>
+              <input class="input-field" placeholder="Name / Title of internal advocate">
+              <label class="field-label" style="margin-top:.5rem">What did they say/do in the last internal meeting you weren't in?</label>
+              <textarea class="ta-field" placeholder="Specific names, conversations, reactions they reported…"></textarea>
+            </div>
+            <div>
+              <label class="field-label">Hidden veto player identified?</label>
+              <input class="input-field" placeholder="Name / Role of most sceptical stakeholder">
+              <label class="field-label" style="margin-top:.5rem">How has their concern been addressed?</label>
+              <textarea class="ta-field" placeholder="Specific action taken to pre-handle the veto player…"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-nav">
+        <button class="btn btn-ghost" onclick="goMod('attract')">← ATTRACT</button>
+        <button class="btn btn-primary" onclick="goMod('execute')">Continue to EXECUTE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EXECUTE ══ -->
+  <div class="module" id="mod-execute">
+    <div class="mh" style="--accent-color:var(--green)">
+      <div class="mh-eye">Gate 3 · Conviction-Based Close</div>
+      <div class="mh-title">EXECUTE — Close with Conviction</div>
+      <div class="mh-desc">If PROBE is complete, this is a transition — not a push. You are bridging from the root cause they named to the solution that addresses it precisely. Fast. Confident. Earned.</div>
+      <div class="mh-badge"><div class="mh-badge-val" style="color:var(--green)">+10%</div><div class="mh-badge-label">Closing Uplift</div></div>
+    </div>
+    <div class="mb">
+
+      <!-- COMPETITIVE LANDSCAPE -->
+      <div class="sec-title">Competitive Battlecards</div>
+      <div class="sec-sub">Know what you're up against for <span class="prospect-ref">this deal</span>. Use the underserved condition — why no current solution is adequate — as your primary differentiation.</div>
+      <div class="panel"><div class="pb" id="competitive-cards"></div></div>
+
+      <!-- ROI SUMMARY -->
+      <div class="divider"></div>
+      <div class="sec-title">ROI Summary for <span class="prod-ref">your product</span></div>
+      <div class="sec-sub">Present these numbers — built from your configuration — as a starting point for the ROI conversation. Always anchor to figures they confirmed in PROBE.</div>
+      <div class="roi-grid" id="roi-grid"></div>
+
+      <div class="divider"></div>
+
+      <!-- CLOSING TECHNIQUES -->
+      <div class="sec-title">Select Your Closing Technique</div>
+      <div class="sec-sub">Choose the one that fits the current state of <span class="prospect-ref">this deal</span>.</div>
+      <div class="close-cards">
+        <div class="close-card" onclick="selectClose(this)">
+          <div class="cc-head" style="background:#065F46"><h3>The 3-Option Close</h3></div>
+          <div class="cc-body"><div class="cc-desc">Present Good/Better/Best tiers. 70% choose middle. Build your preferred option as the middle tier. Use when the prospect has confirmed ROI but hasn't committed to a tier.</div><div class="cc-script" id="close-three-script">"Most clients in your situation choose [Middle Tier] — it includes [key feature] and delivers [outcome]. Which makes most sense to start with?"</div></div>
+        </div>
+        <div class="close-card" onclick="selectClose(this)">
+          <div class="cc-head" style="background:var(--ad)"><h3>The Assumption Close</h3></div>
+          <div class="cc-body"><div class="cc-desc">Move language from "if" to "when." Use when conviction is high but the prospect hasn't physically committed. Unstalls deals where the decision is made but not declared.</div><div class="cc-script">"When we go live — who will be the project lead on your side? When your team starts using this, which department benefits first?"</div></div>
+        </div>
+        <div class="close-card" onclick="selectClose(this)">
+          <div class="cc-head" style="background:var(--pd)"><h3>The Urgency Close</h3></div>
+          <div class="cc-body"><div class="cc-desc">Tie urgency to THEIR triggering event — never manufacture it. Use only when a real deadline exists on their side (discovered in ATTRACT).</div><div class="cc-script" id="close-urgency-script">"You mentioned [their trigger event] — if we start now, you get [X months] of results before that conversation."</div></div>
+        </div>
+      </div>
+
+      <!-- PRICING TIERS -->
+      <div class="divider"></div>
+      <div class="sec-title">Pricing Tiers</div>
+      <div class="sec-sub" id="pricing-sub">Your configured tiers for the 3-option close.</div>
+      <div id="pricing-tiers"></div>
+
+      <div class="divider"></div>
+
+      <!-- OBJECTION HANDLER -->
+      <div class="sec-title">Objection Handler</div>
+      <div class="sec-sub">Click any objection to reveal what it actually means and the exact counter-question to re-engage. Every objection is a diagnostic question in disguise.</div>
+      <div id="objection-handler"></div>
+
+      <div class="divider"></div>
+
+      <!-- BRUTAL QUALIFIER -->
+      <div class="sec-title">Brutal 7-Question Pipeline Qualifier</div>
+      <div class="sec-sub">Answer with verifiable evidence — not optimism. This determines your forecast category. A deal that fails here does not belong in your commit number.</div>
+      <div id="brutal-qualifier"></div>
+      <div class="bq-result" id="bq-result">
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:.2rem">Qualifier Score</div><div class="bq-score" id="bq-score-val">0/7</div></div>
+        <div id="bq-verdict" style="font-size:.8rem;color:var(--t3)">Answer all 7 questions for your forecast verdict.</div>
+      </div>
+
+      <div class="mod-nav">
+        <button class="btn btn-ghost" onclick="goMod('probe')">← PROBE</button>
+        <button class="btn btn-primary" onclick="goMod('excel')">Continue to EXCEL →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EXCEL ══ -->
+  <div class="module" id="mod-excel">
+    <div class="mh" style="--accent-color:var(--purple)">
+      <div class="mh-eye">Ongoing · The Rep System</div>
+      <div class="mh-title">EXCEL — Master Your Mindset</div>
+      <div class="mh-desc">Skills get you to average. Mindset gets you to exceptional. Run this system every day — not when you feel like it. Consistency is the only edge that compounds.</div>
+      <div class="mh-badge"><div class="mh-badge-val" style="color:#A78BFA">+10%</div><div class="mh-badge-label">Mindset Uplift</div></div>
+    </div>
+    <div class="mb">
+      <div class="stats-row" id="ritual-stats">
+        <div class="stat"><div class="stat-v" id="ritual-done-count" style="color:var(--green)">0</div><div class="stat-l">Done Today</div></div>
+        <div class="stat"><div class="stat-v" style="color:var(--t2)">5</div><div class="stat-l">Total Rituals</div></div>
+        <div class="stat"><div class="stat-v" id="ritual-pct-val" style="color:var(--amber)">0%</div><div class="stat-l">Completion</div></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="ph-icon" style="background:var(--pd)">⚡</div><div class="ph-name">Peak Performance Daily Ritual</div></div>
+        <div class="pb" id="ritual-list">
+          <div class="ritual-row"><div class="rt-time">7:00 AM</div><div class="rt-body"><div class="rt-name">Pipeline Review</div><div class="rt-desc">Top 5 active deals. Write the single next action for each. Do not leave without confirmed next actions.</div></div><div class="rt-chk" onclick="toggleRitual(this)">✓</div></div>
+          <div class="ritual-row"><div class="rt-time">7:15 AM</div><div class="rt-body"><div class="rt-name">Win Visualisation</div><div class="rt-desc">Mentally rehearse your best call of the day. Walk through it from opener to close. Prime your state for performance.</div></div><div class="rt-chk" onclick="toggleRitual(this)">✓</div></div>
+          <div class="ritual-row"><div class="rt-time">9:00 AM</div><div class="rt-body"><div class="rt-name">90-Min Prospecting Sprint</div><div class="rt-desc">Phones, emails, LinkedIn — nothing else. No Slack. No internal email. This is your most protected block.</div></div><div class="rt-chk" onclick="toggleRitual(this)">✓</div></div>
+          <div class="ritual-row"><div class="rt-time">12:00 PM</div><div class="rt-body"><div class="rt-name">Learning Input</div><div class="rt-desc">One article, podcast segment, or lost-deal review. Feed the machine with new insight every day.</div></div><div class="rt-chk" onclick="toggleRitual(this)">✓</div></div>
+          <div class="ritual-row"><div class="rt-time">5:30 PM</div><div class="rt-body"><div class="rt-name">Day Debrief</div><div class="rt-desc">Three questions: (1) My 1 win today. (2) My 1 miss. (3) What I do differently tomorrow. Write it. Every day.</div></div><div class="rt-chk" onclick="toggleRitual(this)">✓</div></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-title">Rejection Resilience Protocol</div>
+      <div class="sec-sub">Use this after every lost deal or cold prospect. Not next week. Today.</div>
+      <div class="two-col">
+        <div>
+          <div class="panel" style="border-color:var(--purple)44">
+            <div class="ph"><div class="ph-icon" style="background:var(--pd)">⏸️</div><div class="ph-name" style="color:#A78BFA">Step 1 — 24-Hour Rule</div></div>
+            <div class="pb" style="font-size:.82rem;color:var(--t2);line-height:1.6">After a significant loss: do nothing for 24 hours. No reactive discounting, no desperate follow-ups. Let the emotion pass before you act on it.</div>
+          </div>
+          <div class="panel" style="border-color:var(--purple)44;margin-top:1rem">
+            <div class="ph"><div class="ph-icon" style="background:var(--pd)">📊</div><div class="ph-name" style="color:#A78BFA">Step 2 — Data Debrief</div></div>
+            <div class="pb"><textarea class="ta-field" style="border-color:var(--purple)44" placeholder="Which 4U condition did I misread? Which discovery question did I skip? Where did I stop diagnosing and start pitching?"></textarea></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="border-color:var(--purple)44">
+            <div class="ph"><div class="ph-icon" style="background:var(--pd)">🔄</div><div class="ph-name" style="color:#A78BFA">Step 3 — Reframe</div></div>
+            <div class="pb">
+              <div class="info" style="background:var(--pd);border-color:var(--purple);color:#A78BFA;margin-bottom:0">Replace <strong>"I got rejected"</strong> → <strong>"I gathered data."</strong><br>Replace <strong>"They don't want this"</strong> → <strong>"I didn't fully understand their 4U conditions yet."</strong><br>Language shapes state. Reframe deliberately every time.</div>
+            </div>
+          </div>
+          <div class="panel" style="border-color:var(--purple)44;margin-top:1rem">
+            <div class="ph"><div class="ph-icon" style="background:var(--pd)">⚡</div><div class="ph-name" style="color:#A78BFA">Step 4 — Momentum Reset</div></div>
+            <div class="pb" style="font-size:.82rem;color:var(--t2);line-height:1.6">After every loss, book one new prospect meeting. <strong style="color:var(--t1)">Not tomorrow. Today.</strong> Motion creates momentum. Action breaks the spiral.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-nav">
+        <button class="btn btn-ghost" onclick="goMod('execute')">← EXECUTE</button>
+        <button class="btn btn-primary" onclick="goMod('cement')">Continue to CEMENT →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CEMENT ══ -->
+  <div class="module" id="mod-cement">
+    <div class="mh" style="--accent-color:#EF4444">
+      <div class="mh-eye">Post-Sale · The Long Game</div>
+      <div class="mh-title">CEMENT — Engineer 3–5 Year Stickiness</div>
+      <div class="mh-desc">The close is the starting gun. Every action before the close was done with this horizon in mind. Now execute it. Indispensability is earned through outcomes — not products.</div>
+      <div class="mh-badge"><div class="mh-badge-val" style="color:#FCA5A5">5 YR</div><div class="mh-badge-label">Horizon</div></div>
+    </div>
+    <div class="mb">
+      <div class="info amber"><strong>IGNITE_APEX Principle:</strong> Your best pipeline sits inside your existing accounts. Expansion revenue costs 5–7× less than a new logo. CEMENT is not customer success — it is pre-engineered from your first discovery call.</div>
+
+      <div class="cement-layer">
+        <div class="cl-head"><div class="cl-num" style="color:#EF4444">1</div><div class="cl-info"><h3>Outcome Ownership — Month 1–3</h3><p>Stay present after contract. Make yourself responsible for the outcome, not the sale.</p></div><div class="cl-prog" id="c1p">0/3</div></div>
+        <div class="cl-body" id="c1">
+          <div class="chk" onclick="toggleChk(this,'c1')"><div class="chkbox"></div><div class="chk-txt"><strong>30/60/90 Day Check-ins Scheduled</strong>Outcome milestones defined and calendar invites sent. You own the schedule — not the client.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c1')"><div class="chkbox"></div><div class="chk-txt"><strong>QBR Template Tied to Root Cause</strong>Each quarterly review references the root cause you diagnosed together in PROBE. Their exact words from Layer 3 are in your agenda.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c1')"><div class="chkbox"></div><div class="chk-txt"><strong>First Problem Surfaced Before Client Noticed</strong>You identified an implementation risk before it became visible. This is the moment you become a strategic partner, not a vendor.</div></div>
+        </div>
+      </div>
+      <div class="cement-layer">
+        <div class="cl-head"><div class="cl-num" style="color:#3B82F6">2</div><div class="cl-info"><h3>Stakeholder Expansion — Month 3–9</h3><p>One relationship is one resignation away from zero.</p></div><div class="cl-prog" id="c2p">0/3</div></div>
+        <div class="cl-body" id="c2">
+          <div class="chk" onclick="toggleChk(this,'c2')"><div class="chkbox"></div><div class="chk-txt"><strong>3 Stakeholders Beyond Primary Contact</strong>Named individuals at different levels. Each has received individual value from you — not just cc'd on emails.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c2')"><div class="chkbox"></div><div class="chk-txt"><strong>Relationship Survives Champion Departure</strong>If your primary contact left tomorrow, you have at least 2 other relationships who know you and value your involvement.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c2')"><div class="chkbox"></div><div class="chk-txt"><strong>Economic Buyer Has Received Direct Value</strong>Not through your champion — directly. A report, insight, or result delivered to the economic buyer personally.</div></div>
+        </div>
+      </div>
+      <div class="cement-layer">
+        <div class="cl-head"><div class="cl-num" style="color:var(--green)">3</div><div class="cl-info"><h3>Institutional Knowledge Accumulation — Month 6–18</h3><p>Your context becomes a moat no new vendor can cross.</p></div><div class="cl-prog" id="c3p">0/3</div></div>
+        <div class="cl-body" id="c3">
+          <div class="chk" onclick="toggleChk(this,'c3')"><div class="chkbox"></div><div class="chk-txt"><strong>Living Account Intelligence Document Active</strong>Updated after every interaction: cycles, politics, strategic priorities, prior failures. You remember what they forget.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c3')"><div class="chkbox"></div><div class="chk-txt"><strong>Historical Reference Used in Conversations</strong>"Last time you dealt with X, we solved it by doing Y — this looks similar." You cite their own history back to them.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c3')"><div class="chkbox"></div><div class="chk-txt"><strong>Switching Cost Is Intellectual, Not Just Financial</strong>18 months of contextual knowledge cannot be replicated by a new vendor. This has been acknowledged — explicitly or implicitly.</div></div>
+        </div>
+      </div>
+      <div class="cement-layer">
+        <div class="cl-head"><div class="cl-num" style="color:var(--amber)">4</div><div class="cl-info"><h3>Root Cause Chain Expansion — Month 12–24</h3><p>Every solved root cause reveals the next one underneath.</p></div><div class="cl-prog" id="c4p">0/3</div></div>
+        <div class="cl-body" id="c4">
+          <div class="chk" onclick="toggleChk(this,'c4')"><div class="chkbox"></div><div class="chk-txt"><strong>Next Root Cause Identified and Documented</strong>Root Cause 1 is resolved. A new gap has surfaced. You have documented it and begun the diagnostic for Root Cause 2.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c4')"><div class="chkbox"></div><div class="chk-txt"><strong>Expansion Conversation Framed as Natural Progression</strong>The expansion sale feels to the client like their own journey — not a sales motion. They raised it before you pitched it.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c4')"><div class="chkbox"></div><div class="chk-txt"><strong>Account Revenue Has Grown From Original Contract</strong>Expansion through root cause chain logic. The client never felt sold to — they felt supported.</div></div>
+        </div>
+      </div>
+      <div class="cement-layer">
+        <div class="cl-head"><div class="cl-num" style="color:var(--purple)">5</div><div class="cl-info"><h3>Advocacy Engineering — Month 18–36+</h3><p>A client who invests their credibility in your success cannot easily leave.</p></div><div class="cl-prog" id="c5p">0/4</div></div>
+        <div class="cl-body" id="c5">
+          <div class="chk" onclick="toggleChk(this,'c5')"><div class="chkbox"></div><div class="chk-txt"><strong>Case Study Agreed and Published</strong>Their name and results are attached to your solution publicly. They have staked their professional credibility on your success.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c5')"><div class="chkbox"></div><div class="chk-txt"><strong>Peer Referral Made</strong>They have referred you to a peer organisation and staked their credibility on your solution working for someone else.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c5')"><div class="chkbox"></div><div class="chk-txt"><strong>Co-Presentation or Speaking Engagement Completed</strong>They have spoken publicly about your solution. Public investment creates permanent bond.</div></div>
+          <div class="chk" onclick="toggleChk(this,'c5')"><div class="chkbox"></div><div class="chk-txt"><strong>Formally Classified as Strategic Partner</strong>The relationship is documented in their procurement records and your account plan as strategic — not transactional.</div></div>
+        </div>
+      </div>
+
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;text-align:center;margin-top:1rem">
+        <div style="font-family:'Syne',sans-serif;font-size:1rem;color:var(--amber);margin-bottom:.4rem">The IGNITE_APEX Genius Salesperson</div>
+        <div style="font-size:.86rem;color:var(--t3);line-height:1.7;max-width:640px;margin:0 auto;font-style:italic">"Qualifies harder than anyone. Diagnoses deeper than anyone. Reads what is never said. Forecasts with brutal honesty. Closes fast because conviction was already built. Then spends the next five years making themselves impossible to replace."</div>
+        <div style="margin-top:.85rem;font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3)">IGNITE_APEX · Universal SaaS Sales System</div>
+      </div>
+
+      <div class="mod-nav">
+        <button class="btn btn-ghost" onclick="goMod('excel')">← EXCEL</button>
+        <button class="btn btn-primary" onclick="completeDeal()">✓ Complete This Deal →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DEAL COMPLETE ════════════════════════════════════════════════════ -->
+  <div class="module" id="mod-complete" style="display:none">
+    <div class="mod-header" style="background:linear-gradient(135deg,#021A10,#010C08);border-bottom:3px solid var(--green)">
+      <div class="mod-eyebrow" style="color:var(--green)">Deal Complete · Mission Accomplished</div>
+      <div class="mod-title" style="color:#6EE7B7">Deal Closed &amp; Cemented</div>
+      <div class="mod-desc">You have worked this deal through every IGNITE_APEX gate. The relationship is built. The next deal inside this account costs 5–7× less to close. Now capture the learnings and start the next one.</div>
+      <div style="position:absolute;top:2rem;right:2.5rem;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--green);line-height:1">✓</div>
+        <div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-top:.2rem">COMPLETE</div>
+      </div>
+    </div>
+    <div class="mod-body">
+
+      <!-- DEAL SUMMARY -->
+      <div style="background:linear-gradient(135deg,#021A10,#010C08);border:1px solid var(--green);border-radius:14px;padding:1.75rem 2rem;margin-bottom:1.5rem">
+        <div style="font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Deal Summary</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem" id="deal-summary-grid">
+          <div>
+            <div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.3rem">Account</div>
+            <div style="font-size:1.1rem;font-weight:700;color:#6EE7B7" id="complete-prospect">—</div>
+          </div>
+          <div>
+            <div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.3rem">Product</div>
+            <div style="font-size:1rem;font-weight:600;color:var(--amber)" id="complete-product">—</div>
+          </div>
+          <div>
+            <div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:.3rem">ICP Segment</div>
+            <div style="font-size:.9rem;color:var(--t2)" id="complete-icp">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IGNITE_APEX GATES SUMMARY -->
+      <div style="font-size:.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3);margin-bottom:.75rem">Gates Completed</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.65rem;margin-bottom:1.5rem" id="gates-summary">
+        <div style="background:var(--gd);border:1px solid var(--green);border-radius:9px;padding:.85rem;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--green)">I</div>
+          <div style="font-size:.6rem;font-weight:700;color:var(--green);margin-top:.2rem">IGNITE</div>
+          <div style="font-size:.65rem;color:var(--t3);margin-top:.2rem">Mindset ✓</div>
+        </div>
+        <div style="background:var(--gd);border:1px solid var(--green);border-radius:9px;padding:.85rem;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--green)">A</div>
+          <div style="font-size:.6rem;font-weight:700;color:var(--green);margin-top:.2rem">ATTRACT</div>
+          <div style="font-size:.65rem;color:var(--t3);margin-top:.2rem">ICP Qualified ✓</div>
+        </div>
+        <div style="background:var(--gd);border:1px solid var(--green);border-radius:9px;padding:.85rem;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--green)">P</div>
+          <div style="font-size:.6rem;font-weight:700;color:var(--green);margin-top:.2rem">PROBE</div>
+          <div style="font-size:.65rem;color:var(--t3);margin-top:.2rem">Root Cause ✓</div>
+        </div>
+        <div style="background:var(--gd);border:1px solid var(--green);border-radius:9px;padding:.85rem;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--green)">E</div>
+          <div style="font-size:.6rem;font-weight:700;color:var(--green);margin-top:.2rem">EXECUTE</div>
+          <div style="font-size:.65rem;color:var(--t3);margin-top:.2rem">7Q Passed ✓</div>
+        </div>
+        <div style="background:var(--gd);border:1px solid var(--green);border-radius:9px;padding:.85rem;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--green)">C</div>
+          <div style="font-size:.6rem;font-weight:700;color:var(--green);margin-top:.2rem">CEMENT</div>
+          <div style="font-size:.65rem;color:var(--t3);margin-top:.2rem">Cemented ✓</div>
+        </div>
+      </div>
+
+      <!-- DEAL DEBRIEF -->
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+        <div style="font-size:.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3);margin-bottom:1rem">Deal Debrief — Capture Before You Move On</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div>
+            <label style="display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:.35rem">What won this deal?</label>
+            <textarea style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.6rem .8rem;font-size:.82rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:70px;outline:none;transition:border .15s" placeholder="The single most decisive factor that closed this..." id="debrief-won"></textarea>
+          </div>
+          <div>
+            <label style="display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:.35rem">What would you do differently?</label>
+            <textarea style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.6rem .8rem;font-size:.82rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:70px;outline:none;transition:border .15s" placeholder="The one thing that slowed this deal down..." id="debrief-diff"></textarea>
+          </div>
+          <div>
+            <label style="display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue2);margin-bottom:.35rem">Root cause — in their exact words</label>
+            <textarea style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.6rem .8rem;font-size:.82rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:70px;outline:none;transition:border .15s" placeholder="Copy the Layer 3 root cause they named..." id="debrief-root"></textarea>
+          </div>
+          <div>
+            <label style="display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--purple);margin-bottom:.35rem">Next expansion opportunity</label>
+            <textarea style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.6rem .8rem;font-size:.82rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:70px;outline:none;transition:border .15s" placeholder="The next root cause in this account to solve..." id="debrief-next"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHAT HAPPENS NEXT -->
+      <div style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.75rem">
+        <div style="font-size:.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3);margin-bottom:.85rem">What Happens Next</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+          <div style="text-align:center;padding:.75rem">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📋</div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--t1);margin-bottom:.25rem">Log to Pipeline</div>
+            <div style="font-size:.7rem;color:var(--t3);line-height:1.5">Add this closed deal to your Weekly Report pipeline tracker with the final value.</div>
+          </div>
+          <div style="text-align:center;padding:.75rem">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">🔄</div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--t1);margin-bottom:.25rem">Start Next Deal</div>
+            <div style="font-size:.7rem;color:var(--t3);line-height:1.5">Enter a new prospect name and work the next deal through the same system from the top.</div>
+          </div>
+          <div style="text-align:center;padding:.75rem">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📈</div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--t1);margin-bottom:.25rem">Expand This Account</div>
+            <div style="font-size:.7rem;color:var(--t3);line-height:1.5">Re-enter this account name above and run the system again for the next root cause you identified.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINAL QUOTE -->
+      <div style="background:linear-gradient(135deg,#021A10,#010C08);border:1px solid var(--green);border-radius:12px;padding:1.5rem 2rem;text-align:center;margin-bottom:1.5rem">
+        <div style="font-size:.86rem;color:var(--t3);line-height:1.75;max-width:640px;margin:0 auto;font-style:italic">"Qualifies harder than anyone. Diagnoses deeper than anyone. Reads what is never said. Forecasts with brutal honesty. Closes fast because conviction was already built. Then spends the next five years making themselves impossible to replace."</div>
+        <div style="margin-top:.75rem;font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--green)">IGNITE_APEX · Deal Complete</div>
+      </div>
+
+      <!-- BOTTOM ACTIONS -->
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="btn" style="background:var(--amber);color:#000;padding:.8rem 2rem;font-size:.88rem;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:'Outfit',sans-serif" onclick="generateReport()">
+          ⬇ Download Report Briefing
+        </button>
+      </div>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="startNewDeal()" style="padding:.8rem 2rem;font-size:.88rem">
+          ⚡ Start Next Deal
+        </button>
+        <button class="btn" style="background:var(--green);color:#000;padding:.8rem 2rem;font-size:.88rem;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:'Outfit',sans-serif" onclick="expandAccount()">
+          📈 Expand This Account
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  </div><!-- /main -->
+</div><!-- /app-screen -->
+
+<script>
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+// (no auto-launch on load - user fills form and clicks Launch)
+
+// ─── CONFIG STATE ────────────────────────────────────────────────────────────
+let cfg = {};
+const bqAnswers = {};
+const layerFilled = {1:false,2:false,3:false};
+const doneModules = new Set();
+
+// ─── LAUNCH SYSTEM ───────────────────────────────────────────────────────────
+function launchSystem(){
+  const required = ['s-product','s-value-prop','s-icp-name','s-industry','s-buyer-title','u-unworkable','u-unavoidable','u-urgent','u-underserved'];
+  const missing = required.filter(id => !document.getElementById(id).value.trim());
+  if(missing.length){
+    const msg = document.getElementById('validation-msg');
+    msg.style.display = 'block';
+    document.getElementById(missing[0]).focus();
+    return;
+  }
+  cfg = {
+    product: v('s-product'), valueProp: v('s-value-prop'), category: v('s-category'),
+    motion: v('s-motion'), differentiator: v('s-differentiator'),
+    icpName: v('s-icp-name'), industry: v('s-industry'), size: v('s-size'),
+    buyerTitle: v('s-buyer-title'), championTitle: v('s-champion-title'),
+    geo: v('s-geo'), dealSize: v('s-deal-size'), triggers: v('s-triggers'),
+    unworkable: v('u-unworkable'), unavoidable: v('u-unavoidable'),
+    urgent: v('u-urgent'), underserved: v('u-underserved'),
+    kpis: { time:v('k-time'), cost:v('k-cost'), revenue:v('k-revenue'), speed:v('k-speed'), impl:v('k-impl'), payback:v('k-payback') },
+    competitors: v('s-competitors'), pricing: v('s-pricing'),
+  };
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('tb-product-badge').textContent = cfg.product;
+  document.getElementById('tb-product-badge').style.display = 'block';
+  document.getElementById('reconfig-btn').style.display = 'block';
+  // Save config to shared storage for other tools
+  IA.saveConfig(cfg);
+  console.log('[IGNITE_APEX] Config saved to shared storage');
+  populateSystem();
+  goMod('ignite');
+}
+
+function v(id){ return (document.getElementById(id)||{}).value || ''; }
+
+function showSetup(){
+  document.getElementById('setup-screen').style.display = 'block';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+// ─── POPULATE ALL MODULES FROM CONFIG ─────────────────────────────────────────
+function populateSystem(){
+  updateRefs();
+  buildU4Summary();
+  buildReframe();
+  buildICPMatrix();
+  buildTriggers();
+  buildDiscoveryQuestions();
+  buildCompetitive();
+  buildROI();
+  buildPricing();
+  buildObjections();
+  buildBrutalQualifier();
+}
+
+function updateRefs(){
+  document.querySelectorAll('.prod-ref').forEach(el=>el.textContent=cfg.product||'your product');
+  document.querySelectorAll('.icp-ref').forEach(el=>el.textContent=cfg.icpName||'your ICP');
+  updateProspectRefs();
+}
+
+function updateProspectRefs(){
+  const name = document.getElementById('prospect-name').value.trim();
+  document.querySelectorAll('.prospect-ref').forEach(el=>el.textContent=name||'your prospect');
+  document.querySelectorAll('.u-unworkable-ref').forEach(el=>el.textContent=cfg.unworkable ? cfg.unworkable.split('.')[0].substring(0,60)+'…' : 'the current broken situation');
+  document.querySelectorAll('.u-unavoidable-ref').forEach(el=>el.textContent=cfg.unavoidable ? cfg.unavoidable.split('.')[0].substring(0,60)+'…' : 'the unavoidable force');
+}
+
+// ─── 4U SUMMARY ──────────────────────────────────────────────────────────────
+function buildU4Summary(){
+  const el = document.getElementById('u-summary');
+  const items = [
+    {cls:'unworkable',label:'🔴 Unworkable',text:cfg.unworkable},
+    {cls:'unavoidable',label:'🔵 Unavoidable',text:cfg.unavoidable},
+    {cls:'urgent',label:'🟡 Urgent',text:cfg.urgent},
+    {cls:'underserved',label:'🟣 Underserved',text:cfg.underserved},
+  ];
+  el.innerHTML = items.map(i=>`<div class="us-card ${i.cls}"><span class="us-label">${i.label}</span><div class="us-text">${i.text||'—'}</div></div>`).join('');
+}
+
+// ─── REFRAME OPENER ──────────────────────────────────────────────────────────
+function buildReframe(){
+  const el = document.getElementById('reframe-generated');
+  const t = cfg.buyerTitle||'your buyer';
+  const u = cfg.unavoidable ? cfg.unavoidable.split('\n')[0].substring(0,120) : 'the market is shifting rapidly';
+  const uw = cfg.unworkable ? cfg.unworkable.split('\n')[0].substring(0,100) : 'the current approach is breaking down';
+  el.innerHTML = `<strong>Generated opener for ${t}:</strong><br><em>"Most ${t}s I speak to tell me that ${uw.toLowerCase()} — and they're managing it with the same approach they used 3 years ago. Meanwhile ${u.toLowerCase()}. I'm curious — is that a tension you're feeling in your role right now?"</em>`;
+}
+
+// ─── ICP MATRIX ──────────────────────────────────────────────────────────────
+function buildICPMatrix(){
+  const el = document.getElementById('icp-matrix');
+  const rows = [
+    {crit:`Buyer title matches ${cfg.buyerTitle||'target role'}`, hint:'Is this the right person with budget authority or direct influence?', map:'Unworkable', w:20},
+    {crit:`Active pain matching Unworkable condition`, hint:cfg.unworkable?cfg.unworkable.substring(0,80)+'…':'Visible, named pain impacting their KPIs', map:'Unworkable', w:20},
+    {crit:`Unavoidable external pressure present`, hint:cfg.unavoidable?cfg.unavoidable.substring(0,80)+'…':'External force they cannot ignore', map:'Unavoidable', w:20},
+    {crit:`Urgency trigger exists within 90 days`, hint:cfg.urgent?cfg.urgent.substring(0,80)+'…':'Specific event creating time pressure', map:'Urgent', w:20},
+    {crit:`Current solution is clearly underserved`, hint:cfg.underserved?cfg.underserved.substring(0,80)+'…':'Gap between what they have and what they need', map:'Underserved', w:20},
+  ];
+  el.innerHTML = rows.map((r,i)=>`
+    <div class="icp-row">
+      <div><div class="icp-crit">${r.crit}</div><div class="icp-hint">${r.hint}</div></div>
+      <div class="icp-wt" style="font-size:.62rem"><span style="background:var(--ad);color:var(--amber);padding:.15rem .4rem;border-radius:4px;font-weight:700">/${r.w}pts</span><br><span style="color:var(--t3)">${r.map}</span></div>
+      <select class="icp-sel" id="icp${i}" onchange="calcICP()">
+        <option value="0">Select…</option>
+        <option value="${r.w}">Fully confirmed (${r.w})</option>
+        <option value="${Math.round(r.w/2)}">Partially confirmed (${Math.round(r.w/2)})</option>
+        <option value="0">Not confirmed (0)</option>
+      </select>
+    </div>`).join('');
+}
+
+function calcICP(){
+  const s = [0,1,2,3,4].reduce((t,i)=>t+parseInt((document.getElementById('icp'+i)||{}).value||0),0);
+  document.getElementById('icp-score').innerHTML = s+'<span style="font-size:1.3rem;color:var(--t3)">/100</span>';
+  const v = document.getElementById('icp-verdict');
+  if(s>=80){v.style.cssText='background:#052E1A;color:var(--green);border:1px solid var(--green)';v.textContent='✓ Strong Prospect';}
+  else if(s>=70){v.style.cssText='background:var(--ad);color:var(--amber2);border:1px solid var(--amber)';v.textContent='✓ Qualified — Advance';}
+  else if(s>=50){v.style.cssText='background:var(--ad);color:var(--amber)';v.textContent='◉ Borderline — Investigate';}
+  else{v.style.cssText='background:var(--rd);color:#EF4444';v.textContent='✗ Below 70 — Walk Away';}
+  if(s>=70){doneModules.add('attract');document.getElementById('nav-attract').classList.add('done');}
+  else{doneModules.delete('attract');document.getElementById('nav-attract').classList.remove('done');}
+  updateProgress();
+}
+
+// ─── TRIGGERS ────────────────────────────────────────────────────────────────
+function buildTriggers(){
+  const el = document.getElementById('trigger-list');
+  const tList = cfg.triggers ? cfg.triggers.split('\n').filter(t=>t.trim()) : ['Budget planning cycle begins','Leadership change or new mandate','Competitor makes a move they need to respond to'];
+  el.innerHTML = tList.map((t,i)=>`<div style="display:flex;align-items:flex-start;gap:.65rem;padding:.55rem 0;border-bottom:1px solid var(--b1);${i===tList.length-1?'border:none':''}"><span style="color:var(--amber);font-weight:700;font-size:.75rem;flex-shrink:0;margin-top:1px">⚡</span><div><div style="font-size:.83rem;color:var(--t1);font-weight:600">${t.replace(/^\d+\.\s*/,'')}</div><div style="font-size:.7rem;color:var(--t3);margin-top:.15rem">React within 48 hours of detecting this signal</div></div></div>`).join('');
+}
+
+// ─── DISCOVERY QUESTIONS ─────────────────────────────────────────────────────
+function buildDiscoveryQuestions(){
+  const el = document.getElementById('discovery-questions');
+  const p = cfg.product; const b = cfg.buyerTitle||'your buyer'; const ind = cfg.industry||'your industry';
+  const questions = [
+    {layer:'Unworkable · Layer 1', color:'#EF4444', bg:'#100208', q:`"What's your biggest challenge with [area] right now — and how long has this been an issue for your ${ind} organisation?"`, listen:`Listen for: ${cfg.unworkable ? cfg.unworkable.substring(0,100)+'…' : 'signs that the current approach is visibly broken'}. Record their exact words.`},
+    {layer:'Unworkable · Layer 1b', color:'#EF4444', bg:'#100208', q:`"What does this problem cost you — in time, money, or team frustration — every month it is not solved?"`, listen:`Listen for: a quantifiable cost. If they cannot name a number, the pain is not acute enough. Probe deeper: "If you had to guess, what would the annual cost be?"`},
+    {layer:'Unavoidable · Layer 2', color:'#3B82F6', bg:'#020B1A', q:`"What external pressures or mandates are making this harder to ignore than it was 12 months ago?"`, listen:`Listen for: ${cfg.unavoidable ? cfg.unavoidable.substring(0,100)+'…' : 'external forces they cannot control or delay'}. These are your urgency accelerators.`},
+    {layer:'Unavoidable · Layer 2b', color:'#3B82F6', bg:'#020B1A', q:`"What would happen to your organisation if this problem was still unsolved 24 months from now?"`, listen:'Listen for: fear of competitive disadvantage, regulatory risk, or talent loss. The prospect who can vividly describe the consequence of inaction is already moving toward a buy decision.'},
+    {layer:'Urgent · Root Cause', color:'#F59E0B', bg:'#1A0E00', q:`"What has already been tried to solve this — and why did it not fully work?"`, listen:`Listen for: ${cfg.underserved ? cfg.underserved.substring(0,100)+'…' : 'the gap between what exists and what they actually need'}. Failed prior attempts confirm the pain is real and the category is underserved.`},
+    {layer:'Underserved · Root Cause', color:'#8B5CF6', bg:'#160A2E', q:`"If you could describe the ideal solution with no constraints — what would it look like, and why does it not exist today?"`, listen:`Listen for: the exact gap your product fills. When they describe the ideal and you can say "that is exactly what we built" — you are at the close. This is Layer 3.`},
+  ];
+  el.innerHTML = questions.map(q=>`
+    <div style="background:${q.bg};border-left:3px solid ${q.color};border-radius:9px;padding:.9rem 1.1rem;margin-bottom:.65rem">
+      <div style="font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${q.color};margin-bottom:.25rem">${q.layer}</div>
+      <div style="font-size:.87rem;color:var(--t1);line-height:1.5;font-style:italic;margin-bottom:.5rem">${q.q}</div>
+      <div style="font-size:.73rem;color:var(--t3);line-height:1.4"><strong style="color:var(--t2);font-style:normal">Listen for: </strong>${q.listen.replace('Listen for: ','')}</div>
+      <textarea style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:.45rem .65rem;font-size:.78rem;font-family:'Outfit',sans-serif;color:var(--t1);resize:vertical;min-height:44px;outline:none;margin-top:.5rem;line-height:1.5" placeholder="Record their exact answer…"></textarea>
+    </div>`).join('');
+}
+
+// ─── LAYER CHECK ─────────────────────────────────────────────────────────────
+function checkLayer(n,val){
+  layerFilled[n] = val.trim().length > 15;
+  const el = document.getElementById('l'+n+'-done');
+  if(el) el.classList.toggle('show', layerFilled[n]);
+  const gate = document.getElementById('probe-gate');
+  const all = layerFilled[1] && layerFilled[2] && layerFilled[3];
+  const part = layerFilled[1] || layerFilled[2];
+  gate.className = 'gate-bar ' + (all?'pass':part?'partial':'fail');
+  gate.innerHTML = all
+    ? '<span>✓</span><span>Root cause fully diagnosed. Prospect has named it themselves. Advance to EXECUTE with conviction.</span>'
+    : part ? '<span>◉</span><span>Diagnosis in progress. All 3 layers must be complete. Layer 3 must contain their exact words.</span>'
+    : '<span>⚠</span><span>Begin the diagnostic. All 3 layers required with verifiable content from the prospect.</span>';
+  if(all){doneModules.add('probe');document.getElementById('nav-probe').classList.add('done');}
+  else{doneModules.delete('probe');document.getElementById('nav-probe').classList.remove('done');}
+  updateProgress();
+}
+
+// ─── COMPETITIVE ─────────────────────────────────────────────────────────────
+function buildCompetitive(){
+  const el = document.getElementById('competitive-cards');
+  const comps = cfg.competitors ? cfg.competitors.split(',').map(c=>c.trim()).filter(Boolean) : ['Custom Development','Current Manual Process','Competitor Platform'];
+  const diff = cfg.differentiator || cfg.underserved || 'No existing solution fully addresses the root cause';
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:.65rem;padding:.5rem 0;border-bottom:1px solid var(--b1)">
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)">Alternative</div>
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#EF4444">Their Limitation</div>
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">Your Counter</div>
+    </div>
+    ${comps.map(c=>`
+    <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:.65rem;padding:.6rem 0;border-bottom:1px solid var(--b1);font-size:.8rem">
+      <div style="font-weight:700;color:var(--t1)">${c}</div>
+      <div style="color:#EF4444">Does not address: ${cfg.underserved ? cfg.underserved.substring(0,60)+'…' : 'the underserved gap'}</div>
+      <div style="color:var(--green)">${cfg.differentiator ? cfg.differentiator.substring(0,80)+'.' : diff}</div>
+    </div>`).join('')}
+    <div style="padding:.75rem 0 0;font-size:.75rem;color:var(--t3);font-style:italic">Always lead with the underserved condition — not feature comparisons. The underserved condition is why every alternative fails at the root level.</div>`;
+}
+
+// ─── ROI GRID ────────────────────────────────────────────────────────────────
+function buildROI(){
+  const el = document.getElementById('roi-grid');
+  const k = cfg.kpis;
+  const metrics = [
+    {v:k.time||'—', l:'Time Saved / Week', n:'Per user or team'},
+    {v:k.cost||'—', l:'Cost Reduction', n:'vs current approach'},
+    {v:k.revenue||'—', l:'Revenue Impact', n:'New or protected'},
+    {v:k.speed||'—', l:'Speed Improvement', n:'vs current method'},
+    {v:k.impl||'—', l:'Time to First Value', n:'Implementation'},
+    {v:k.payback||'—', l:'Payback Period', n:'ROI breakeven'},
+  ];
+  el.innerHTML = metrics.map(m=>`<div class="roi-card"><div class="roi-v" style="color:var(--amber)">${m.v}</div><div class="roi-l">${m.l}</div><div class="roi-n">${m.n}</div></div>`).join('');
+}
+
+// ─── PRICING ────────────────────────────────────────────────────────────────
+function buildPricing(){
+  const el = document.getElementById('pricing-tiers');
+  const sub = document.getElementById('pricing-sub');
+  if(!cfg.pricing){
+    el.innerHTML = `<div style="background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:1rem 1.2rem;font-size:.82rem;color:var(--t3);text-align:center">No pricing tiers configured. Return to setup and add your pricing tiers to activate the 3-option close framework.</div>`;
+    return;
+  }
+  const lines = cfg.pricing.split('\n').filter(l=>l.trim());
+  const tiers = lines.map((l,i)=>{
+    const parts = l.split(':');
+    const name = parts[0]||('Tier '+(i+1));
+    const rest = parts.slice(1).join(':').trim();
+    const price = rest.match(/\$[\d,]+[^\s]*/)?.[0] || '—';
+    const features = rest.replace(price,'').split(',').map(f=>f.trim()).filter(Boolean);
+    return {name,price,features,recommended: l.toLowerCase().includes('recommend') || i===1};
+  });
+  const classes = ['good','better','best'];
+  el.innerHTML = `<div class="tier-grid">${tiers.slice(0,3).map((t,i)=>`
+    <div class="tier ${classes[i]||'good'}">
+      <div class="tier-head"><div class="tier-name">${t.name}</div><div class="tier-price">${t.price}</div></div>
+      <div class="tier-body">
+        <ul class="tier-feats">${t.features.slice(0,5).map(f=>`<li>${f}</li>`).join('')}</ul>
+        ${t.recommended?`<div class="tier-rec">⭐ Recommended — Lead with this</div>`:''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// ─── OBJECTIONS ─────────────────────────────────────────────────────────────
+function buildObjections(){
+  const el = document.getElementById('objection-handler');
+  const p = cfg.product; const d = cfg.differentiator||'our unique approach';
+  const u = cfg.underserved||'current solutions leave a critical gap';
+  const objections = [
+    {q:`"It's too expensive."`, real:`I haven't seen the ROI clearly enough. The value hasn't been made concrete for me.`, script:`"What would make this a no-brainer investment? Let's build the ROI case together right now — what number would change the conversation?"`},
+    {q:`"We need to think about it."`, real:`I'm not confident enough yet. Something is unresolved — in the solution fit or internal process.`, script:`"Completely fair. If you had to name the one thing you'd need to be more certain about — what would that be?"`},
+    {q:`"Not the right time."`, real:`Other priorities are competing. The pain hasn't been felt acutely enough yet.`, script:`"I understand. When your team revisits this — what would need to be true for ${p||'this'} to rise to the top of the list?"`},
+    {q:`"We're happy with what we have."`, real:`Change feels risky. The status quo is comfortable even if suboptimal.`, script:`"That makes sense — what you have works to a degree. What would have to visibly break before you'd genuinely consider a change? And is ${u.substring(0,60).toLowerCase()} not a concern?"`},
+    {q:`"We need to check with [person]."`, real:`I'm not the decision maker, or I need political cover before committing.`, script:`"Of course. When you brief [person], what would be the one piece of the conversation that would make them lean in?"`},
+    {q:`"We don't have budget."`, real:`Budget hasn't been allocated — or the ROI case isn't compelling enough to release it.`, script:`"Understood. If the ROI case were ironclad — say, a ${cfg.kpis&&cfg.kpis.payback?cfg.kpis.payback+' payback':'3–6 month payback'} — would this move to the top of the budget conversation?"`},
+    {q:`"We tried something similar before and it failed."`, real:`Prior failure created a bias against the category. They need the differentiation to be clear and credible.`, script:`"That's really important context — thank you. Can you tell me what specifically failed? Because ${d.substring(0,80)} — and I want to make sure we're not proposing the same solution with a different name."`},
+  ];
+  el.innerHTML = objections.map(o=>`
+    <div class="obj-card" onclick="this.classList.toggle('open')">
+      <div class="obj-q">${o.q}</div>
+      <div class="obj-real">What it actually means: ${o.real}</div>
+      <div class="obj-script"><em>${o.script}</em><div style="font-size:.68rem;color:var(--t3);margin-top:.4rem">This counter-question opens a new diagnostic conversation — not a defensive rebuttal.</div></div>
+    </div>`).join('');
+}
+
+// ─── BRUTAL QUALIFIER ─────────────────────────────────────────────────────────
+function buildBrutalQualifier(){
+  const el = document.getElementById('brutal-qualifier');
+  const b = cfg.buyerTitle||'the decision maker'; const p = cfg.product;
+  const questions = [
+    `Can you name the exact ${b} and confirm they are aware a decision needs to be made?`,
+    `Has ${(document.getElementById('prospect-name')||{}).value||'the prospect'} voluntarily invested time, internal resources, or political capital in this evaluation?`,
+    `Is there a specific, time-bound consequence — from your configured trigger events — if they do not act this quarter?`,
+    `Have they explicitly told you why they would NOT buy from you — and have you addressed that concern?`,
+    `What happens to this deal if your champion leaves the organisation? Is the business case institutional?`,
+    `What is the specific next action, who owns it, and what is the exact date — not "we'll follow up"?`,
+    `Would you bet your own money on this closing in the forecast period — with no quota pressure, no manager scrutiny?`,
+  ];
+  el.innerHTML = questions.map((q,i)=>`
+    <div class="bq">
+      <div class="bq-hd" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div class="bq-n">${i+1}</div>
+        <div class="bq-q">${q}</div>
+        <div class="bq-s" id="bqs${i}">Unanswered</div>
+      </div>
+      <div class="bq-bd" id="bqb${i}">
+        <textarea class="bq-ta" placeholder="Record your verifiable evidence — not your hope…"></textarea>
+        <div class="bq-btns">
+          <button class="bqb y" onclick="setBQ(${i},'yes',this)">✓ Evidence Confirmed</button>
+          <button class="bqb n" onclick="setBQ(${i},'no',this)">✗ Cannot Confirm</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function setBQ(n,val,btn){
+  bqAnswers[n] = val;
+  btn.closest('.bq').querySelectorAll('.bqb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const s = document.getElementById('bqs'+n);
+  if(val==='yes'){s.style.cssText='background:var(--gd);color:var(--green);border:1px solid var(--green)';s.textContent='✓ Confirmed';}
+  else{s.style.cssText='background:var(--rd);color:#EF4444;border:1px solid #EF4444';s.textContent='✗ Not Confirmed';}
+  updateBQ();
+}
+function updateBQ(){
+  const ans = Object.keys(bqAnswers).length;
+  const yes = Object.values(bqAnswers).filter(v=>v==='yes').length;
+  document.getElementById('bq-score-val').textContent = yes+'/7';
+  const v = document.getElementById('bq-verdict');
+  if(ans<7){v.style.color='var(--t3)';v.textContent='Answer all 7 for your forecast verdict.';}
+  else if(yes===7){v.style.color='var(--green)';v.innerHTML='<strong>✓ COMMIT FORECAST</strong> — All 7 confirmed. This deal belongs in your commit number.';}
+  else if(yes>=5){v.style.color='var(--amber)';v.innerHTML='<strong>◉ BEST CASE</strong> — '+(7-yes)+' criteria unconfirmed. Best case only. Do not commit.';}
+  else{v.style.color='#EF4444';v.innerHTML='<strong>✗ PIPELINE ONLY</strong> — Too many unconfirmed. Remove from forecast. Return to PROBE or disqualify.';}
+  if(ans===7){doneModules.add('execute');document.getElementById('nav-execute').classList.add('done');updateProgress();}
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function goMod(id){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('mod-'+id).classList.add('active');
+  const nav=document.getElementById('nav-'+id);
+  if(nav) nav.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─── CHECKLIST ────────────────────────────────────────────────────────────────
+function toggleChk(item,group){
+  const box = item.querySelector('.chkbox');
+  box.classList.toggle('on');
+  box.textContent = box.classList.contains('on') ? '✓' : '';
+  item.classList.toggle('done');
+  if(group==='ignite') updateIgniteGate();
+  if(group.startsWith('c')) updateCement(group);
+}
+function updateIgniteGate(){
+  const done = document.querySelectorAll('#ignite-checks .chkbox.on').length;
+  const gate = document.getElementById('ignite-gate');
+  const pass = done===5;
+  gate.className = 'gate-bar '+(pass?'pass':'fail');
+  gate.innerHTML = pass
+    ? '<span>✓</span><span>All 5 prerequisites confirmed. You are equipped for this market. Advance to ATTRACT.</span>'
+    : `<span>⚠</span><span>${5-done} prerequisite${5-done!==1?'s':''} remaining before advancing to ATTRACT.</span>`;
+  if(pass){doneModules.add('ignite');document.getElementById('nav-ignite').classList.add('done');}
+  else{doneModules.delete('ignite');document.getElementById('nav-ignite').classList.remove('done');}
+  updateProgress();
+}
+function updateCement(group){
+  const el = document.getElementById(group);
+  if(!el) return;
+  const total = el.querySelectorAll('.chk').length;
+  const done = el.querySelectorAll('.chkbox.on').length;
+  const pg = document.getElementById(group+'p');
+  if(pg){pg.textContent=done+'/'+total;pg.style.color=done===total?'var(--green)':'var(--t3)';}
+}
+
+// ─── RITUAL ──────────────────────────────────────────────────────────────────
+function toggleRitual(btn){
+  btn.classList.toggle('on');
+  const done = document.querySelectorAll('.rt-chk.on').length;
+  document.getElementById('ritual-done-count').textContent = done;
+  document.getElementById('ritual-pct-val').textContent = Math.round(done/5*100)+'%';
+  if(done===5){doneModules.add('excel');document.getElementById('nav-excel').classList.add('done');}
+  else{doneModules.delete('excel');document.getElementById('nav-excel').classList.remove('done');}
+  updateProgress();
+}
+
+// ─── CLOSING ─────────────────────────────────────────────────────────────────
+function selectClose(card){
+  document.querySelectorAll('.close-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+}
+
+// ─── PROGRESS ────────────────────────────────────────────────────────────────
+function updateProgress(){
+  const total = 5;
+  const pct = Math.round(doneModules.size/total*100);
+  document.getElementById('nav-fill').style.width = pct+'%';
+}
+</script>
+</body>
+</html>

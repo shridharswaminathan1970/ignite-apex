@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forecast & Reports — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./team-selector.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+  --purple:#8B5CF6;--teal:#14B8A6;--orange:#F97316;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:1600px;margin:0 auto;padding:2rem}
+.page-header{margin-bottom:2rem}
+.page-title{font-size:2rem;font-weight:700;color:var(--t1);margin-bottom:.5rem}
+.page-subtitle{font-size:.9rem;color:var(--t3)}
+
+.tabs{display:flex;gap:.5rem;margin-bottom:2rem;border-bottom:2px solid var(--b1)}
+.tab{background:none;border:none;color:var(--t3);padding:1rem 1.5rem;font-size:.85rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab:hover{color:var(--t1)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-bottom:2rem}
+.metric-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem}
+.metric-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:.5rem}
+.metric-value{font-size:2rem;font-weight:700;color:var(--t1);margin-bottom:.25rem}
+.metric-change{font-size:.8rem;font-weight:600}
+.metric-change.positive{color:var(--green)}
+.metric-change.negative{color:var(--red)}
+
+.report-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;margin-bottom:2rem}
+.report-title{font-size:1.2rem;font-weight:700;color:var(--t1);margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--b1)}
+
+.table{width:100%;border-collapse:collapse}
+.table thead{background:var(--s2)}
+.table th{text-align:left;padding:1rem;font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-weight:700}
+.table td{padding:1rem;border-top:1px solid var(--b1);font-size:.85rem}
+.table tr:hover{background:var(--s2)}
+
+.badge{display:inline-block;padding:.25rem .75rem;border-radius:6px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.badge.won{background:var(--green);color:#000}
+.badge.lost{background:var(--red);color:#fff}
+.badge.open{background:var(--blue);color:#fff}
+
+.chart-container{margin-top:1.5rem;min-height:300px}
+.bar-chart{display:flex;align-items:flex-end;gap:1rem;height:300px;padding:1rem 0}
+.bar{flex:1;background:var(--amber);border-radius:8px 8px 0 0;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;transition:all .2s;cursor:pointer}
+.bar:hover{background:var(--amber2)}
+.bar-value{color:var(--bg);font-weight:700;font-size:.9rem;padding:.5rem}
+.bar-label{position:absolute;bottom:-2rem;font-size:.75rem;color:var(--t3);text-align:center;width:100%}
+
+.filters{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-group{display:flex;flex-direction:column;gap:.5rem}
+.filter-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)}
+.filter-select{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.85rem;font-family:inherit;cursor:pointer}
+.filter-select:focus{outline:none;border-color:var(--amber)}
+
+.loading{text-align:center;padding:3rem;color:var(--t3)}
+.empty-state{text-align:center;padding:3rem;color:var(--t3);font-size:.9rem}
+</style>
+<!-- Trial Banner Component -->
+<script src="../components/trial-banner.js"></script>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <div class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./pipeline.html">Pipeline</a>
+    <a href="./forecast.html">Forecast</a>
+    <a href="./accounts.html">Accounts</a>
+    <a href="./contacts.html">Contacts</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <div class="page-title">📊 Forecast & Reports</div>
+    <div class="page-subtitle">Weighted pipeline, win/loss analysis, and activity tracking</div>
+  </div>
+
+  <!-- Team Selector -->
+  <div id="team-selector-container"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('weighted-pipeline')">💰 Weighted Pipeline</button>
+    <button class="tab" onclick="switchTab('forecast')">📅 Forecast</button>
+    <button class="tab" onclick="switchTab('win-loss')">🎯 Win/Loss</button>
+    <button class="tab" onclick="switchTab('activities')">📋 Activities</button>
+  </div>
+
+  <!-- Weighted Pipeline Tab -->
+  <div id="tab-weighted-pipeline" class="tab-content active">
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Pipeline</div>
+        <div class="metric-value" id="metric-total-pipeline">$0</div>
+        <div class="metric-change" id="metric-pipeline-change">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Weighted Pipeline</div>
+        <div class="metric-value" id="metric-weighted-pipeline">$0</div>
+        <div class="metric-change" id="metric-weighted-change">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Open Opportunities</div>
+        <div class="metric-value" id="metric-open-opps">0</div>
+        <div class="metric-change" id="metric-opps-change">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Deal Size</div>
+        <div class="metric-value" id="metric-avg-deal">$0</div>
+        <div class="metric-change" id="metric-avg-change">—</div>
+      </div>
+      <div class="metric-card" style="border-left:3px solid var(--green)">
+        <div class="metric-label">Closed Won</div>
+        <div class="metric-value" style="color:var(--green)" id="metric-closed-won">$0</div>
+        <div class="metric-change" style="color:var(--green)"><span id="metric-closed-won-count">0</span> deals won</div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Pipeline by Stage</div>
+      <div class="chart-container" id="pipeline-by-stage-chart"></div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Pipeline Details</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Stage</th>
+            <th>Probability</th>
+            <th>Value</th>
+            <th>Weighted</th>
+            <th>Close Date</th>
+            <th>Methodology</th>
+          </tr>
+        </thead>
+        <tbody id="pipeline-details-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Forecast Tab -->
+  <div id="tab-forecast" class="tab-content">
+    <div class="filters">
+      <div class="filter-group">
+        <div class="filter-label">Time Period</div>
+        <select class="filter-select" id="forecast-period" onchange="loadForecast()">
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label" id="forecast-period-label">This Month</div>
+        <div class="metric-value" id="forecast-total">$0</div>
+        <div class="metric-change" id="forecast-vs-target">vs target: —</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Weighted Forecast</div>
+        <div class="metric-value" id="forecast-weighted">$0</div>
+        <div class="metric-change" id="forecast-confidence">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Closed Won</div>
+        <div class="metric-value" id="forecast-won">$0</div>
+        <div class="metric-change positive" id="forecast-won-count">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">At Risk</div>
+        <div class="metric-value" id="forecast-at-risk">$0</div>
+        <div class="metric-change negative" id="forecast-risk-count">—</div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Opportunities Closing This Period</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Stage</th>
+            <th>Value</th>
+            <th>Weighted</th>
+            <th>Close Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="forecast-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Win/Loss Tab -->
+  <div id="tab-win-loss" class="tab-content">
+    <div class="filters">
+      <div class="filter-group">
+        <div class="filter-label">Time Period</div>
+        <select class="filter-select" id="winloss-period" onchange="loadWinLoss()">
+          <option value="30">Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+          <option value="180">Last 6 Months</option>
+          <option value="365">Last Year</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Methodology</div>
+        <select class="filter-select" id="winloss-methodology" onchange="loadWinLoss()">
+          <option value="all">All</option>
+          <option value="ignite_apex">IGNITE-APEX</option>
+          <option value="standard">Standard</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Win Rate</div>
+        <div class="metric-value" id="winloss-rate">0%</div>
+        <div class="metric-change" id="winloss-rate-trend">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Won</div>
+        <div class="metric-value" id="winloss-won-value">$0</div>
+        <div class="metric-change positive" id="winloss-won-count">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Lost</div>
+        <div class="metric-value" id="winloss-lost-value">$0</div>
+        <div class="metric-change negative" id="winloss-lost-count">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Days to Close</div>
+        <div class="metric-value" id="winloss-avg-days">0</div>
+        <div class="metric-change" id="winloss-days-trend">—</div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Win/Loss by Methodology</div>
+      <div class="chart-container" id="winloss-chart"></div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Recent Closed Opportunities</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Methodology</th>
+            <th>Value</th>
+            <th>Closed Date</th>
+            <th>Days to Close</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="winloss-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Activities Tab -->
+  <div id="tab-activities" class="tab-content">
+    <div class="filters">
+      <div class="filter-group">
+        <div class="filter-label">Time Period</div>
+        <select class="filter-select" id="activity-period" onchange="loadActivityReport()">
+          <option value="7">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Activity Type</div>
+        <select class="filter-select" id="activity-type" onchange="loadActivityReport()">
+          <option value="all">All Activities</option>
+          <option value="call">Calls</option>
+          <option value="email">Emails</option>
+          <option value="meeting">Meetings</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Activities</div>
+        <div class="metric-value" id="activity-total">0</div>
+        <div class="metric-change" id="activity-total-change">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Calls Logged</div>
+        <div class="metric-value" id="activity-calls">0</div>
+        <div class="metric-change" id="activity-calls-change">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Meetings Held</div>
+        <div class="metric-value" id="activity-meetings">0</div>
+        <div class="metric-change" id="activity-meetings-change">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg per Opportunity</div>
+        <div class="metric-value" id="activity-avg">0</div>
+        <div class="metric-change" id="activity-avg-change">—</div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Activities by Type</div>
+      <div class="chart-container" id="activity-chart"></div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-title">Top Opportunities by Activity</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Opportunity</th>
+            <th>Calls</th>
+            <th>Emails</th>
+            <th>Meetings</th>
+            <th>Total</th>
+            <th>Last Activity</th>
+          </tr>
+        </thead>
+        <tbody id="activity-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="./crm-v2-client.js"></script>
+<script src="./team-selector.js"></script>
+
+<script>
+let currentUser = null;
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) { resolve(window.supabaseClient); return; }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) { clearInterval(interval); resolve(window.supabaseClient); }
+    }, 50);
+  });
+}
+
+(async function init() {
+  try {
+    const sb = await waitForSupabaseClient();
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '../app/auth.html'; return; }
+
+    const { data: profile } = await sb.from('users').select('*').eq('id', session.user.id).single();
+    if (!profile || !profile.crm_enabled) { window.location.href = '../system/index.html'; return; }
+
+    window.currentUser = profile;
+    window.currentOrgId = profile.org_id;
+    currentUser = profile;
+
+    // Initialize team selector
+    window.teamSelector = await new TeamSelector(profile).init();
+    window.teamSelector.render('team-selector-container');
+
+    // Listen for team scope changes
+    window.addEventListener('team-scope-changed', () => {
+      loadWeightedPipeline();
+    });
+
+    await loadWeightedPipeline();
+  } catch (err) {
+    console.error('[Forecast] Init error:', err);
+  }
+})();
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+
+  if (tabName === 'weighted-pipeline') loadWeightedPipeline();
+  if (tabName === 'forecast') loadForecast();
+  if (tabName === 'win-loss') loadWinLoss();
+  if (tabName === 'activities') loadActivityReport();
+}
+
+async function loadWeightedPipeline() {
+  try {
+    // WEIGHTED FORECAST = OPEN deals only (status='Open')
+    let openQuery = window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .eq('pipeline_status', 'Open');
+
+    // CLOSED WON = deals with status='Won'
+    let wonQuery = window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .eq('pipeline_status', 'Won');
+
+    // Apply team filter to both queries
+    openQuery = window.teamSelector.applyFilter(openQuery);
+    wonQuery = window.teamSelector.applyFilter(wonQuery);
+
+    const [openResult, wonResult] = await Promise.all([openQuery, wonQuery]);
+    if (openResult.error) throw openResult.error;
+    if (wonResult.error) throw wonResult.error;
+
+    const opps = openResult.data || [];
+    const wonOpps = wonResult.data || [];
+
+    const totalPipeline = opps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+    const weightedPipeline = opps.reduce((sum, o) => {
+      const value = parseFloat(o.estimated_value) || 0;
+      const prob = (o.probability || 0) / 100;
+      return sum + (value * prob);
+    }, 0);
+
+    // Closed Won metrics
+    const closedWonValue = wonOpps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+    const closedWonCount = wonOpps.length;
+
+    document.getElementById('metric-total-pipeline').textContent = formatCurrency(totalPipeline);
+    document.getElementById('metric-weighted-pipeline').textContent = formatCurrency(weightedPipeline);
+    document.getElementById('metric-open-opps').textContent = opps.length;
+    document.getElementById('metric-avg-deal').textContent = formatCurrency(opps.length > 0 ? totalPipeline / opps.length : 0);
+
+    // Update Closed Won metrics if elements exist
+    const closedWonEl = document.getElementById('metric-closed-won');
+    if (closedWonEl) closedWonEl.textContent = formatCurrency(closedWonValue);
+
+    const closedWonCountEl = document.getElementById('metric-closed-won-count');
+    if (closedWonCountEl) closedWonCountEl.textContent = closedWonCount;
+
+    renderPipelineByStage(opps);
+    renderPipelineTable(opps);
+  } catch (err) {
+    console.error('[Forecast] Load weighted pipeline error:', err);
+  }
+}
+
+function renderPipelineByStage(opps) {
+  const stages = ['Qualification', 'Discovery', 'Demo', 'Proposal', 'Negotiation'];
+  const stageData = {};
+
+  stages.forEach(s => stageData[s] = { count: 0, value: 0, weighted: 0 });
+
+  opps.forEach(o => {
+    const stage = o.pipeline_stage || 'Lead';
+    if (stageData[stage]) {
+      stageData[stage].count++;
+      stageData[stage].value += parseFloat(o.estimated_value) || 0;
+      stageData[stage].weighted += (parseFloat(o.estimated_value) || 0) * ((o.probability || 0) / 100);
+    }
+  });
+
+  const maxValue = Math.max(...Object.values(stageData).map(d => d.weighted));
+
+  const html = `
+    <div class="bar-chart">
+      ${stages.map(stage => {
+        const data = stageData[stage];
+        const height = maxValue > 0 ? (data.weighted / maxValue) * 100 : 0;
+        return `
+          <div class="bar" style="height:${height}%" title="${stage}: ${formatCurrency(data.weighted)} weighted">
+            <div class="bar-value">${formatCurrency(data.weighted)}</div>
+            <div class="bar-label">${stage}<br/>(${data.count})</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  document.getElementById('pipeline-by-stage-chart').innerHTML = html;
+}
+
+function renderPipelineTable(opps) {
+  const html = opps.map(o => `
+    <tr onclick="window.location.href='./opportunity.html?id=${o.id}'" style="cursor:pointer">
+      <td>${o.name || o.company_name || 'Unnamed'}</td>
+      <td>${o.pipeline_stage || 'Lead'}</td>
+      <td>${o.probability || 0}%</td>
+      <td>${formatCurrency(o.estimated_value)}</td>
+      <td>${formatCurrency((o.estimated_value || 0) * ((o.probability || 0) / 100))}</td>
+      <td>${o.expected_close_date || '—'}</td>
+      <td>${o.methodology === 'ignite_apex' ? '🎯 IGNITE' : '📊 Standard'}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('pipeline-details-table').innerHTML = html || '<tr><td colspan="7" class="empty-state">No open opportunities</td></tr>';
+}
+
+async function loadForecast() {
+  try {
+    const period = document.getElementById('forecast-period').value;
+    const dateRange = getDateRange(period);
+
+    let query = window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .gte('expected_close_date', dateRange.start)
+      .lte('expected_close_date', dateRange.end);
+
+    // Apply team filter
+    query = window.teamSelector.applyFilter(query);
+
+    const { data: opps, error } = await query;
+    if (error) throw error;
+
+    const openOpps = opps.filter(o => o.pipeline_status === 'Open');
+    const wonOpps = opps.filter(o => o.pipeline_status === 'Won');
+    const atRiskOpps = openOpps.filter(o => {
+      const daysUntilClose = Math.floor((new Date(o.expected_close_date) - new Date()) / (1000 * 60 * 60 * 24));
+      return daysUntilClose < 7 && (o.probability || 0) < 70;
+    });
+
+    const totalForecast = openOpps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+    const weightedForecast = openOpps.reduce((sum, o) => sum + ((parseFloat(o.estimated_value) || 0) * ((o.probability || 0) / 100)), 0);
+    const wonValue = wonOpps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+    const atRiskValue = atRiskOpps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+
+    document.getElementById('forecast-period-label').textContent = period === 'month' ? 'This Month' : period === 'quarter' ? 'This Quarter' : 'This Year';
+    document.getElementById('forecast-total').textContent = formatCurrency(totalForecast);
+    document.getElementById('forecast-weighted').textContent = formatCurrency(weightedForecast);
+    document.getElementById('forecast-won').textContent = formatCurrency(wonValue);
+    document.getElementById('forecast-won-count').textContent = `${wonOpps.length} deals won`;
+    document.getElementById('forecast-at-risk').textContent = formatCurrency(atRiskValue);
+    document.getElementById('forecast-risk-count').textContent = `${atRiskOpps.length} at risk`;
+
+    renderForecastTable(opps);
+  } catch (err) {
+    console.error('[Forecast] Load forecast error:', err);
+  }
+}
+
+async function loadWinLoss() {
+  try {
+    const period = parseInt(document.getElementById('winloss-period').value);
+    const methodology = document.getElementById('winloss-methodology').value;
+
+    let query = window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('org_id', currentUser.org_id)
+      .in('pipeline_status', ['Won', 'Lost']);
+
+    if (period !== 'all') {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - period);
+      query = query.gte('updated_at', startDate.toISOString());
+    }
+
+    if (methodology !== 'all') {
+      query = query.eq('methodology', methodology);
+    }
+
+    // Apply team filter
+    query = window.teamSelector.applyFilter(query);
+
+    const { data: opps, error } = await query;
+    if (error) throw error;
+
+    const wonOpps = opps.filter(o => o.pipeline_status === 'Won');
+    const lostOpps = opps.filter(o => o.pipeline_status === 'Lost');
+
+    const winRate = opps.length > 0 ? ((wonOpps.length / opps.length) * 100).toFixed(1) : 0;
+    const wonValue = wonOpps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+    const lostValue = lostOpps.reduce((sum, o) => sum + (parseFloat(o.estimated_value) || 0), 0);
+
+    const avgDays = wonOpps.length > 0 ? wonOpps.reduce((sum, o) => {
+      const created = new Date(o.created_at);
+      const closed = new Date(o.updated_at);
+      return sum + Math.floor((closed - created) / (1000 * 60 * 60 * 24));
+    }, 0) / wonOpps.length : 0;
+
+    document.getElementById('winloss-rate').textContent = `${winRate}%`;
+    document.getElementById('winloss-won-value').textContent = formatCurrency(wonValue);
+    document.getElementById('winloss-won-count').textContent = `${wonOpps.length} won`;
+    document.getElementById('winloss-lost-value').textContent = formatCurrency(lostValue);
+    document.getElementById('winloss-lost-count').textContent = `${lostOpps.length} lost`;
+    document.getElementById('winloss-avg-days').textContent = Math.round(avgDays);
+
+    renderWinLossChart(wonOpps, lostOpps);
+    renderWinLossTable(opps);
+  } catch (err) {
+    console.error('[Forecast] Load win/loss error:', err);
+  }
+}
+
+async function loadActivityReport() {
+  try {
+    const period = parseInt(document.getElementById('activity-period').value);
+    const type = document.getElementById('activity-type').value;
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - period);
+
+    let query = window.supabaseClient
+      .from('activities')
+      .select('*, opportunities(name, company_name, owner_id)')
+      .eq('org_id', currentUser.org_id)
+      .gte('created_at', startDate.toISOString());
+
+    if (type !== 'all') {
+      query = query.eq('type', type);
+    }
+
+    const { data: allActivities, error } = await query;
+    if (error) throw error;
+
+    // Filter activities by team scope (filter by opportunity owner)
+    const userIds = window.teamSelector.getFilteredUserIds();
+    const activities = userIds
+      ? allActivities.filter(a => a.opportunities && userIds.includes(a.opportunities.owner_id))
+      : allActivities;
+
+    const calls = activities.filter(a => a.type === 'call').length;
+    const meetings = activities.filter(a => a.type === 'meeting').length;
+    const emails = activities.filter(a => a.type === 'email').length;
+
+    const oppActivityCount = {};
+    activities.forEach(a => {
+      if (a.opportunity_id) {
+        oppActivityCount[a.opportunity_id] = (oppActivityCount[a.opportunity_id] || 0) + 1;
+      }
+    });
+
+    const avgPerOpp = Object.keys(oppActivityCount).length > 0 ?
+      (activities.length / Object.keys(oppActivityCount).length).toFixed(1) : 0;
+
+    document.getElementById('activity-total').textContent = activities.length;
+    document.getElementById('activity-calls').textContent = calls;
+    document.getElementById('activity-meetings').textContent = meetings;
+    document.getElementById('activity-avg').textContent = avgPerOpp;
+
+    renderActivityChart({ calls, meetings, emails });
+    renderActivityTable(activities, oppActivityCount);
+  } catch (err) {
+    console.error('[Forecast] Load activity report error:', err);
+  }
+}
+
+function getDateRange(period) {
+  const now = new Date();
+  let start, end;
+
+  if (period === 'month') {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  } else if (period === 'quarter') {
+    const quarter = Math.floor(now.getMonth() / 3);
+    start = new Date(now.getFullYear(), quarter * 3, 1);
+    end = new Date(now.getFullYear(), quarter * 3 + 3, 0);
+  } else {
+    start = new Date(now.getFullYear(), 0, 1);
+    end = new Date(now.getFullYear(), 11, 31);
+  }
+
+  return {
+    start: start.toISOString().split('T')[0],
+    end: end.toISOString().split('T')[0]
+  };
+}
+
+function renderForecastTable(opps) {
+  const html = opps.map(o => `
+    <tr onclick="window.location.href='./opportunity.html?id=${o.id}'" style="cursor:pointer">
+      <td>${o.name || o.company_name || 'Unnamed'}</td>
+      <td>${o.pipeline_stage || 'Lead'}</td>
+      <td>${formatCurrency(o.estimated_value)}</td>
+      <td>${formatCurrency((o.estimated_value || 0) * ((o.probability || 0) / 100))}</td>
+      <td>${o.expected_close_date || '—'}</td>
+      <td><span class="badge ${o.pipeline_status === 'Won' ? 'won' : o.pipeline_status === 'Lost' ? 'lost' : 'open'}">${o.pipeline_status || 'Open'}</span></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('forecast-table').innerHTML = html || '<tr><td colspan="6" class="empty-state">No opportunities in this period</td></tr>';
+}
+
+function renderWinLossChart(wonOpps, lostOpps) {
+  const igniteWon = wonOpps.filter(o => o.methodology === 'ignite_apex').length;
+  const igniteLost = lostOpps.filter(o => o.methodology === 'ignite_apex').length;
+  const standardWon = wonOpps.filter(o => o.methodology === 'standard').length;
+  const standardLost = lostOpps.filter(o => o.methodology === 'standard').length;
+
+  const maxValue = Math.max(igniteWon, igniteLost, standardWon, standardLost, 1);
+
+  const html = `
+    <div class="bar-chart">
+      <div class="bar" style="height:${(igniteWon / maxValue) * 100}%;background:var(--green)">
+        <div class="bar-value">${igniteWon}</div>
+        <div class="bar-label">IGNITE<br/>Won</div>
+      </div>
+      <div class="bar" style="height:${(igniteLost / maxValue) * 100}%;background:var(--red)">
+        <div class="bar-value">${igniteLost}</div>
+        <div class="bar-label">IGNITE<br/>Lost</div>
+      </div>
+      <div class="bar" style="height:${(standardWon / maxValue) * 100}%;background:var(--green)">
+        <div class="bar-value">${standardWon}</div>
+        <div class="bar-label">Standard<br/>Won</div>
+      </div>
+      <div class="bar" style="height:${(standardLost / maxValue) * 100}%;background:var(--red)">
+        <div class="bar-value">${standardLost}</div>
+        <div class="bar-label">Standard<br/>Lost</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('winloss-chart').innerHTML = html;
+}
+
+function renderWinLossTable(opps) {
+  const html = opps.slice(0, 20).map(o => {
+    const created = new Date(o.created_at);
+    const closed = new Date(o.updated_at);
+    const daysToClose = Math.floor((closed - created) / (1000 * 60 * 60 * 24));
+
+    return `
+      <tr onclick="window.location.href='./opportunity.html?id=${o.id}'" style="cursor:pointer">
+        <td>${o.name || o.company_name || 'Unnamed'}</td>
+        <td>${o.methodology === 'ignite_apex' ? '🎯 IGNITE' : '📊 Standard'}</td>
+        <td>${formatCurrency(o.estimated_value)}</td>
+        <td>${o.updated_at?.split('T')[0] || '—'}</td>
+        <td>${daysToClose} days</td>
+        <td><span class="badge ${o.pipeline_status === 'Won' ? 'won' : 'lost'}">${o.pipeline_status}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('winloss-table').innerHTML = html || '<tr><td colspan="6" class="empty-state">No closed opportunities</td></tr>';
+}
+
+function renderActivityChart(data) {
+  const maxValue = Math.max(data.calls, data.meetings, data.emails, 1);
+
+  const html = `
+    <div class="bar-chart">
+      <div class="bar" style="height:${(data.calls / maxValue) * 100}%;background:var(--blue)">
+        <div class="bar-value">${data.calls}</div>
+        <div class="bar-label">Calls</div>
+      </div>
+      <div class="bar" style="height:${(data.emails / maxValue) * 100}%;background:var(--purple)">
+        <div class="bar-value">${data.emails}</div>
+        <div class="bar-label">Emails</div>
+      </div>
+      <div class="bar" style="height:${(data.meetings / maxValue) * 100}%;background:var(--green)">
+        <div class="bar-value">${data.meetings}</div>
+        <div class="bar-label">Meetings</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('activity-chart').innerHTML = html;
+}
+
+function renderActivityTable(activities, oppActivityCount) {
+  const oppData = {};
+
+  activities.forEach(a => {
+    const oppId = a.opportunity_id;
+    if (!oppId) return;
+
+    if (!oppData[oppId]) {
+      oppData[oppId] = {
+        id: oppId,
+        name: a.opportunities?.name || a.opportunities?.company_name || 'Unnamed',
+        calls: 0,
+        emails: 0,
+        meetings: 0,
+        lastActivity: a.created_at
+      };
+    }
+
+    if (a.type === 'call') oppData[oppId].calls++;
+    if (a.type === 'email') oppData[oppId].emails++;
+    if (a.type === 'meeting') oppData[oppId].meetings++;
+
+    if (new Date(a.created_at) > new Date(oppData[oppId].lastActivity)) {
+      oppData[oppId].lastActivity = a.created_at;
+    }
+  });
+
+  const sorted = Object.values(oppData).sort((a, b) => {
+    const totalA = a.calls + a.emails + a.meetings;
+    const totalB = b.calls + b.emails + b.meetings;
+    return totalB - totalA;
+  });
+
+  const html = sorted.slice(0, 20).map(o => `
+    <tr onclick="window.location.href='./opportunity.html?id=${o.id}'" style="cursor:pointer">
+      <td>${o.name}</td>
+      <td>${o.calls}</td>
+      <td>${o.emails}</td>
+      <td>${o.meetings}</td>
+      <td>${o.calls + o.emails + o.meetings}</td>
+      <td>${o.lastActivity?.split('T')[0] || '—'}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('activity-table').innerHTML = html || '<tr><td colspan="6" class="empty-state">No activities logged</td></tr>';
+}
+
+function formatCurrency(value) {
+  if (!value) return '$0';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+}
+</script>
+
+</body>
+</html>

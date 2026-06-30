@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+.tb-nav a.active{color:var(--amber)}
+
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2rem}
+.page-header{margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1)}
+.page-subtitle{font-size:.85rem;color:var(--t3);margin-top:.5rem}
+
+.profile-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;overflow:hidden}
+.profile-header{background:linear-gradient(135deg,var(--amber),var(--amber2));padding:2rem;text-align:center}
+.profile-avatar{width:100px;height:100px;border-radius:50%;background:rgba(0,0,0,.3);border:4px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;color:#000;margin:0 auto 1rem}
+.profile-name{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#000;margin-bottom:.25rem}
+.profile-email{font-size:.85rem;color:rgba(0,0,0,.7)}
+
+.profile-body{padding:2rem}
+.form-group{margin-bottom:1.5rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.form-input:focus{outline:none;border-color:var(--amber)}
+.form-input:disabled{opacity:.6;cursor:not-allowed}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+.badge{display:inline-block;background:var(--s2);border:1px solid var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;color:var(--t1)}
+.badge.admin{background:var(--amber);color:#000;border-color:var(--amber)}
+.badge.manager{background:var(--blue);color:#fff;border-color:var(--blue)}
+.badge.rep{background:var(--green);color:#fff;border-color:var(--green)}
+
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--s2);border:1px solid var(--b1);border-radius:8px;margin-bottom:1rem}
+.info-label{font-size:.75rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.info-value{font-size:.9rem;font-weight:600;color:var(--t1)}
+
+.btn-primary{background:var(--amber);color:#000;padding:.75rem 2rem;border-radius:8px;font-size:.85rem;font-weight:700;border:none;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--amber2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.btn-secondary{background:var(--s2);color:var(--t2);padding:.75rem 2rem;border-radius:8px;font-size:.85rem;font-weight:700;border:1px solid var(--b1);cursor:pointer;transition:all .2s}
+.btn-secondary:hover{background:var(--b1);color:var(--t1)}
+
+.actions{display:flex;gap:1rem;margin-top:2rem;padding-top:2rem;border-top:1px solid var(--b1)}
+.alert{padding:1rem;border-radius:8px;margin-bottom:1.5rem;font-size:.85rem}
+.alert.success{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.alert.error{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <div style="display:flex;align-items:center;gap:2rem">
+    <nav class="tb-nav">
+      <a href="./index.html">Dashboard</a>
+      <a href="./leads.html">Leads</a>
+      <a href="./pipeline.html">Pipeline</a>
+      <a href="./accounts.html">Accounts</a>
+      <a href="./contacts.html">Contacts</a>
+      <a href="./admin.html" id="admin-link" style="display:none">Admin</a>
+    </nav>
+    <div id="user-menu-container"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">Manage your account settings and preferences</p>
+  </div>
+
+  <div id="alert-container"></div>
+
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profile-avatar">U</div>
+      <div class="profile-name" id="profile-name-display">User Name</div>
+      <div class="profile-email" id="profile-email-display">user@example.com</div>
+    </div>
+
+    <div class="profile-body">
+      <form id="profile-form" onsubmit="handleSaveProfile(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-input" name="name" id="input-name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email (Read Only)</label>
+            <input type="email" class="form-input" id="input-email" disabled>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <div style="padding:.75rem 0">
+              <span class="badge" id="role-badge">User</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Member Since</label>
+            <div class="info-value" style="padding:.75rem 0" id="member-since">—</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary" id="save-btn">Save Changes</button>
+          <button type="button" class="btn-secondary" onclick="window.location.href='./index.html'">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="../auth.js"></script>
+<script src="../components/user-menu.js"></script>
+<script src="./crm-v2-client.js"></script>
+
+<script>
+// Render user menu
+window.IAUserMenu.render('user-menu-container');
+</script>
+
+<script>
+let currentUser = null;
+let supabaseClient = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // Wait for shared Supabase client from supabase-client.js
+    function waitForSupabaseClient() {
+      return new Promise((resolve) => {
+        if (window.supabaseClient) {
+          resolve(window.supabaseClient);
+          return;
+        }
+        const interval = setInterval(() => {
+          if (window.supabaseClient) {
+            clearInterval(interval);
+            resolve(window.supabaseClient);
+          }
+        }, 50);
+      });
+    }
+
+    supabaseClient = await waitForSupabaseClient();
+    console.log('[Profile] Supabase client ready');
+
+    // Check session
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+      window.location.href = '../app/auth.html';
+      return;
+    }
+
+    // Fetch user profile
+    const { data: profile, error } = await supabaseClient
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error || !profile) {
+      console.error('Profile error:', error);
+      window.location.href = '../app/auth.html';
+      return;
+    }
+
+    currentUser = profile;
+
+    if (currentUser.role === 'admin') {
+      document.getElementById('admin-link').style.display = 'inline-block';
+    }
+
+    loadProfile();
+  } catch (err) {
+    console.error('Error loading profile:', err);
+    window.location.href = '../app/auth.html';
+  }
+});
+
+function loadProfile() {
+  if (!currentUser) return;
+
+  // Get initials for avatar
+  const initials = currentUser.name
+    ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : currentUser.email[0].toUpperCase();
+
+  // Update header
+  document.getElementById('profile-avatar').textContent = initials;
+  document.getElementById('profile-name-display').textContent = currentUser.name || currentUser.email;
+  document.getElementById('profile-email-display').textContent = currentUser.email;
+
+  // Update form fields
+  document.getElementById('input-name').value = currentUser.name || '';
+  document.getElementById('input-email').value = currentUser.email;
+
+  // Update role badge
+  const roleBadge = document.getElementById('role-badge');
+  roleBadge.textContent = currentUser.role || 'User';
+  roleBadge.className = `badge ${currentUser.role || ''}`;
+
+  // Update member since (from created_at if available)
+  if (currentUser.created_at) {
+    const memberSince = new Date(currentUser.created_at).toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
+    document.getElementById('member-since').textContent = memberSince;
+  }
+}
+
+async function handleSaveProfile(e) {
+  e.preventDefault();
+  const btn = document.getElementById('save-btn');
+  const formData = new FormData(e.target);
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const updates = {
+      name: formData.get('name')
+    };
+
+    // Update in database using direct Supabase client
+    const { error } = await supabaseClient
+      .from('users')
+      .update(updates)
+      .eq('id', currentUser.id);
+
+    if (error) throw error;
+
+    // Update local cache
+    currentUser.name = updates.name;
+
+    // Update header display
+    document.getElementById('profile-name-display').textContent = updates.name;
+
+    // Show success message
+    showAlert('success', '✓ Profile updated successfully!');
+
+    // Reload profile
+    loadProfile();
+
+  } catch (err) {
+    console.error('Error saving profile:', err);
+    showAlert('error', 'Failed to save profile. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  }
+}
+
+function showAlert(type, message) {
+  const container = document.getElementById('alert-container');
+  container.innerHTML = `<div class="alert ${type}">${message}</div>`;
+
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    container.innerHTML = '';
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

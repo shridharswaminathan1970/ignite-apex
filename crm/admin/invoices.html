@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Generator — IGNITE_APEX Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{background:var(--s1);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber)}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;margin-left:1.5rem}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:900px;margin:2rem auto;padding:0 2rem}
+.page-title{font-size:2rem;font-weight:700;margin-bottom:2rem}
+
+.form-grid{display:grid;gap:1.5rem;background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem}
+.form-group{display:flex;flex-direction:column;gap:.5rem}
+.form-label{font-size:.85rem;font-weight:600;color:var(--t2)}
+.form-input,.form-select{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.9rem}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--amber)}
+
+.btn-primary{background:var(--amber);color:#000;border:none;padding:1rem 2rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem;width:100%;margin-top:1rem}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.invoice-preview{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem;margin-top:2rem;display:none}
+.invoice-preview.active{display:block}
+
+.success-msg{background:#021F12;border:1px solid var(--green);color:var(--green);padding:1rem;border-radius:8px;margin-top:1rem;display:none}
+.success-msg.active{display:block}
+
+.error-msg{background:#1F0202;border:1px solid var(--red);color:var(--red);padding:1rem;border-radius:8px;margin-top:1rem;display:none}
+.error-msg.active{display:block}
+
+.invoice-list{margin-top:3rem}
+.invoice-card{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:1.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.invoice-info{flex:1}
+.invoice-number{font-weight:700;color:var(--amber);margin-bottom:.5rem}
+.invoice-meta{font-size:.85rem;color:var(--t3)}
+.invoice-actions{display:flex;gap:.5rem}
+.btn-sm{background:var(--b1);color:var(--t2);border:1px solid var(--b2);padding:.5rem 1rem;border-radius:6px;font-size:.8rem;cursor:pointer}
+.btn-sm:hover{background:var(--b2);color:var(--t1)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX Admin</div>
+  <nav class="tb-nav">
+    <a href="../index.html">← Back to CRM</a>
+    <a href="./users.html">Users</a>
+    <a href="./invoices.html" style="color:var(--amber)">Invoices</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <h1 class="page-title">Manual Invoice Generator</h1>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="form-label">Select Organization *</label>
+      <select id="org-select" class="form-select" onchange="loadOrgDetails()">
+        <option value="">-- Select Organization --</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Customer Name *</label>
+      <input type="text" id="customer-name" class="form-input" placeholder="e.g., ACME Corporation">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Contact Email *</label>
+      <input type="email" id="customer-email" class="form-input" placeholder="billing@acme.com">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Subscription Plan *</label>
+      <select id="plan-select" class="form-select" onchange="updatePricing()">
+        <option value="">-- Select Plan --</option>
+        <option value="team_mini_monthly">Team Mini - Monthly ($9/month)</option>
+        <option value="team_mini_yearly">Team Mini - Yearly ($100/year)</option>
+        <option value="team_midi_monthly">Team Midi - Monthly ($15/month)</option>
+        <option value="team_midi_yearly">Team Midi - Yearly ($195/year)</option>
+        <option value="team_maxi_monthly">Team Maxi - Monthly ($30/month)</option>
+        <option value="team_maxi_yearly">Team Maxi - Yearly ($320/year)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">B2B Outreach Add-on</label>
+      <select id="addon-select" class="form-select" onchange="updatePricing()">
+        <option value="">None</option>
+        <option value="mini_monthly">Mini Add-on - Monthly (+$6/month)</option>
+        <option value="mini_yearly">Mini Add-on - Yearly (+$160/year)</option>
+        <option value="midi_monthly">Midi Add-on - Monthly (+$9/month)</option>
+        <option value="midi_yearly">Midi Add-on - Yearly (+$250/year)</option>
+        <option value="maxi_monthly">Maxi Add-on - Monthly (+$12/month)</option>
+        <option value="maxi_yearly">Maxi Add-on - Yearly (+$500/year)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Total Amount (USD) *</label>
+      <input type="number" id="invoice-amount" class="form-input" placeholder="0.00" readonly style="font-weight:700;font-size:1.2rem;color:var(--amber)">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Payment Due Date *</label>
+      <input type="date" id="due-date" class="form-input">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Invoice Notes (Optional)</label>
+      <textarea id="invoice-notes" class="form-input" rows="3" placeholder="Additional payment instructions or notes..."></textarea>
+    </div>
+
+    <button id="generate-btn" class="btn-primary" onclick="generateInvoice()" disabled>
+      Generate Invoice PDF
+    </button>
+  </div>
+
+  <div class="success-msg" id="success-msg"></div>
+  <div class="error-msg" id="error-msg"></div>
+
+  <div class="invoice-list">
+    <h2 style="font-size:1.5rem;margin-bottom:1.5rem">Recent Invoices</h2>
+    <div id="invoices-list">
+      <p style="color:var(--t3);text-align:center;padding:2rem">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../../supabase-client.js"></script>
+
+<script>
+const PRICING = {
+  team_mini_monthly: 9,
+  team_mini_yearly: 100,
+  team_midi_monthly: 15,
+  team_midi_yearly: 195,
+  team_maxi_monthly: 30,
+  team_maxi_yearly: 320,
+  mini_monthly: 6,
+  mini_yearly: 160,
+  midi_monthly: 9,
+  midi_yearly: 250,
+  maxi_monthly: 12,
+  maxi_yearly: 500
+};
+
+let currentUser = null;
+
+(async function init() {
+  const sb = window.supabaseClient;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '../../app/auth.html'; return; }
+
+  const { data: user } = await sb.from('users').select('*').eq('id', session.user.id).single();
+  if (!user || !['super_duper_admin', 'admin', 'super_admin'].includes(user.role)) {
+    alert('Access denied. Admin only.');
+    window.location.href = '../index.html';
+    return;
+  }
+
+  currentUser = user;
+
+  // Set default due date (30 days from now)
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 30);
+  document.getElementById('due-date').valueAsDate = dueDate;
+
+  await loadOrganizations();
+  await loadRecentInvoices();
+})();
+
+async function loadOrganizations() {
+  const { data: orgs } = await window.supabaseClient
+    .from('organisations')
+    .select('id, name')
+    .order('name');
+
+  const select = document.getElementById('org-select');
+  orgs.forEach(org => {
+    const option = document.createElement('option');
+    option.value = org.id;
+    option.textContent = org.name;
+    select.appendChild(option);
+  });
+}
+
+async function loadOrgDetails() {
+  const orgId = document.getElementById('org-select').value;
+  if (!orgId) {
+    document.getElementById('generate-btn').disabled = true;
+    return;
+  }
+
+  // Load org subscription if exists
+  const { data: sub } = await window.supabaseClient
+    .from('org_subscriptions')
+    .select('*')
+    .eq('org_id', orgId)
+    .single();
+
+  if (sub && sub.plan !== 'free_trial') {
+    // Pre-fill with existing plan
+    const billing = sub.billing_cycle || 'monthly';
+    document.getElementById('plan-select').value = `${sub.plan}_${billing}`;
+    updatePricing();
+  }
+
+  validateForm();
+}
+
+function updatePricing() {
+  const plan = document.getElementById('plan-select').value;
+  const addon = document.getElementById('addon-select').value;
+
+  let total = 0;
+  if (plan) total += PRICING[plan] || 0;
+  if (addon) total += PRICING[addon] || 0;
+
+  document.getElementById('invoice-amount').value = total.toFixed(2);
+  validateForm();
+}
+
+function validateForm() {
+  const orgId = document.getElementById('org-select').value;
+  const customerName = document.getElementById('customer-name').value;
+  const customerEmail = document.getElementById('customer-email').value;
+  const plan = document.getElementById('plan-select').value;
+  const amount = parseFloat(document.getElementById('invoice-amount').value);
+  const dueDate = document.getElementById('due-date').value;
+
+  const valid = orgId && customerName && customerEmail && plan && amount > 0 && dueDate;
+  document.getElementById('generate-btn').disabled = !valid;
+}
+
+document.getElementById('customer-name').addEventListener('input', validateForm);
+document.getElementById('customer-email').addEventListener('input', validateForm);
+
+async function generateInvoice() {
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  try {
+    const orgId = document.getElementById('org-select').value;
+    const orgName = document.getElementById('org-select').selectedOptions[0].text;
+    const customerName = document.getElementById('customer-name').value;
+    const customerEmail = document.getElementById('customer-email').value;
+    const plan = document.getElementById('plan-select').value;
+    const planName = document.getElementById('plan-select').selectedOptions[0].text;
+    const addon = document.getElementById('addon-select').value;
+    const addonName = addon ? document.getElementById('addon-select').selectedOptions[0].text : null;
+    const amount = parseFloat(document.getElementById('invoice-amount').value);
+    const dueDate = document.getElementById('due-date').value;
+    const notes = document.getElementById('invoice-notes').value;
+
+    // Generate invoice number
+    const invoiceNumber = 'INV-' + Date.now();
+
+    // Generate PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold');
+    doc.text('INVOICE', 20, 20);
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text('IGNITE_APEX CRM', 20, 28);
+    doc.text('Subscription Services', 20, 33);
+
+    // Invoice details
+    doc.setFontSize(10);
+    doc.text(`Invoice #: ${invoiceNumber}`, 140, 20);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 140, 25);
+    doc.text(`Due: ${new Date(dueDate).toLocaleDateString()}`, 140, 30);
+
+    // Bill To
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('Bill To:', 20, 50);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(10);
+    doc.text(customerName, 20, 57);
+    doc.text(orgName, 20, 62);
+    doc.text(customerEmail, 20, 67);
+
+    // Line items
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('Description', 20, 85);
+    doc.text('Amount', 170, 85);
+    doc.line(20, 87, 190, 87);
+
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(10);
+    let y = 95;
+    doc.text(planName, 20, y);
+    doc.text(`$${PRICING[plan].toFixed(2)}`, 170, y);
+
+    if (addon) {
+      y += 7;
+      doc.text(addonName, 20, y);
+      doc.text(`$${PRICING[addon].toFixed(2)}`, 170, y);
+    }
+
+    // Total
+    y += 15;
+    doc.line(20, y, 190, y);
+    y += 7;
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('TOTAL DUE:', 130, y);
+    doc.text(`$${amount.toFixed(2)}`, 170, y);
+
+    // Payment instructions
+    y += 15;
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text('Payment Instructions:', 20, y);
+    doc.setFont(undefined, 'normal');
+    y += 7;
+    doc.text('Please contact administrator for payment details.', 20, y);
+    y += 5;
+    doc.text('Email: muhammad.shaamel@gmail.com', 20, y);
+
+    if (notes) {
+      y += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('Notes:', 20, y);
+      doc.setFont(undefined, 'normal');
+      y += 7;
+      const splitNotes = doc.splitTextToSize(notes, 170);
+      doc.text(splitNotes, 20, y);
+    }
+
+    // Save PDF
+    const pdfBlob = doc.output('blob');
+    const pdfDataUrl = doc.output('dataurlstring');
+
+    // Save to database
+    const { data: invoice, error } = await window.supabaseClient
+      .from('payment_transactions')
+      .insert({
+        org_id: orgId,
+        amount: amount,
+        currency: 'USD',
+        payment_method: 'manual_invoice',
+        status: 'pending',
+        invoice_number: invoiceNumber,
+        invoice_due_date: dueDate,
+        description: `${planName}${addon ? ' + ' + addonName : ''}`
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Download PDF
+    doc.save(`${invoiceNumber}.pdf`);
+
+    // Show success
+    document.getElementById('success-msg').textContent = `✓ Invoice ${invoiceNumber} generated and saved! PDF downloaded.`;
+    document.getElementById('success-msg').classList.add('active');
+
+    // Reset form
+    document.getElementById('org-select').value = '';
+    document.getElementById('customer-name').value = '';
+    document.getElementById('customer-email').value = '';
+    document.getElementById('plan-select').value = '';
+    document.getElementById('addon-select').value = '';
+    document.getElementById('invoice-amount').value = '';
+    document.getElementById('invoice-notes').value = '';
+
+    await loadRecentInvoices();
+
+  } catch (err) {
+    console.error('Invoice error:', err);
+    document.getElementById('error-msg').textContent = `Error: ${err.message}`;
+    document.getElementById('error-msg').classList.add('active');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Invoice PDF';
+  }
+}
+
+async function loadRecentInvoices() {
+  const { data: invoices } = await window.supabaseClient
+    .from('payment_transactions')
+    .select('*, organisations(name)')
+    .eq('payment_method', 'manual_invoice')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const container = document.getElementById('invoices-list');
+  if (!invoices || invoices.length === 0) {
+    container.innerHTML = '<p style="color:var(--t3);text-align:center;padding:2rem">No invoices yet</p>';
+    return;
+  }
+
+  container.innerHTML = invoices.map(inv => `
+    <div class="invoice-card">
+      <div class="invoice-info">
+        <div class="invoice-number">${inv.invoice_number}</div>
+        <div class="invoice-meta">
+          ${inv.organisations.name} • $${inv.amount} • Due: ${new Date(inv.invoice_due_date).toLocaleDateString()} • Status: ${inv.status.toUpperCase()}
+        </div>
+        <div style="font-size:.8rem;color:var(--t3);margin-top:.25rem">${inv.description}</div>
+      </div>
+      <div class="invoice-actions">
+        <button class="btn-sm" onclick="markInvoicePaid('${inv.id}')">Mark Paid</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function markInvoicePaid(invoiceId) {
+  if (!confirm('Mark this invoice as paid?')) return;
+
+  const { error } = await window.supabaseClient
+    .from('payment_transactions')
+    .update({ status: 'paid', paid_at: new Date().toISOString() })
+    .eq('id', invoiceId);
+
+  if (error) {
+    alert('Error: ' + error.message);
+  } else {
+    alert('✓ Invoice marked as paid');
+    await loadRecentInvoices();
+  }
+}
+</script>
+
+</body>
+</html>

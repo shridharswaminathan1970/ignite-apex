@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Management — IGNITE_APEX CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./team-selector.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--green:#10B981;--blue:#3B82F6;--red:#EF4444;--purple:#8B5CF6;--gray:#6B7280;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.tb-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.tb-nav{display:flex;gap:1.5rem;align-items:center}
+.tb-nav a{font-size:.75rem;color:var(--t2);text-decoration:none;font-weight:600;transition:color .2s}
+.tb-nav a:hover{color:var(--t1)}
+
+.wrap{max-width:1600px;margin:0 auto;padding:2rem}
+.page-header{margin-bottom:2rem}
+.page-title{font-size:2rem;font-weight:700;margin-bottom:.5rem}
+.page-subtitle{font-size:.9rem;color:var(--t3)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem}
+.stat-label{font-size:.75rem;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem}
+.stat-value{font-size:2rem;font-weight:700}
+
+.filters{display:flex;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap}
+.filter-btn{background:var(--s2);color:var(--t2);padding:.6rem 1rem;border-radius:8px;font-size:.85rem;font-weight:600;border:2px solid var(--b1);cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:var(--amber)}
+.filter-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
+
+.table-container{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2)}
+th{padding:1rem;text-align:left;font-size:.75rem;text-transform:uppercase;color:var(--t3);font-weight:700}
+td{padding:1rem;border-top:1px solid var(--b1);font-size:.85rem}
+tr:hover{background:var(--s2);cursor:pointer}
+
+.badge{display:inline-block;padding:.3rem .75rem;border-radius:6px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.badge.new{background:#2D1F00;color:var(--amber);border:1px solid var(--amber)}
+.badge.contacted{background:#020F2A;color:var(--blue);border:1px solid var(--blue)}
+.badge.qualified{background:#021F12;color:var(--green);border:1px solid var(--green)}
+.badge.nurture{background:#160A2E;color:var(--purple);border:1px solid var(--purple)}
+.badge.disqualified{background:#1F0202;color:var(--red);border:1px solid var(--red)}
+
+.action-btn{background:var(--s2);border:1px solid var(--b1);color:var(--t2);padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+.action-btn:hover{border-color:var(--amber);color:var(--t1)}
+.action-btn.convert{background:var(--green);color:#000;border-color:var(--green)}
+
+.loading{text-align:center;padding:3rem;color:var(--t3)}
+.empty-state{text-align:center;padding:3rem;color:var(--t3);font-size:.9rem}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">IGNITE_APEX CRM</div>
+  <div class="tb-nav">
+    <a href="./index.html">Dashboard</a>
+    <a href="./leads-v2.html">Leads</a>
+    <a href="./pipeline.html">Pipeline</a>
+    <a href="./forecast.html">Forecast</a>
+    <a href="./accounts.html">Accounts</a>
+    <a href="./contacts.html">Contacts</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-header">
+    <div class="page-title">🎯 Lead Management</div>
+    <div class="page-subtitle">Pre-pipeline qualification: score, qualify, convert</div>
+  </div>
+
+  <!-- Team Selector -->
+  <div id="team-selector-container"></div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Hot Leads (70+)</div>
+      <div class="stat-value" style="color:var(--green)" id="stat-hot">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Warm Leads (50-69)</div>
+      <div class="stat-value" style="color:var(--amber)" id="stat-warm">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Lead Score</div>
+      <div class="stat-value" id="stat-avg-score">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ready to Convert</div>
+      <div class="stat-value" style="color:var(--green)" id="stat-ready">0</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterLeads('all')">All Leads</button>
+    <button class="filter-btn" onclick="filterLeads('new')">New</button>
+    <button class="filter-btn" onclick="filterLeads('contacted')">Contacted</button>
+    <button class="filter-btn" onclick="filterLeads('qualified')">Qualified</button>
+    <button class="filter-btn" onclick="filterLeads('nurture')">Nurture</button>
+    <button class="filter-btn" onclick="filterLeads('disqualified')">Disqualified</button>
+  </div>
+
+  <!-- Leads Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Lead Score</th>
+          <th>Company</th>
+          <th>Contact</th>
+          <th>Status</th>
+          <th>Source</th>
+          <th>Last Contact</th>
+          <th>Recommended Action</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="leads-table">
+        <tr><td colspan="8" class="loading">Loading leads...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script src="./crm-v2-client.js"></script>
+<script src="./team-selector.js"></script>
+<script src="./lead-scoring.js"></script>
+
+<script>
+let currentUser = null;
+let allLeads = [];
+let currentFilter = 'all';
+
+function waitForSupabaseClient() {
+  return new Promise((resolve) => {
+    if (window.supabaseClient) { resolve(window.supabaseClient); return; }
+    const interval = setInterval(() => {
+      if (window.supabaseClient) { clearInterval(interval); resolve(window.supabaseClient); }
+    }, 50);
+  });
+}
+
+(async function init() {
+  try {
+    const sb = await waitForSupabaseClient();
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '../app/auth.html'; return; }
+
+    const { data: profile } = await sb.from('users').select('*').eq('id', session.user.id).single();
+    if (!profile || !profile.crm_enabled) { window.location.href = '../system/index.html'; return; }
+
+    window.currentUser = profile;
+    window.currentOrgId = profile.org_id;
+    currentUser = profile;
+
+    // Initialize team selector
+    window.teamSelector = await new TeamSelector(profile).init();
+    window.teamSelector.render('team-selector-container');
+
+    window.addEventListener('team-scope-changed', () => {
+      loadLeads();
+    });
+
+    await loadLeads();
+  } catch (err) {
+    console.error('[Leads] Init error:', err);
+  }
+})();
+
+async function loadLeads() {
+  try {
+    let query = window.supabaseClient
+      .from('opportunities')
+      .select('*, accounts(name), contacts(name, email)')
+      .eq('org_id', currentUser.org_id)
+      .eq('pipeline_stage', 'Lead');
+
+    // Apply team filter
+    query = window.teamSelector.applyFilter(query);
+
+    const { data: leads, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+
+    // Calculate scores for each lead
+    allLeads = leads.map(lead => ({
+      ...lead,
+      _score: window.LeadScoring.calculateScore(lead),
+      _canConvert: window.LeadScoring.canConvertToOpportunity(lead),
+      _recommendedAction: window.LeadScoring.getRecommendedAction(lead)
+    }));
+
+    updateStats();
+    renderLeads();
+  } catch (err) {
+    console.error('[Leads] Load error:', err);
+    document.getElementById('leads-table').innerHTML = '<tr><td colspan="8" class="empty-state">Error loading leads</td></tr>';
+  }
+}
+
+function updateStats() {
+  const total = allLeads.length;
+  const hot = allLeads.filter(l => l._score >= 70).length;
+  const warm = allLeads.filter(l => l._score >= 50 && l._score < 70).length;
+  const avgScore = total > 0 ? Math.round(allLeads.reduce((sum, l) => sum + l._score, 0) / total) : 0;
+  const ready = allLeads.filter(l => l._canConvert.allowed).length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-hot').textContent = hot;
+  document.getElementById('stat-warm').textContent = warm;
+  document.getElementById('stat-avg-score').textContent = avgScore;
+  document.getElementById('stat-ready').textContent = ready;
+}
+
+function filterLeads(status) {
+  currentFilter = status;
+
+  // Update active button
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+
+  renderLeads();
+}
+
+function renderLeads() {
+  const filtered = currentFilter === 'all'
+    ? allLeads
+    : allLeads.filter(l => l.lead_status === currentFilter);
+
+  if (filtered.length === 0) {
+    document.getElementById('leads-table').innerHTML = '<tr><td colspan="8" class="empty-state">No leads found</td></tr>';
+    return;
+  }
+
+  const html = filtered.map(lead => {
+    const daysSince = lead.last_contacted_at
+      ? Math.floor((new Date() - new Date(lead.last_contacted_at)) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return `
+      <tr onclick="viewLead('${lead.id}')">
+        <td>${window.LeadScoring.renderScoreBadge(lead._score)}</td>
+        <td><strong>${lead.company_name || lead.name || 'Unnamed'}</strong></td>
+        <td>${lead.contacts?.name || lead.contacts?.email || '—'}</td>
+        <td><span class="badge ${lead.lead_status || 'new'}">${lead.lead_status || 'new'}</span></td>
+        <td>${lead.lead_source || '—'}</td>
+        <td>${daysSince !== null ? daysSince + ' days ago' : 'Never'}</td>
+        <td>
+          <span style="color:var(--${lead._recommendedAction.color});font-weight:600;font-size:.8rem">
+            ${lead._recommendedAction.label}
+          </span>
+        </td>
+        <td onclick="event.stopPropagation()">
+          ${lead._canConvert.allowed ? `
+            <button class="action-btn convert" onclick="convertLead('${lead.id}')">
+              ✓ Convert
+            </button>
+          ` : `
+            <button class="action-btn" onclick="viewLead('${lead.id}')">
+              Qualify
+            </button>
+          `}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('leads-table').innerHTML = html;
+}
+
+function viewLead(leadId) {
+  window.location.href = `./opportunity.html?id=${leadId}`;
+}
+
+async function convertLead(leadId) {
+  const lead = allLeads.find(l => l.id === leadId);
+  if (!lead) return;
+
+  const check = window.LeadScoring.canConvertToOpportunity(lead);
+  if (!check.allowed) {
+    alert(`Cannot convert this lead:\n\n${check.missing.join('\n')}`);
+    return;
+  }
+
+  if (!confirm(`Convert "${lead.company_name || lead.name}" to Opportunity?\n\nThis will move it from Leads to Pipeline (Stage 1: Qualification).`)) {
+    return;
+  }
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('opportunities')
+      .update({
+        pipeline_stage: 'Qualification',
+        pipeline_status: 'Open',
+        probability: 10,
+        converted_at: new Date().toISOString(),
+        lead_status: 'qualified'
+      })
+      .eq('id', leadId);
+
+    if (error) throw error;
+
+    alert('✅ Lead converted to Opportunity!');
+    await loadLeads();
+  } catch (err) {
+    alert('Failed to convert lead: ' + err.message);
+  }
+}
+</script>
+
+</body>
+</html>

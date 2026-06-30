@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activate CRM Trial — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1);display:flex;align-items:center;justify-content:center}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+.container{position:relative;z-index:1;max-width:700px;padding:3rem 2rem}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--amber);letter-spacing:2px;text-align:center;margin-bottom:3rem}
+
+.card{background:var(--s1);border:2px solid var(--amber);border-radius:16px;padding:3rem;text-align:center;box-shadow:0 8px 32px rgba(245,158,11,.2)}
+.icon{font-size:5rem;margin-bottom:1.5rem}
+.title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--t1);margin-bottom:1rem}
+.subtitle{font-size:1rem;color:var(--t2);line-height:1.7;margin-bottom:2rem}
+
+.features{text-align:left;background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+.feature-item{display:flex;align-items:start;gap:1rem;margin-bottom:1rem;font-size:.9rem}
+.feature-item:last-child{margin-bottom:0}
+.feature-icon{font-size:1.5rem;flex-shrink:0}
+.feature-text{flex:1}
+.feature-title{font-weight:700;color:var(--t1);margin-bottom:.25rem}
+.feature-desc{font-size:.85rem;color:var(--t3)}
+
+.trial-box{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(245,158,11,.05));border:2px solid var(--amber);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+.trial-highlight{font-size:2rem;font-weight:800;color:var(--amber);margin-bottom:.5rem}
+.trial-text{font-size:.9rem;color:var(--t2)}
+
+.btn-activate{background:var(--amber);color:#000;border:none;padding:1.25rem 2.5rem;border-radius:12px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:all .3s;width:100%;margin-bottom:1rem}
+.btn-activate:hover{background:var(--amber2);transform:translateY(-3px);box-shadow:0 8px 24px rgba(245,158,11,.4)}
+.btn-activate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.btn-secondary{background:transparent;color:var(--t3);border:none;padding:.75rem;font-size:.85rem;cursor:pointer;text-decoration:underline}
+.btn-secondary:hover{color:var(--t1)}
+
+.warning-box{background:rgba(239,68,68,.1);border:1px solid var(--red);border-radius:8px;padding:1rem;margin-top:1.5rem}
+.warning-title{font-size:.85rem;font-weight:700;color:var(--red);margin-bottom:.5rem}
+.warning-text{font-size:.8rem;color:var(--t3);line-height:1.6}
+
+.loading{text-align:center;padding:3rem;font-size:1rem;color:var(--t3)}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">IGNITE_APEX</div>
+
+  <div id="loading" class="loading">Loading...</div>
+
+  <div id="content" style="display:none">
+    <div class="card">
+      <div class="icon">🚀</div>
+      <h1 class="title">Activate Your CRM Trial</h1>
+      <p class="subtitle">
+        You currently have FREE lifetime access to <strong>IGNITE-APEX Sales OS</strong>.
+        <br>Want full CRM features? Activate your 99-day trial now!
+      </p>
+
+      <div class="trial-box">
+        <div class="trial-highlight">99 DAYS FREE</div>
+        <div class="trial-text">Full CRM access • No credit card required • Cancel anytime</div>
+      </div>
+
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-icon">✅</div>
+          <div class="feature-text">
+            <div class="feature-title">Sales OS (FREE Forever)</div>
+            <div class="feature-desc">IGNITE-APEX methodology, opportunity scoring, AI coaching</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-text">
+            <div class="feature-title">Full CRM (99-Day Trial)</div>
+            <div class="feature-desc">Leads, opportunities, accounts, contacts, pipeline, forecasting</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">👥</div>
+          <div class="feature-text">
+            <div class="feature-title">Team Collaboration</div>
+            <div class="feature-desc">Up to 3 users, activity tracking, reports, dashboards</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <div class="feature-text">
+            <div class="feature-title">Advanced Features</div>
+            <div class="feature-desc">Tasks, reminders, email integration, deal stages</div>
+          </div>
+        </div>
+      </div>
+
+      <button id="activate-btn" class="btn-activate" onclick="activateTrial()">
+        🚀 Activate 99-Day CRM Trial
+      </button>
+
+      <button class="btn-secondary" onclick="skipTrial()">
+        Skip for now (stay on FREE Sales OS)
+      </button>
+
+      <div class="warning-box">
+        <div class="warning-title">⏰ Trial Reminder Schedule</div>
+        <div class="warning-text">
+          • <strong>Day 90:</strong> In-app reminder (9 days left)<br>
+          • <strong>Day 120:</strong> Email warning (30 days past trial)<br>
+          • <strong>Day 130:</strong> Email warning (40 days past trial)<br>
+          • <strong>Day 140:</strong> Final warning (account may be deactivated without warning)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+
+<script>
+let currentUser = null;
+
+(async function init() {
+  try {
+    const sb = window.supabaseClient;
+    const { data: { session } } = await sb.auth.getSession();
+
+    if (!session) {
+      window.location.href = './auth.html';
+      return;
+    }
+
+    const { data: user } = await sb.from('users').select('*').eq('id', session.user.id).single();
+    currentUser = user;
+
+    // Check subscription status
+    const { data: subscription } = await sb
+      .from('org_subscriptions')
+      .select('*')
+      .eq('org_id', user.org_id)
+      .single();
+
+    // If trial already activated, redirect to CRM
+    if (subscription && subscription.trial_started_at) {
+      console.log('[Activate] Trial already active, redirecting to CRM');
+      window.location.href = '../crm/index.html';
+      return;
+    }
+
+    // Show activation screen
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+  } catch (err) {
+    console.error('[Activate] Init error:', err);
+    document.getElementById('loading').innerHTML = '<div style="color:var(--red)">Error: ' + err.message + '</div>';
+  }
+})();
+
+async function activateTrial() {
+  const btn = document.getElementById('activate-btn');
+  btn.disabled = true;
+  btn.textContent = 'Activating...';
+
+  try {
+    const sb = window.supabaseClient;
+
+    // Call function to activate trial
+    const { data, error } = await sb.rpc('activate_crm_trial', {
+      user_org_id: currentUser.org_id
+    });
+
+    if (error) throw error;
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to activate trial');
+    }
+
+    console.log('[Activate] Trial activated:', data);
+
+    // Show success and redirect
+    btn.textContent = '✓ Trial Activated! Redirecting...';
+    btn.style.background = 'var(--green)';
+
+    setTimeout(() => {
+      window.location.href = '../crm/index.html';
+    }, 1500);
+
+  } catch (err) {
+    console.error('[Activate] Error:', err);
+    alert('Error activating trial: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '🚀 Activate 99-Day CRM Trial';
+  }
+}
+
+function skipTrial() {
+  if (confirm('Skip CRM trial and stay on FREE Sales OS?\n\nYou can activate the trial anytime from your dashboard.')) {
+    window.location.href = '../system/index.html';
+  }
+}
+</script>
+
+</body>
+</html>

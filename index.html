@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNITE_APEX — Sales Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;
+  --t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;
+  --amber:#F59E0B;--amber2:#FCD34D;--ad:#2D1F00;
+  --green:#10B981;--gd:#021F12;
+  --blue:#3B82F6;--bd:#020F2A;
+  --red:#EF4444;--rd:#1F0202;
+  --purple:#8B5CF6;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'Outfit',sans-serif;color:var(--t1);scroll-behavior:smooth}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0}
+nav{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.nav-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--amber);letter-spacing:1px}
+.nav-links{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.nav-links a{font-size:.78rem;font-weight:600;color:var(--t2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--t1)}
+.nav-cta{background:var(--amber);color:#000!important;padding:.45rem 1.1rem;border-radius:7px;font-size:.78rem;font-weight:700;text-decoration:none!important;transition:background .15s}
+.nav-cta:hover{background:var(--amber2)}
+.hero{position:relative;z-index:1;text-align:center;padding:6rem 2rem 3.5rem;max-width:880px;margin:0 auto}
+.hero-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:1rem}
+.hero-logo{font-family:'Syne',sans-serif;font-size:clamp(3rem,8vw,6rem);font-weight:800;line-height:1;margin-bottom:.5rem}
+.hero-logo em{color:var(--amber);font-style:normal}
+.hero-sub{font-size:.85rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--t3);margin-bottom:1.5rem}
+.hero-desc{font-size:1rem;color:var(--t2);line-height:1.75;max-width:600px;margin:0 auto 2.5rem}
+.hero-ctas{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+.btn-primary{background:var(--amber);color:#000;padding:.85rem 2rem;border-radius:10px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:all .15s}
+.btn-primary:hover{background:var(--amber2);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--t1);padding:.85rem 2rem;border-radius:10px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--b2);transition:all .15s}
+.btn-ghost:hover{border-color:var(--t2);background:var(--s1)}
+.stats-bar{position:relative;z-index:1;display:flex;gap:.65rem;flex-wrap:wrap;justify-content:center;padding:0 2rem 3.5rem;max-width:880px;margin:0 auto}
+.stat{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:.7rem 1.25rem;text-align:center;min-width:110px}
+.stat-v{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--amber);line-height:1}
+.stat-l{font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-top:.2rem}
+.section{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:0 2rem 4.5rem}
+.section-label{font-size:.6rem;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.65rem}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3.5vw,2.1rem);font-weight:800;line-height:1.15;color:var(--t1);margin-bottom:.6rem}
+.section-desc{font-size:.9rem;color:var(--t2);line-height:1.7;max-width:580px}
+.divider{display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
+.div-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--b2),transparent)}
+.div-label{font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3);white-space:nowrap}
+.quote-block{background:var(--s1);border:1px solid var(--b1);border-left:3px solid var(--amber);border-radius:10px;padding:1.4rem 1.75rem;margin-bottom:3.5rem}
+.quote-block p{font-size:.9rem;color:var(--t2);line-height:1.75;font-style:italic}
+.quote-block cite{display:block;font-size:.62rem;font-weight:700;letter-spacing:1px;color:var(--amber);margin-top:.5rem;font-style:normal}
+/* OFFER CARDS */
+.offer-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem}
+@media(max-width:680px){.offer-grid{grid-template-columns:1fr}}
+.offer-card{border-radius:16px;overflow:hidden;border:1px solid;display:flex;flex-direction:column}
+.offer-card.free{border-color:var(--green)}
+.offer-card.paid{border-color:var(--amber)}
+.offer-head{padding:2rem 2rem 1.5rem}
+.offer-card.free .offer-head{background:linear-gradient(135deg,#021A10,#010C08)}
+.offer-card.paid .offer-head{background:linear-gradient(135deg,#1A1000,#0D0800)}
+.offer-badge{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.22rem .65rem;border-radius:20px;display:inline-block;margin-bottom:1rem}
+.offer-card.free .offer-badge{background:var(--gd);color:var(--green);border:1px solid var(--green)}
+.offer-card.paid .offer-badge{background:var(--ad);color:var(--amber2);border:1px solid var(--amber)}
+.offer-title{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;line-height:1.1;margin-bottom:.35rem}
+.offer-card.free .offer-title{color:#6EE7B7}
+.offer-card.paid .offer-title{color:var(--amber2)}
+.offer-price{display:flex;align-items:baseline;gap:.35rem;margin:.75rem 0}
+.price-main{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;line-height:1}
+.offer-card.free .price-main{color:var(--green)}
+.offer-card.paid .price-main{color:var(--amber)}
+.price-suffix{font-size:.8rem;color:var(--t3);font-weight:500}
+.offer-tagline{font-size:.82rem;color:var(--t2);line-height:1.55}
+.offer-body{padding:1.25rem 2rem 2rem;flex:1;display:flex;flex-direction:column}
+.offer-card.free .offer-body{background:#010C08}
+.offer-card.paid .offer-body{background:#0A0800}
+.offer-features{list-style:none;margin-bottom:1.5rem;flex:1}
+.offer-features li{display:flex;align-items:flex-start;gap:.55rem;font-size:.8rem;color:var(--t2);line-height:1.5;padding:.35rem 0;border-bottom:1px solid var(--b1)}
+.offer-features li:last-child{border-bottom:none}
+.offer-features li .tick{font-size:.7rem;flex-shrink:0;margin-top:2px}
+.offer-card.free .offer-features li .tick{color:var(--green)}
+.offer-card.paid .offer-features li .tick{color:var(--amber)}
+.offer-note{font-size:.7rem;color:var(--t3);line-height:1.55;margin-bottom:1.25rem;padding:.65rem .85rem;background:var(--s2);border-radius:7px;border:1px solid var(--b2)}
+.offer-btn{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.1rem;border-radius:9px;font-size:.85rem;font-weight:700;text-decoration:none;transition:all .15s;cursor:pointer}
+.offer-card.free .offer-btn{background:var(--green);color:#000}
+.offer-card.free .offer-btn:hover{background:#34D399}
+.offer-card.paid .offer-btn{background:var(--amber);color:#000}
+.offer-card.paid .offer-btn:hover{background:var(--amber2)}
+/* COMPARE */
+.compare-table{width:100%;border-collapse:collapse;margin-top:1.75rem;font-size:.82rem}
+.compare-table th{padding:.75rem 1.1rem;text-align:left;font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b2)}
+.compare-table th.hl{color:var(--amber)}
+.compare-table td{padding:.7rem 1.1rem;border-bottom:1px solid var(--b1);color:var(--t2);vertical-align:middle}
+.compare-table tr:last-child td{border-bottom:none}
+.tg{color:var(--green);font-weight:600}
+.ta{color:var(--amber);font-weight:600}
+.tx{color:var(--t3)}
+/* STEPS */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2rem}
+@media(max-width:640px){.steps{grid-template-columns:1fr}}
+.step{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem}
+.step-num{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--b2);line-height:1;margin-bottom:.65rem}
+.step-title{font-size:.9rem;font-weight:700;color:var(--t1);margin-bottom:.4rem}
+.step-desc{font-size:.78rem;color:var(--t2);line-height:1.6}
+/* FRAMEWORK */
+.flow-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:2rem}
+@media(max-width:700px){.flow-grid{grid-template-columns:repeat(2,1fr)}}
+.flow-block{border-radius:10px;padding:1rem 1.1rem;border:1px solid}
+.flow-block.i{background:#1A1000;border-color:var(--amber)}
+.flow-block.g{background:#0A1200;border-color:var(--green)}
+.flow-block.n{background:#020B1A;border-color:var(--blue)}
+.flow-block.e{background:#160A2E;border-color:var(--purple)}
+.flow-letter{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;line-height:1;margin-bottom:.2rem}
+.flow-block.i .flow-letter{color:var(--amber)}
+.flow-block.g .flow-letter{color:var(--green)}
+.flow-block.n .flow-letter{color:#60A5FA}
+.flow-block.e .flow-letter{color:#A78BFA}
+.flow-word{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem}
+.flow-block.i .flow-word{color:var(--amber)}
+.flow-block.g .flow-word{color:var(--green)}
+.flow-block.n .flow-word{color:#60A5FA}
+.flow-block.e .flow-word{color:#A78BFA}
+.flow-desc{font-size:.72rem;color:var(--t2);line-height:1.5}
+.footer{position:relative;z-index:1;border-top:1px solid var(--b1);padding:2rem;text-align:center}
+.footer p{font-size:.7rem;color:var(--t3);line-height:1.85}
+.footer strong{color:var(--t2)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">IGNITE_APEX</div>
+  <div class="nav-links">
+    <a href="#how-it-works">How It Works</a>
+    <a href="./pricing.html">Pricing</a>
+    <a href="#framework">Framework</a>
+    <a href="#setup-paths">Setup Paths</a>
+    <a href="./guide/">User Guide</a>
+    <a href="./app/auth.html" style="font-size:.78rem;font-weight:600;color:var(--t2);text-decoration:none">Sign In</a>
+    <a class="nav-cta" href="./app/register.html">Try Sales OS Free →</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <span class="hero-eyebrow">Demand Generation Sales Operating System</span>
+  <div class="hero-logo">IGNITE<em>_</em>APEX</div>
+  <div class="hero-sub">Sales Operating System</div>
+  <p class="hero-desc">The complete methodology for markets where every deal must be earned. Create demand, qualify brutally, diagnose deeply, forecast with integrity, and engineer 5-year client stickiness — for any SaaS product.</p>
+  <div class="hero-ctas">
+    <a href="./app/register.html" class="btn-primary">Try Sales OS Free →</a>
+    <a href="./app/auth.html" class="btn-ghost">Sign In</a>
+  </div>
+</div>
+
+<!-- TWO SETUP PATHS -->
+<div id="setup-paths" style="position:relative;z-index:1;max-width:700px;margin:0 auto;padding:0 2rem 2.5rem">
+  <div style="text-align:center;margin-bottom:1.5rem">
+    <div style="font-size:.6rem;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem">Two Ways to Set Up</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--t1)">Choose Your Setup Path</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.25rem 1.5rem">
+      <div style="font-size:.58rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem">Manual Setup</div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--t1);margin-bottom:.4rem">Build My Sales System</div>
+      <div style="font-size:.75rem;color:var(--t2);line-height:1.6;margin-bottom:.85rem">You fill in your product, ICP, 4U conditions, discovery questions, and objection scripts yourself. Full control. No API key needed.</div>
+      <a href="./universal/" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:700;color:var(--amber);text-decoration:none">Get Started →</a>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--amber);border-radius:12px;padding:1.25rem 1.5rem;position:relative">
+      <div style="font-size:.58rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem">AI-Powered</div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--t1);margin-bottom:.4rem">🤖 AI System Builder</div>
+      <div style="font-size:.75rem;color:var(--t2);line-height:1.6;margin-bottom:.85rem">Describe your product in 3 sentences. Claude generates your complete framework — 20 qualification questions, 7 objection scripts, 4U conditions — in 60 seconds. You review and edit everything before saving.</div>
+      <a href="./configure/" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:700;color:var(--amber);text-decoration:none">Try AI Builder →</a>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-v">40%</div><div class="stat-l">Performance Uplift</div></div>
+  <div class="stat"><div class="stat-v">70%</div><div class="stat-l">Sale is Diagnosis</div></div>
+  <div class="stat"><div class="stat-v">4U</div><div class="stat-l">Qualification Filter</div></div>
+  <div class="stat"><div class="stat-v">5–9%</div><div class="stat-l">Forecast Tolerance</div></div>
+  <div class="stat"><div class="stat-v">5 YR</div><div class="stat-l">Relationship Horizon</div></div>
+</div>
+
+<div class="section">
+  <div class="quote-block">
+    <p>"Qualifies harder than anyone. Diagnoses deeper than anyone. Reads what is never said. Forecasts with brutal honesty. Closes fast because conviction was already built. Then spends the next five years making themselves impossible to replace."</p>
+    <cite>— The IGNITE_APEX Definition of the Genius Salesperson</cite>
+  </div>
+</div>
+
+<div class="section" id="pricing">
+  <div class="section-label">Access</div>
+  <div class="section-title">Free for 99 days</div>
+  <p class="section-desc">Start with 99 days of free CRM access. Sales OS is always free. All features included — no credit card required.</p>
+
+  <div class="offer-grid">
+    <div class="offer-card free">
+      <div class="offer-head">
+        <div class="offer-badge">✦ Free · 90 Days</div>
+        <div class="offer-title">IGNITE_APEX SoS Template</div>
+        <div class="offer-price"><span class="price-main">Free</span><span class="price-suffix">for 99 days</span></div>
+        <p class="offer-tagline">The full Sales Operating System as a self-contained template. Download once, use it for any deal, any product, any market.</p>
+      </div>
+      <div class="offer-body">
+        <ul class="offer-features">
+          <li><span class="tick">✓</span>Complete IGNITE demand creation methodology</li>
+          <li><span class="tick">✓</span>4U Qualification Framework (Unworkable, Unavoidable, Urgent, Underserved)</li>
+          <li><span class="tick">✓</span>3-Layer Root Cause Diagnostic with capture fields</li>
+          <li><span class="tick">✓</span>Brutal 7-Question Pipeline Qualifier</li>
+          <li><span class="tick">✓</span>ICP Scoring Matrix — 70/100 gate</li>
+          <li><span class="tick">✓</span>Objection handler with counter-question scripts</li>
+          <li><span class="tick">✓</span>CEMENT 5-layer stickiness architecture</li>
+          <li><span class="tick">✓</span>Works for any SaaS product — no configuration needed</li>
+          <li><span class="tick">✓</span>No login, no account — yours to keep</li>
+        </ul>
+        <div class="offer-note">⏱ Free access for 99 days. After that, you'll receive an email with subscription options to continue using the platform.</div>
+        <a href="./system/" class="offer-btn">Download SoS Template Free <span>→</span></a>
+      </div>
+    </div>
+
+    <div class="offer-card paid">
+      <div class="offer-head">
+        <div class="offer-badge">⚡ Full App · Free Access</div>
+        <div class="offer-title">IGNITE_APEX CRM & Sales OS</div>
+        <div class="offer-price"><span class="price-main">Free</span><span class="price-suffix">for 99 days</span></div>
+        <p class="offer-tagline">Complete CRM with lead management, opportunity pipeline, task tracking, and the full IGNITE_APEX methodology built in.</p>
+      </div>
+      <div class="offer-body">
+        <ul class="offer-features">
+          <li><span class="tick">✓</span>Complete Lead Management with IGNITE stages</li>
+          <li><span class="tick">✓</span>Opportunity Pipeline with APEX methodology</li>
+          <li><span class="tick">✓</span>Activity tracking (calls, emails, meetings, demos)</li>
+          <li><span class="tick">✓</span>Task management with reminders</li>
+          <li><span class="tick">✓</span>Role-based access (Admin, Manager, Rep)</li>
+          <li><span class="tick">✓</span>User & team management</li>
+          <li><span class="tick">✓</span>Dashboard with pipeline metrics</li>
+          <li><span class="tick">✓</span>T1/T2/T3 qualification gates built-in</li>
+          <li><span class="tick">✓</span>Persistent cloud data with Supabase</li>
+        </ul>
+        <div class="offer-note">🎯 Full Salesforce-style CRM aligned to IGNITE_APEX methodology — 99 days free. <a href="./pricing.html" style="color:var(--amber);text-decoration:none;font-weight:700">View pricing →</a></div>
+        <a href="./crm/" class="offer-btn">Access CRM <span>→</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="divider"><div class="div-line"></div><div class="div-label">Feature Comparison</div><div class="div-line"></div></div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="hl">Free SoS Template</th>
+        <th class="hl">CRM App · Free (90 Days)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>IGNITE demand creation methodology</td><td><span class="tg">✓ Full</span></td><td><span class="ta">✓ Full</span></td></tr>
+      <tr><td>4U qualification framework</td><td><span class="tg">✓ Included</span></td><td><span class="ta">✓ Included</span></td></tr>
+      <tr><td>3-Layer root cause diagnostic</td><td><span class="tg">✓ Included</span></td><td><span class="ta">✓ Included</span></td></tr>
+      <tr><td>Brutal 7-Question pipeline qualifier</td><td><span class="tg">✓ Included</span></td><td><span class="ta">✓ Included</span></td></tr>
+      <tr><td>Objection handler with scripts</td><td><span class="tg">✓ Included</span></td><td><span class="ta">✓ Included</span></td></tr>
+      <tr><td>Product / ICP configurator</td><td><span class="tx">Manual — fill in each time</span></td><td><span class="ta">✓ Saved &amp; auto-loaded</span></td></tr>
+      <tr><td>AI-generated discovery questions</td><td><span class="tx">Generic templates</span></td><td><span class="ta">✓ From your 4U config</span></td></tr>
+      <tr><td>Competitive battlecard</td><td><span class="tx">Not included</span></td><td><span class="ta">✓ Auto-generated</span></td></tr>
+      <tr><td>Deal pipeline tracker</td><td><span class="tx">Not included</span></td><td><span class="ta">✓ Pipeline -007 risk flags</span></td></tr>
+      <tr><td>Weekly Sales Report Generator</td><td><span class="tx">Not included</span></td><td><span class="ta">✓ Commit / Upside / Pipeline</span></td></tr>
+      <tr><td>Forecast accuracy gauge (5–9%)</td><td><span class="tx">Not included</span></td><td><span class="ta">✓ Live margin tracker</span></td></tr>
+      <tr><td>Data persistence across sessions</td><td><span class="tx">Resets on close</span></td><td><span class="ta">✓ Auto-saves locally</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section" id="how-it-works">
+  <div class="divider"><div class="div-line"></div><div class="div-label">How It Works</div><div class="div-line"></div></div>
+  <div class="section-label">The 3-Step System</div>
+  <div class="section-title">Configure once. Run every deal through the same process.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Configure Your Product</div>
+      <p class="step-desc">Enter your product, ICP, and 4U framework. The system generates all discovery questions, objection scripts, and the competitive battlecard from this single configuration. One setup powers every deal.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Work Every Deal</div>
+      <p class="step-desc">Open the Deal Template for each active prospect. The system walks you through IGNITE → ATTRACT → PROBE → EXECUTE → CEMENT, saving pipeline data and auto-flagging at-risk deals before they corrupt your forecast.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Report Every Friday</div>
+      <p class="step-desc">The Weekly Report auto-loads your pipeline and generates a Commit / Upside / Pipeline forecast with a live 5–9% accuracy gauge. Five integrity gates prevent phantom pipeline from entering your number.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="framework">
+  <div class="divider"><div class="div-line"></div><div class="div-label">The Framework</div><div class="div-line"></div></div>
+  <div class="section-label">IGNITE_APEX Methodology</div>
+  <div class="section-title">Built for demand generation markets.</div>
+  <p class="section-desc" style="margin-bottom:1.5rem">Where prospects don't yet know they need a solution — and every deal must be earned through diagnosis, not pitch.</p>
+  <div class="flow-grid">
+    <div class="flow-block i">
+      <div class="flow-letter">I</div>
+      <div class="flow-word">Identify</div>
+      <p class="flow-desc">Qualify the rep and the market before a single call. Missionary mindset, demand creation readiness, category-level conviction.</p>
+    </div>
+    <div class="flow-block g">
+      <div class="flow-letter">G</div>
+      <div class="flow-word">Go Deep</div>
+      <p class="flow-desc">70% of the sale happens in diagnosis. Three layers deep until the prospect names the root cause in their own words.</p>
+    </div>
+    <div class="flow-block n">
+      <div class="flow-letter">N</div>
+      <div class="flow-word">Nail It</div>
+      <p class="flow-desc">Build the proposal around the root cause they named. Not features — a direct bridge between their diagnosis and your solution.</p>
+    </div>
+    <div class="flow-block e">
+      <div class="flow-letter">E</div>
+      <div class="flow-word">Execute</div>
+      <p class="flow-desc">Pass the 7-question brutal qualifier before committing to forecast. Close with conviction. Cement a 5-year relationship.</p>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem">
+    <a href="./framework/" style="font-size:.82rem;font-weight:600;color:var(--blue);text-decoration:none">Read the full APEX Framework Guide →</a>
+  </div>
+</div>
+
+<div class="section">
+  <div style="background:linear-gradient(135deg,var(--s1),#100C00);border:1px solid var(--b2);border-radius:16px;padding:3rem 2rem;text-align:center">
+    <div style="font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:.75rem">Get Started Now</div>
+    <div style="font-family:'Syne',sans-serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:var(--t1);margin-bottom:.75rem">90 days free access</div>
+    <p style="font-size:.88rem;color:var(--t2);max-width:480px;margin:0 auto 2rem;line-height:1.65">Get complete access to the IGNITE_APEX CRM, methodology templates, and all features for 99 days. After your trial, you'll receive subscription options via email.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="./crm/" class="btn-primary">Access CRM →</a>
+      <a href="./universal/" class="btn-ghost">Download SoS Template →</a>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>
+    <strong>IGNITE_APEX Sales Operating System</strong><br>
+    A demand generation sales methodology for software and hardware sales professionals.<br>
+    All data is stored locally in your browser. Nothing leaves your device.
+  </p>
+</div>
+
+</body>
+</html>

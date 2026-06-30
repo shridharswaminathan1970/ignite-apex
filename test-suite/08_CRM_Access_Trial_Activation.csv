@@ -1,0 +1,85 @@
+Test ID,Test Name,Test Type,Preconditions,Steps,Expected Result,Actual Result,Status,Priority,Notes
+CRM-001,CRM Trial Not Started - Redirect to Activation,Functional,User with trial_started_at=NULL,"1. User approved (REG-010)
+2. trial_started_at is NULL
+3. Navigate to /crm/index.html","1. Access gate detects no trial
+2. Redirected to /app/activate-crm-trial.html
+3. Activation page loads",,Pending,Critical,Trial activation gate
+CRM-002,CRM Activation Page Content,UI,On activation page,"1. Review page content","Page displays:
+- Title: Activate your CRM trial
+- Sales OS is FREE forever message
+- 99-day trial offer
+- Features list
+- Reminder schedule (90/120/130/140)
+- Two buttons:
+  - 'Activate 99-Day CRM Trial'
+  - 'Skip for now (stay on FREE Sales OS)'",,Pending,High,Activation page UI
+CRM-003,Activate CRM Trial - Button Click,Functional,On activation page,"1. Click 'Activate 99-Day CRM Trial' button","1. Function called: activate_crm_trial()
+2. Database updated:
+   - status = 'trial'
+   - trial_started_at = now()
+   - trial_ends_at = now() + 99 days
+   - crm_enabled = true
+3. Redirected to /crm/index.html
+4. CRM loads successfully",,Pending,Critical,Trial activation
+CRM-004,Skip Trial Activation,Functional,On activation page,"1. Click 'Skip for now' button","1. Stays on Sales OS
+2. Redirected to /system/index.html OR /app/launcher.html
+3. Trial NOT activated
+4. trial_started_at remains NULL",,Pending,High,Skip activation
+CRM-005,CRM Trial Active - Access Granted,Functional,Trial activated (CRM-003),"1. Trial active (within 99 days)
+2. Navigate to /crm/index.html","1. Access granted
+2. CRM dashboard loads
+3. No redirect
+4. Full CRM functionality available",,Pending,Critical,Active trial access
+CRM-006,CRM Trial Countdown Display,UI,Trial active,"1. Login to CRM
+2. Check for trial countdown","Trial days remaining displayed:
+- Visible in topbar or dashboard
+- Shows days left (e.g., '87 days remaining')
+- Updates daily",,Pending,High,Countdown visibility
+CRM-007,CRM Trial Expired - Access Denied,Functional,trial_ends_at < now(),"1. Set trial_ends_at to past date
+2. Navigate to /crm/index.html","1. Access denied
+2. Redirected to /pricing.html
+3. Message: Trial expired, subscribe to continue
+4. crm_enabled = false (updated by system)",,Pending,Critical,Trial expiry lock
+CRM-008,CRM Paid Subscription - Access Granted,Functional,Paid via Paddle (status='active'),"1. User purchases CRM via Paddle
+2. Webhook updates: status='active', crm_enabled=true
+3. Navigate to /crm/index.html","1. Access granted
+2. No trial countdown shown
+3. Shows 'Active Subscription' status
+4. Full CRM access",,Pending,Critical,Paid access
+CRM-009,CRM Trial to Paid Upgrade,Functional,On trial -> Purchases,"1. User on trial (50 days left)
+2. User purchases CRM subscription
+3. Webhook updates status='active'","1. Trial ends early
+2. status = 'active'
+3. No more countdown
+4. Continuous access
+5. No interruption in service",,Pending,High,Upgrade flow
+CRM-010,CRM Access Gate - Performance,Performance,Any user state,"1. Navigate to /crm/index.html
+2. Measure access check time","1. Access decision < 200ms
+2. Single DB query for subscription
+3. Fast redirect if locked
+4. No multiple checks",,Pending,Medium,Gate performance
+CRM-011,CRM Subscription Status in Profile,UI,User logged in to CRM,"1. Navigate to /crm/profile.html
+2. Check subscription section","Displays:
+- Current plan (Trial / Active / Expired)
+- Days remaining (if trial)
+- Next billing date (if active)
+- Upgrade/Subscribe button if needed",,Pending,Medium,Profile display
+CRM-012,Trial Activation - Database State,Database,After CRM-003,"1. Activate trial
+2. Query: SELECT * FROM org_subscriptions WHERE org_id='...'"," Record shows:
+- status = 'trial'
+- trial_started_at = recent timestamp
+- trial_ends_at = started + 99 days
+- crm_enabled = true
+- b2b0_enabled unchanged",,Pending,Critical,DB verification
+CRM-013,Multiple Trial Activation Attempts,Negative,Trial already activated,"1. Trial active
+2. Navigate to /app/activate-crm-trial.html manually
+3. Try to activate again","1. Already activated message
+2. Cannot activate twice
+3. trial_started_at not changed
+4. Redirected to CRM or error shown",,Pending,High,Duplicate prevention
+CRM-014,CRM Access for Enterprise User,Functional,User in company with CRM subscription,"1. Company has active CRM subscription
+2. User is team member
+3. Navigate to /crm/index.html","1. Access granted
+2. Inherits company subscription
+3. No individual trial needed
+4. Full CRM access based on company plan",,Pending,High,Enterprise access

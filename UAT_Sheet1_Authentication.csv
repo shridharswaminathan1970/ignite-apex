@@ -1,0 +1,51 @@
+Test ID,Module,Test Case,Priority,Steps,Expected Result,Actual Result,Status,Severity,Notes
+AUTH-001,Registration,User can register with valid invite code,P0,"1. Go to https://shaamelz.com/app/auth.html
+2. Click Register tab
+3. Enter: Name, Email, Password (6+ chars)
+4. Enter valid invite code
+5. Click Create Account","Account created successfully
+Redirected to dashboard
+Email confirmation sent (if enabled)",,,PASS/FAIL,P0,
+AUTH-002,Registration,Registration fails without invite code,P1,"1. Go to registration page
+2. Leave invite code blank
+3. Try to submit",Error message: Invite code required,,,PASS/FAIL,P1,
+AUTH-003,Registration,Registration fails with invalid email,P1,"1. Enter invalid email format
+2. Try to register",Validation error shown,,,PASS/FAIL,P1,
+AUTH-004,Registration,Password must be 6+ characters,P1,"1. Enter password < 6 chars
+2. Try to register",Validation error: Password too short,,,PASS/FAIL,P1,
+AUTH-005,Login,User can login with correct credentials,P0,"1. Go to login page
+2. Enter registered email & password
+3. Click Sign In","Login successful
+Redirected based on role:
+- Admin → Company Dashboard
+- Rep → CRM or Sales OS",,,PASS/FAIL,P0,
+AUTH-006,Login,Login fails with wrong password,P1,"1. Enter correct email
+2. Enter wrong password
+3. Try to login",Error: Invalid credentials,,,PASS/FAIL,P1,
+AUTH-007,Login,Login fails with unregistered email,P1,"1. Enter email not in system
+2. Try to login",Error: Invalid credentials,,,PASS/FAIL,P1,
+AUTH-008,Logout,User can logout successfully,P1,"1. Login
+2. Click user menu
+3. Click Sign Out","Logged out
+Redirected to login page
+Cannot access protected pages",,,PASS/FAIL,P1,
+AUTH-009,Session,Session persists after browser refresh,P2,"1. Login
+2. Refresh page",Still logged in,,,PASS/FAIL,P2,
+AUTH-010,Session,Logged out users cannot access CRM,P0,"1. Without logging in
+2. Try to access /crm/index.html directly",Redirected to login page,,,PASS/FAIL,P0,
+AUTH-011,Password Reset,User can reset password,P2,"1. Click Forgot Password
+2. Enter email
+3. Follow reset link in email
+4. Enter new password","Password updated
+Can login with new password",,,PASS/FAIL,P2,Password reset via Supabase email
+AUTH-012,Roles,Super admin has full access,P1,"1. Login as super admin
+2. Try to access all modules","Can access:
+- CRM
+- Sales OS
+- Admin dashboard
+- User management
+- Invoice generation",,,PASS/FAIL,P1,
+AUTH-013,Roles,Regular user cannot access admin functions,P1,"1. Login as regular user (role=sdr)
+2. Try to access /app/company-dashboard.html",Access denied or redirected,,,PASS/FAIL,P1,
+AUTH-014,Roles,CRM access controlled by crm_enabled flag,P0,"1. User with crm_enabled=false
+2. Try to access /crm/index.html",Redirected to Sales OS,,,PASS/FAIL,P0,

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX Sales Framework</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#1E2761;--navy-dark:#131A4A;--orange:#F5822A;--gold:#F5C842;
+    --blue:#0D6EFD;--green:#2ECC71;--purple:#9B59B6;--ice:#C8D8F0;
+    --light:#F4F6FA;--dark:#1A1F3A;--gray:#8892A4;--white:#fff;
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);overflow-x:hidden}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--navy-dark);display:flex;align-items:center;padding:0 2rem;height:60px;box-shadow:0 2px 20px rgba(0,0,0,.3)}
+  .nav-logo{font-size:1.4rem;font-weight:900;color:var(--orange);letter-spacing:2px;margin-right:2rem}
+  .nav-links{display:flex;gap:.5rem;flex:1}
+  .nav-links a{color:var(--ice);text-decoration:none;padding:.4rem .8rem;border-radius:6px;font-size:.8rem;font-weight:600;letter-spacing:.5px;transition:all .2s;text-transform:uppercase}
+  .nav-links a:hover,.nav-links a.active{background:var(--orange);color:var(--white)}
+  .nav-badge{margin-left:auto;background:var(--gold);color:var(--navy-dark);padding:.3rem .8rem;border-radius:20px;font-size:.75rem;font-weight:700}
+
+  /* HERO */
+  .hero{min-height:100vh;background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy) 60%,#2a3c8a 100%);display:flex;align-items:center;justify-content:center;padding-top:60px;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;width:600px;height:600px;background:var(--orange);opacity:.04;border-radius:50%;top:-100px;right:-100px}
+  .hero::after{content:'';position:absolute;width:400px;height:400px;background:var(--blue);opacity:.06;border-radius:50%;bottom:-80px;left:-80px}
+  .hero-content{text-align:center;z-index:1;padding:2rem}
+  .hero-label{color:var(--orange);font-size:.85rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:1rem}
+  .hero-title{font-size:clamp(4rem,10vw,8rem);font-weight:900;color:var(--orange);line-height:1;letter-spacing:-2px}
+  .hero-sub{font-size:clamp(1rem,3vw,1.8rem);font-weight:700;color:var(--ice);letter-spacing:4px;margin-bottom:1.5rem;text-transform:uppercase}
+  .hero-desc{font-size:1.05rem;color:rgba(200,216,240,.8);max-width:600px;margin:0 auto 2rem;line-height:1.7}
+  .hero-promise{background:rgba(245,130,42,.15);border:1px solid var(--orange);border-radius:12px;padding:.8rem 1.5rem;display:inline-block;color:var(--gold);font-weight:700;font-size:1rem;margin-bottom:2.5rem}
+  .pillars-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  .pillar-chip{padding:.6rem 1.2rem;border-radius:8px;font-weight:700;font-size:.85rem;color:var(--white);cursor:pointer;transition:transform .2s}
+  .pillar-chip:hover{transform:translateY(-2px)}
+
+  /* SECTION */
+  section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+  .section-label{font-size:.75rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:.5rem}
+  .section-title{font-size:2.2rem;font-weight:900;margin-bottom:.5rem;color:var(--navy)}
+  .section-sub{color:var(--gray);font-size:1rem;max-width:700px;line-height:1.7;margin-bottom:2.5rem}
+  .divider{height:4px;width:60px;border-radius:2px;margin-bottom:2rem}
+
+  /* EQUATION */
+  #equation{background:var(--white)}
+  #equation>*{max-width:1100px;margin-left:auto;margin-right:auto}
+  .eq-section{padding:5rem 2rem}
+  .eq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2rem}
+  @media(max-width:768px){.eq-grid{grid-template-columns:repeat(2,1fr)}}
+  .eq-card{border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.08);transition:transform .2s}
+  .eq-card:hover{transform:translateY(-4px)}
+  .eq-card-top{padding:1.2rem;text-align:center}
+  .eq-card-letter{font-size:3.5rem;font-weight:900;color:var(--white);line-height:1}
+  .eq-card-body{padding:1.2rem;background:var(--white)}
+  .eq-card-name{font-weight:800;font-size:1rem;margin-bottom:.25rem}
+  .eq-card-module{font-size:.8rem;color:var(--gray);margin-bottom:.75rem}
+  .eq-card-gain{font-size:2.5rem;font-weight:900;line-height:1}
+  .eq-card-gain-label{font-size:.75rem;color:var(--gray);margin-top:.2rem}
+  .eq-total{background:var(--navy);color:var(--white);border-radius:16px;padding:1.5rem 2rem;text-align:center}
+  .eq-total span{font-size:2rem;font-weight:900;color:var(--gold)}
+
+  /* MODULE SECTIONS */
+  .module-section{padding:5rem 2rem}
+  .module-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem}
+  .module-letter{font-size:5rem;font-weight:900;line-height:1;flex-shrink:0}
+  .module-title-area h2{font-size:1.8rem;font-weight:900}
+  .module-title-area p{color:var(--gray);font-size:.95rem;margin-top:.3rem}
+  .module-quote{border-left:4px solid;padding:1rem 1.5rem;border-radius:0 12px 12px 0;background:var(--light);font-style:italic;font-size:1rem;color:var(--dark);margin-bottom:2rem;line-height:1.6}
+  .tools-grid{display:grid;gap:1.5rem}
+  .tool-card{background:var(--white);border-radius:16px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.06);border-left:5px solid}
+  .tool-card h3{font-size:1.1rem;font-weight:800;margin-bottom:.75rem}
+  .tool-card p{color:var(--gray);font-size:.9rem;line-height:1.6;margin-bottom:.75rem}
+  .tool-card ul{list-style:none;padding:0}
+  .tool-card ul li{padding:.3rem 0;font-size:.88rem;color:var(--dark);padding-left:1.2rem;position:relative}
+  .tool-card ul li::before{content:'→';position:absolute;left:0;font-weight:700}
+  .table-wrap{overflow-x:auto;margin:1rem 0}
+  table{width:100%;border-collapse:collapse;font-size:.875rem}
+  th{background:var(--navy);color:var(--white);padding:.75rem 1rem;text-align:left;font-weight:700}
+  td{padding:.7rem 1rem;border-bottom:1px solid #e8ecf5}
+  tr:nth-child(even) td{background:#f8faff}
+  .badge{display:inline-block;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:700}
+
+  /* CHECKLIST */
+  .checklist-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+  @media(max-width:600px){.checklist-grid{grid-template-columns:1fr}}
+  .checklist-card{border-radius:16px;padding:1.5rem;border:2px solid}
+  .checklist-card h3{font-size:1rem;font-weight:800;margin-bottom:1rem}
+  .check-item{display:flex;align-items:flex-start;gap:.75rem;padding:.4rem 0;cursor:pointer}
+  .check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--orange);flex-shrink:0;margin-top:2px}
+  .check-item label{font-size:.875rem;cursor:pointer;color:var(--dark)}
+  .check-item input:checked+label{color:var(--gray);text-decoration:line-through}
+
+  /* ROADMAP */
+  .roadmap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+  @media(max-width:768px){.roadmap-grid{grid-template-columns:1fr}}
+  .phase-card{border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+  .phase-header{padding:1.2rem 1.5rem;color:var(--white)}
+  .phase-header h3{font-size:1.1rem;font-weight:800}
+  .phase-header p{font-size:.8rem;opacity:.85;margin-top:.3rem}
+  .phase-body{background:var(--white);padding:1.2rem 1.5rem}
+  .phase-body li{font-size:.875rem;color:var(--dark);padding:.35rem 0;border-bottom:1px solid #f0f0f0;list-style:none;padding-left:1.2rem;position:relative}
+  .phase-body li::before{content:'✓';position:absolute;left:0;font-weight:700;color:var(--green)}
+
+  /* TRACKER */
+  .tracker{background:var(--white);border-radius:16px;padding:2rem;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-top:2rem}
+  .tracker h3{font-size:1.2rem;font-weight:800;margin-bottom:1.5rem;color:var(--navy)}
+  .tracker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+  .tracker-item label{display:block;font-size:.75rem;color:var(--gray);font-weight:600;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px}
+  .tracker-item input{width:100%;padding:.6rem .75rem;border:2px solid #e0e8f8;border-radius:8px;font-size:.9rem;color:var(--dark);transition:border .2s}
+  .tracker-item input:focus{outline:none;border-color:var(--orange)}
+  .tracker-score{background:linear-gradient(135deg,var(--navy),var(--navy-dark));border-radius:12px;padding:1.2rem;text-align:center;color:var(--white);margin-top:1rem}
+  .tracker-score .score-number{font-size:3rem;font-weight:900;color:var(--gold)}
+  .tracker-score p{font-size:.85rem;color:var(--ice);margin-top:.3rem}
+  .btn{display:inline-block;padding:.75rem 1.5rem;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:all .2s}
+  .btn-primary{background:var(--orange);color:var(--white)}
+  .btn-primary:hover{background:#e07020;transform:translateY(-1px)}
+
+  /* FOOTER */
+  footer{background:var(--navy-dark);color:var(--ice);text-align:center;padding:2rem;font-size:.85rem}
+  footer span{color:var(--orange);font-weight:700}
+</style>
+<script src="../nav.js"></script>
+</head>
+<body>
+
+<div id="ia-fw-status" style="background:#0D0F15;border-bottom:1px solid #1E2535;padding:.6rem 1.5rem;font-size:.75rem;color:#8892AA;font-family:Outfit,sans-serif;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+  <span id="ia-fw-status-text">Loading system status…</span>
+  <div style="display:flex;gap:.75rem">
+    <a href="../universal/" style="color:#F59E0B;text-decoration:none;font-weight:700;font-size:.68rem">⚡ SaaS System</a>
+    <a href="../system/"    style="color:#10B981;text-decoration:none;font-weight:700;font-size:.68rem">🎯 Deal Template</a>
+    <a href="../report/"   style="color:#3B82F6;text-decoration:none;font-weight:700;font-size:.68rem">📊 Weekly Report</a>
+  </div>
+</div>
+<script>
+window.addEventListener('load',function(){
+  setTimeout(function(){
+    const h = IA.getHealth();
+    const el = document.getElementById('ia-fw-status-text');
+    if(!el) return;
+    if(h.hasConfig && h.hasDeals){
+      el.innerHTML = '✓ System configured for <strong style="color:#F59E0B">' + (h.cfg&&h.cfg.product||'your product') + '</strong> · ' + (h.cfg&&h.cfg.icpName||'') + ' ICP · ' + (h.deals?((h.deals.pipeCM||[]).length+(h.deals.pipeQ1||[]).length)+' active deals':'') + ' in pipeline';
+      el.style.color = '#10B981';
+    } else {
+      el.innerHTML = '⚠ System not fully configured — complete <a href="../universal/" style="color:#F59E0B;font-weight:700">SaaS System setup</a> first to unlock full functionality across all tools.';
+      el.style.color = '#F59E0B';
+    }
+  }, 300);
+});
+</script>
+
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">APEX</div>
+  <div class="nav-links">
+    <a href="#equation">Overview</a>
+    <a href="#attract">Attract</a>
+    <a href="#probe">Probe</a>
+    <a href="#execute">Execute</a>
+    <a href="#excel">Excel</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#tracker">Tracker</a>
+  </div>
+  <div class="nav-badge">+40% in 90 Days</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-label">The Performance Multiplier System</div>
+    <div class="hero-title">APEX</div>
+    <div class="hero-sub">Sales Framework</div>
+    <div class="hero-desc">Built for software and hardware sales professionals with 2+ years experience who want to break into the top 10% of performers.</div>
+    <div class="hero-promise">🎯 Engineered to deliver a +40% performance uplift in 90 days</div>
+    <div class="pillars-row">
+      <div class="pillar-chip" style="background:#F5822A" onclick="document.getElementById('attract').scrollIntoView({behavior:'smooth'})">A — Attract</div>
+      <div class="pillar-chip" style="background:#0D6EFD" onclick="document.getElementById('probe').scrollIntoView({behavior:'smooth'})">P — Probe</div>
+      <div class="pillar-chip" style="background:#2ECC71" onclick="document.getElementById('execute').scrollIntoView({behavior:'smooth'})">E — Execute</div>
+      <div class="pillar-chip" style="background:#9B59B6" onclick="document.getElementById('excel').scrollIntoView({behavior:'smooth'})">X — Excel</div>
+    </div>
+  </div>
+</div>
+
+<!-- EQUATION -->
+<div id="equation" style="background:var(--white)">
+  <div class="eq-section" style="max-width:1100px;margin:0 auto">
+    <div class="section-label" style="color:var(--orange)">The System</div>
+    <div class="section-title">The 40% Performance Equation</div>
+    <div class="section-sub">Each pillar of APEX contributes a measurable 10% uplift. Stack all four in 90 days and the compound effect is transformational.</div>
+    <div class="divider" style="background:var(--orange)"></div>
+    <div class="eq-grid">
+      <div class="eq-card">
+        <div class="eq-card-top" style="background:#F5822A">
+          <div class="eq-card-letter">A</div>
+        </div>
+        <div class="eq-card-body">
+          <div class="eq-card-name" style="color:#F5822A">ATTRACT</div>
+          <div class="eq-card-module">Prospect with Precision</div>
+          <div class="eq-card-gain" style="color:#F5822A">+10%</div>
+          <div class="eq-card-gain-label">Pipeline Uplift</div>
+        </div>
+      </div>
+      <div class="eq-card">
+        <div class="eq-card-top" style="background:#0D6EFD">
+          <div class="eq-card-letter">P</div>
+        </div>
+        <div class="eq-card-body">
+          <div class="eq-card-name" style="color:#0D6EFD">PROBE</div>
+          <div class="eq-card-module">Diagnose Deeply</div>
+          <div class="eq-card-gain" style="color:#0D6EFD">+10%</div>
+          <div class="eq-card-gain-label">Discovery Uplift</div>
+        </div>
+      </div>
+      <div class="eq-card">
+        <div class="eq-card-top" style="background:#2ECC71">
+          <div class="eq-card-letter">E</div>
+        </div>
+        <div class="eq-card-body">
+          <div class="eq-card-name" style="color:#2ECC71">EXECUTE</div>
+          <div class="eq-card-module">Close with Conviction</div>
+          <div class="eq-card-gain" style="color:#2ECC71">+10%</div>
+          <div class="eq-card-gain-label">Closing Uplift</div>
+        </div>
+      </div>
+      <div class="eq-card">
+        <div class="eq-card-top" style="background:#9B59B6">
+          <div class="eq-card-letter">X</div>
+        </div>
+        <div class="eq-card-body">
+          <div class="eq-card-name" style="color:#9B59B6">EXCEL</div>
+          <div class="eq-card-module">Master Your Mindset</div>
+          <div class="eq-card-gain" style="color:#9B59B6">+10%</div>
+          <div class="eq-card-gain-label">Mindset Uplift</div>
+        </div>
+      </div>
+    </div>
+    <div class="eq-total">
+      Combined 90-Day Impact: <span>+40% Sales Performance Uplift</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODULE A: ATTRACT -->
+<div id="attract" class="module-section" style="background:var(--light)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="module-header">
+      <div class="module-letter" style="color:#F5822A">A</div>
+      <div class="module-title-area">
+        <div style="background:#FDE8D8;color:#F5822A;display:inline-block;padding:.3rem .8rem;border-radius:6px;font-size:.75rem;font-weight:700;margin-bottom:.5rem">+10% PIPELINE UPLIFT</div>
+        <h2>ATTRACT — Prospect with Precision</h2>
+        <p>Most reps prospect by volume. Top reps prospect by signal.</p>
+      </div>
+    </div>
+    <div class="module-quote" style="border-color:#F5822A">"A rep with a healthy pipeline can afford to lose deals. A rep with a thin pipeline panics into bad decisions. ATTRACT fixes your pipeline at the source."</div>
+    <div class="tools-grid">
+      <div class="tool-card" style="border-color:#F5822A">
+        <h3 style="color:#F5822A">🎯 Tool 1: ICP Scoring Matrix</h3>
+        <p>Score every prospect before you invest time in them. Only pursue those scoring 70 or above.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Criterion</th><th>Scoring Guide</th><th>Max Points</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Budget Authority</strong></td><td>Yes=20, Influence=10, No=0</td><td><span class="badge" style="background:#FDE8D8;color:#F5822A">20</span></td></tr>
+              <tr><td><strong>Pain Intensity</strong></td><td>High=20, Medium=10, Low=0</td><td><span class="badge" style="background:#FDE8D8;color:#F5822A">20</span></td></tr>
+              <tr><td><strong>Strategic Fit</strong></td><td>Perfect=20, OK=10, Poor=0</td><td><span class="badge" style="background:#FDE8D8;color:#F5822A">20</span></td></tr>
+              <tr><td><strong>Timeline (0–90 days)</strong></td><td>0–90 days=20, 90–180=10, 180+=0</td><td><span class="badge" style="background:#FDE8D8;color:#F5822A">20</span></td></tr>
+              <tr><td><strong>Competitor Exposure</strong></td><td>Yes=20, Open=10, Locked=0</td><td><span class="badge" style="background:#FDE8D8;color:#F5822A">20</span></td></tr>
+              <tr style="background:#FDE8D8"><td colspan="2"><strong style="color:#F5822A">Minimum score to pursue: 70/100</strong></td><td><strong style="color:#F5822A">100 max</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tool-card" style="border-color:#F5822A">
+        <h3 style="color:#F5822A">📧 Tool 2: 9-Day 3-Channel Outreach Sequence</h3>
+        <p>Each touch adds new value. Never repeat the same message twice.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Day</th><th>Channel</th><th>Message Theme</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Day 1</strong></td><td>Email</td><td>Share a relevant insight or stat about their industry pain</td></tr>
+              <tr><td><strong>Day 3</strong></td><td>LinkedIn</td><td>Comment on their post + connection request with 1-line value hook</td></tr>
+              <tr><td><strong>Day 5</strong></td><td>Email</td><td>Case study from a similar company — lead with outcome, not product</td></tr>
+              <tr><td><strong>Day 7</strong></td><td>Phone</td><td>Reference the case study: "I wanted to walk you through one number from it"</td></tr>
+              <tr><td><strong>Day 9</strong></td><td>Email</td><td>Graceful exit — "happy to reconnect in Q3" (often triggers a reply)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tool-card" style="border-color:#F5822A">
+        <h3 style="color:#F5822A">⚡ Tool 3: Warm Signal Triggers</h3>
+        <p>Reach out within 48 hours of these events — timing is everything.</p>
+        <ul>
+          <li>Leadership change: new VP Sales, CTO, or CEO announced</li>
+          <li>Funding event: Series A/B/C or new fiscal year budget opened</li>
+          <li>Competitor contract ending: watch for RFP activity on LinkedIn</li>
+          <li>Tech stack announcement: new platform = potential integration need</li>
+          <li>Hiring surge: company scaling 20+ sales reps = enablement need</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULE P: PROBE -->
+<div id="probe" class="module-section" style="background:var(--white)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="module-header">
+      <div class="module-letter" style="color:#0D6EFD">P</div>
+      <div class="module-title-area">
+        <div style="background:#D8E8FA;color:#0D6EFD;display:inline-block;padding:.3rem .8rem;border-radius:6px;font-size:.75rem;font-weight:700;margin-bottom:.5rem">+10% DISCOVERY UPLIFT</div>
+        <h2>PROBE — Diagnose Deeply</h2>
+        <p>The prospect who feels understood is the prospect who buys.</p>
+      </div>
+    </div>
+    <div class="module-quote" style="border-color:#0D6EFD">"Great salespeople don't pitch. They diagnose. Spend 70% of discovery listening. Discovery is the creation of conviction."</div>
+    <div class="tools-grid">
+      <div class="tool-card" style="border-color:#0D6EFD">
+        <h3 style="color:#0D6EFD">🔍 Tool 1: MEDDPICC-Lite Framework</h3>
+        <p>7 critical questions every deal needs answered before you progress to proposal.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Letter</th><th>Criterion</th><th>The Question to Ask</th><th>What You're Finding</th></tr></thead>
+            <tbody>
+              <tr><td><strong>M</strong></td><td>Metrics</td><td>What KPIs will this solution move?</td><td>Quantifiable ROI</td></tr>
+              <tr><td><strong>E</strong></td><td>Economic Buyer</td><td>Who controls the final budget?</td><td>Right person at the table?</td></tr>
+              <tr><td><strong>D</strong></td><td>Decision Criteria</td><td>How will you evaluate solutions?</td><td>Their scorecard</td></tr>
+              <tr><td><strong>D</strong></td><td>Decision Process</td><td>What are the steps to a final decision?</td><td>Can you map the journey?</td></tr>
+              <tr><td><strong>I</strong></td><td>Identify Pain</td><td>What does it cost you today if unresolved?</td><td>Big enough to drive action?</td></tr>
+              <tr><td><strong>C</strong></td><td>Champion</td><td>Who internally is driving this?</td><td>Do you have an internal coach?</td></tr>
+              <tr><td><strong>C</strong></td><td>Competition</td><td>Who else are you evaluating?</td><td>Where do you stand?</td></tr>
+              <tr style="background:#D8E8FA"><td colspan="3"><strong style="color:#0D6EFD">Advance to proposal only when you score 5/6 or above</strong></td><td><span class="badge" style="background:#0D6EFD;color:#fff">Scorecard</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tool-card" style="border-color:#0D6EFD">
+        <h3 style="color:#0D6EFD">📈 Tool 2: Pain → Impact → ROI Discovery Ladder</h3>
+        <p>Most reps stop at Pain. Top reps climb all the way to ROI — that's where conviction lives.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem">
+          <div style="background:#FE4A49;border-radius:12px;padding:1rem;color:white;text-align:center">
+            <div style="font-weight:900;font-size:1.1rem;margin-bottom:.5rem">PAIN</div>
+            <div style="font-size:.8rem;opacity:.9;">"What's broken today?"</div>
+            <div style="font-size:.75rem;margin-top:.5rem;opacity:.8">"How long has this been an issue?"</div>
+          </div>
+          <div style="background:#F5822A;border-radius:12px;padding:1rem;color:white;text-align:center">
+            <div style="font-weight:900;font-size:1.1rem;margin-bottom:.5rem">IMPACT</div>
+            <div style="font-size:.8rem;opacity:.9;">"What does that cost you?"</div>
+            <div style="font-size:.75rem;margin-top:.5rem;opacity:.8">"What's the revenue impact?"</div>
+          </div>
+          <div style="background:#2ECC71;border-radius:12px;padding:1rem;color:white;text-align:center">
+            <div style="font-weight:900;font-size:1.1rem;margin-bottom:.5rem">ROI</div>
+            <div style="font-size:.8rem;opacity:.9;">"If we fixed it, what's that worth?"</div>
+            <div style="font-size:.75rem;margin-top:.5rem;opacity:.8">"What would you do with that back?"</div>
+          </div>
+        </div>
+        <div style="background:#D8E8FA;border-radius:10px;padding:1rem;margin-top:1rem;font-size:.875rem;color:var(--dark)">
+          <strong style="color:#0D6EFD">💡 Why this works:</strong> By Step 3, the prospect has calculated their own ROI. You don't have to sell the value — they've already sold it to themselves.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULE E: EXECUTE -->
+<div id="execute" class="module-section" style="background:var(--navy-dark)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="module-header">
+      <div class="module-letter" style="color:#2ECC71">E</div>
+      <div class="module-title-area">
+        <div style="background:rgba(46,204,113,.2);color:#2ECC71;display:inline-block;padding:.3rem .8rem;border-radius:6px;font-size:.75rem;font-weight:700;margin-bottom:.5rem">+10% CLOSING UPLIFT</div>
+        <h2 style="color:var(--white)">EXECUTE — Close with Conviction</h2>
+        <p style="color:var(--ice)">Closing is not manipulation. It is removing friction from a decision the prospect has already made internally.</p>
+      </div>
+    </div>
+    <div class="module-quote" style="border-color:#2ECC71;background:rgba(255,255,255,.05);color:var(--ice)">"If your discovery is excellent, your close should feel almost unnecessary. Remove friction — not resistance."</div>
+    <div class="tools-grid">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem">
+        <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:1.5rem;border-top:4px solid #2ECC71">
+          <div style="background:#2ECC71;color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:1rem">1</div>
+          <h3 style="color:#2ECC71;margin-bottom:.75rem">The 3-Option Close</h3>
+          <p style="color:var(--ice);font-size:.875rem;line-height:1.6">Present Good / Better / Best tiers. 70% choose the middle. Build your preferred option in the middle tier.</p>
+          <div style="background:rgba(46,204,113,.15);border-radius:8px;padding:.75rem;margin-top:1rem;font-size:.8rem;color:var(--ice)">
+            <strong style="color:#2ECC71">Script:</strong> "Most clients in your situation go with [Tier 2]… which one makes most sense to start with?"
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:1.5rem;border-top:4px solid #F5822A">
+          <div style="background:#F5822A;color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:1rem">2</div>
+          <h3 style="color:#F5822A;margin-bottom:.75rem">The Assumption Close</h3>
+          <p style="color:var(--ice);font-size:.875rem;line-height:1.6">Move language from "if" to "when." This signals confidence and often unstalls a deal.</p>
+          <div style="background:rgba(245,130,42,.15);border-radius:8px;padding:.75rem;margin-top:1rem;font-size:.8rem;color:var(--ice)">
+            <strong style="color:#F5822A">Script:</strong> "When we go live in Q1, who will be the project lead on your side?"
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:1.5rem;border-top:4px solid #9B59B6">
+          <div style="background:#9B59B6;color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:1rem">3</div>
+          <h3 style="color:#9B59B6;margin-bottom:.75rem">The Urgency Close</h3>
+          <p style="color:var(--ice);font-size:.875rem;line-height:1.6">Tie urgency to THEIR events: budget cycles, competitive threats, seasonality. Never manufacture urgency.</p>
+          <div style="background:rgba(155,89,182,.15);border-radius:8px;padding:.75rem;margin-top:1rem;font-size:.8rem;color:var(--ice)">
+            <strong style="color:#9B59B6">Rule:</strong> Discovered urgency is 5× more powerful than created urgency.
+          </div>
+        </div>
+      </div>
+      <div class="tool-card" style="border-color:#2ECC71;margin-top:1.5rem">
+        <h3 style="color:#2ECC71">💬 Objection Handling Playbook</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Objection</th><th>What They Really Mean</th><th>Your Response</th></tr></thead>
+            <tbody>
+              <tr><td>"It's too expensive."</td><td>I haven't seen the ROI clearly.</td><td>"What would make this a no-brainer? Let's build the ROI case together."</td></tr>
+              <tr><td>"We need to think about it."</td><td>I'm not confident enough yet.</td><td>"Fair. What's the one thing you need to be more certain about?"</td></tr>
+              <tr><td>"Not the right time."</td><td>Other priorities are competing.</td><td>"What would need to be true in Q3 for this to be a priority?"</td></tr>
+              <tr><td>"Happy with what we have."</td><td>Change feels risky.</td><td>"What would have to break before you'd consider a change?"</td></tr>
+              <tr><td>"Need to check with [person]."</td><td>I'm not the decision maker.</td><td>"When you brief [them], what's the one thing that would make them lean in?"</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULE X: EXCEL -->
+<div id="excel" class="module-section" style="background:var(--light)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="module-header">
+      <div class="module-letter" style="color:#9B59B6">X</div>
+      <div class="module-title-area">
+        <div style="background:#F0E6F8;color:#9B59B6;display:inline-block;padding:.3rem .8rem;border-radius:6px;font-size:.75rem;font-weight:700;margin-bottom:.5rem">+10% MINDSET UPLIFT</div>
+        <h2>EXCEL — Master Your Mindset</h2>
+        <p>Your performance ceiling is set by your mindset, not your skills.</p>
+      </div>
+    </div>
+    <div class="module-quote" style="border-color:#9B59B6">"Skills get you to average. Mindset gets you to exceptional. EXCEL is the multiplier that makes A, P, and E compound over time."</div>
+    <div class="tools-grid">
+      <div class="tool-card" style="border-color:#9B59B6">
+        <h3 style="color:#9B59B6">⏰ Tool 1: Peak Performance Daily Ritual</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Ritual</th><th>Why It Works</th></tr></thead>
+            <tbody>
+              <tr><td><strong>7:00 AM</strong></td><td>Pipeline Review (10 min)</td><td>Confirm the single next action for each top-5 deal</td></tr>
+              <tr><td><strong>7:15 AM</strong></td><td>Win Visualization (5 min)</td><td>Mentally rehearse your best call. Primes your brain for performance.</td></tr>
+              <tr><td><strong>9:00 AM</strong></td><td>90-min Prospecting Sprint</td><td>Uninterrupted focus: phones, emails, LinkedIn. No Slack, no email.</td></tr>
+              <tr><td><strong>12:00 PM</strong></td><td>Learning Input (15 min)</td><td>One article, podcast segment, or lost deal review. Feed the machine.</td></tr>
+              <tr><td><strong>5:30 PM</strong></td><td>Day Debrief (5 min)</td><td>1 win, 1 miss, 1 change for tomorrow. Write it down every single day.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tool-card" style="border-color:#9B59B6">
+        <h3 style="color:#9B59B6">🛡️ Tool 2: Rejection Resilience Protocol</h3>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:.5rem">
+          <div style="background:#F0E6F8;border-radius:10px;padding:1rem">
+            <strong style="color:#9B59B6;font-size:.9rem">Step 1 — 24-Hour Rule</strong>
+            <p style="font-size:.825rem;margin-top:.5rem;color:var(--dark)">After a big loss, do nothing for 24 hours. Let emotion pass before you act.</p>
+          </div>
+          <div style="background:#F0E6F8;border-radius:10px;padding:1rem">
+            <strong style="color:#9B59B6;font-size:.9rem">Step 2 — Data Debrief</strong>
+            <p style="font-size:.825rem;margin-top:.5rem;color:var(--dark)">Which MEDDPICC criteria did I miss? Where did I lose momentum? Data, not emotion.</p>
+          </div>
+          <div style="background:#F0E6F8;border-radius:10px;padding:1rem">
+            <strong style="color:#9B59B6;font-size:.9rem">Step 3 — Reframe Habit</strong>
+            <p style="font-size:.825rem;margin-top:.5rem;color:var(--dark)">Replace "I got rejected" with "I gathered data." Language shapes state.</p>
+          </div>
+          <div style="background:#F0E6F8;border-radius:10px;padding:1rem">
+            <strong style="color:#9B59B6;font-size:.9rem">Step 4 — Momentum Reset</strong>
+            <p style="font-size:.825rem;margin-top:.5rem;color:var(--dark)">After every loss, book one new prospect meeting. Not tomorrow — today.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY CHECKLIST -->
+<div style="background:var(--white);padding:5rem 2rem">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label" style="color:var(--orange)">Daily Execution</div>
+    <div class="section-title">APEX Quick Reference Checklist</div>
+    <div class="section-sub">Check off your daily actions across all four pillars. Consistency compounds.</div>
+    <div class="divider" style="background:var(--orange)"></div>
+    <div class="checklist-grid">
+      <div class="checklist-card" style="border-color:#F5822A;background:#FDE8D8">
+        <h3 style="color:#F5822A">A — ATTRACT Daily</h3>
+        <div class="check-item"><input type="checkbox" id="a1"><label for="a1">Score new leads with ICP Matrix before pursuing</label></div>
+        <div class="check-item"><input type="checkbox" id="a2"><label for="a2">Execute outreach sequence — never skip a touch</label></div>
+        <div class="check-item"><input type="checkbox" id="a3"><label for="a3">Monitor warm signals — outreach within 48 hours</label></div>
+        <div class="check-item"><input type="checkbox" id="a4"><label for="a4">Review pipeline velocity every Friday</label></div>
+      </div>
+      <div class="checklist-card" style="border-color:#0D6EFD;background:#D8E8FA">
+        <h3 style="color:#0D6EFD">P — PROBE Daily</h3>
+        <div class="check-item"><input type="checkbox" id="p1"><label for="p1">Complete MEDDPICC-Lite on every active deal</label></div>
+        <div class="check-item"><input type="checkbox" id="p2"><label for="p2">Ask Pain → Impact → ROI in every discovery call</label></div>
+        <div class="check-item"><input type="checkbox" id="p3"><label for="p3">Score discovery 5/6 minimum before proposing</label></div>
+        <div class="check-item"><input type="checkbox" id="p4"><label for="p4">Identify and nurture your champion in every account</label></div>
+      </div>
+      <div class="checklist-card" style="border-color:#2ECC71;background:#D8F5E6">
+        <h3 style="color:#2ECC71">E — EXECUTE Daily</h3>
+        <div class="check-item"><input type="checkbox" id="e1"><label for="e1">Use 3-Option Close on all new proposals</label></div>
+        <div class="check-item"><input type="checkbox" id="e2"><label for="e2">Shift language from "if" to "when" in every call</label></div>
+        <div class="check-item"><input type="checkbox" id="e3"><label for="e3">Find THEIR urgency — never manufacture it</label></div>
+        <div class="check-item"><input type="checkbox" id="e4"><label for="e4">Handle every objection with a counter-question</label></div>
+      </div>
+      <div class="checklist-card" style="border-color:#9B59B6;background:#F0E6F8">
+        <h3 style="color:#9B59B6">X — EXCEL Daily</h3>
+        <div class="check-item"><input type="checkbox" id="x1"><label for="x1">Run the Daily Ritual — every day, no exceptions</label></div>
+        <div class="check-item"><input type="checkbox" id="x2"><label for="x2">Complete your 5-minute Day Debrief each evening</label></div>
+        <div class="check-item"><input type="checkbox" id="x3"><label for="x3">Apply Resilience Protocol after any loss</label></div>
+        <div class="check-item"><input type="checkbox" id="x4"><label for="x4">Update your Win Wall weekly</label></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div id="roadmap" style="background:var(--navy-dark);padding:5rem 2rem">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label" style="color:var(--orange)">Implementation</div>
+    <div class="section-title" style="color:var(--white)">90-Day APEX Roadmap</div>
+    <div class="section-sub" style="color:var(--ice)">The sequence matters. Don't skip phases. Each phase builds the foundation for the next.</div>
+    <div class="divider" style="background:var(--orange)"></div>
+    <div class="roadmap-grid">
+      <div class="phase-card">
+        <div class="phase-header" style="background:#F5822A">
+          <h3>Phase 1: Foundation</h3>
+          <p>Days 1–30</p>
+        </div>
+        <div class="phase-body">
+          <ul>
+            <li>Build ICP Scoring Matrix — score your current pipeline</li>
+            <li>Set up 9-day 3-channel outreach sequences</li>
+            <li>Install Daily Peak Performance Ritual</li>
+            <li>Audit every active deal with MEDDPICC-Lite</li>
+            <li>Set up Warm Signal monitoring (LinkedIn Alerts)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-header" style="background:#0D6EFD">
+          <h3>Phase 2: Acceleration</h3>
+          <p>Days 31–60</p>
+        </div>
+        <div class="phase-body">
+          <ul>
+            <li>Master Pain→Impact→ROI in every discovery call</li>
+            <li>Practice all 3 close techniques weekly</li>
+            <li>Track pipeline velocity every Friday</li>
+            <li>Begin Win Wall — document every close</li>
+            <li>Apply Urgency Close on 3 stalled deals</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-header" style="background:#2ECC71">
+          <h3>Phase 3: Mastery</h3>
+          <p>Days 61–90</p>
+        </div>
+        <div class="phase-body">
+          <ul>
+            <li>Run weekly deal review with full MEDDPICC-Lite</li>
+            <li>Refine ICP based on won/lost deal patterns</li>
+            <li>Coach one peer — teaching = 40% retention boost</li>
+            <li>Measure 40% uplift vs. your Day 1 baseline</li>
+            <li>Identify weakest pillar → create 30-day sprint plan</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PERFORMANCE TRACKER -->
+<div id="tracker" style="background:var(--light);padding:5rem 2rem">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label" style="color:var(--orange)">Weekly Metrics</div>
+    <div class="section-title">Performance Tracker</div>
+    <div class="section-sub">What gets measured gets managed. Fill this out every Friday.</div>
+    <div class="divider" style="background:var(--orange)"></div>
+    <div class="tracker">
+      <h3>📊 This Week's Numbers</h3>
+      <div class="tracker-grid">
+        <div class="tracker-item">
+          <label>New prospects added</label>
+          <input type="number" id="t1" placeholder="Target: 15+" oninput="calcScore()">
+        </div>
+        <div class="tracker-item">
+          <label>Outreach touches sent</label>
+          <input type="number" id="t2" placeholder="Target: 50+" oninput="calcScore()">
+        </div>
+        <div class="tracker-item">
+          <label>Discovery calls held</label>
+          <input type="number" id="t3" placeholder="Target: 5+" oninput="calcScore()">
+        </div>
+        <div class="tracker-item">
+          <label>Proposals submitted</label>
+          <input type="number" id="t4" placeholder="Target: 2+" oninput="calcScore()">
+        </div>
+        <div class="tracker-item">
+          <label>Deals closed</label>
+          <input type="number" id="t5" placeholder="Per quota" oninput="calcScore()">
+        </div>
+        <div class="tracker-item">
+          <label>ICP avg score (new leads)</label>
+          <input type="number" id="t6" placeholder="Target: 70+" oninput="calcScore()">
+        </div>
+      </div>
+      <div class="tracker-score" id="score-box" style="display:none;margin-top:1.5rem">
+        <div class="score-number" id="score-display">0</div>
+        <p id="score-label">Weekly APEX Score</p>
+        <p id="score-message" style="margin-top:.5rem;color:var(--ice)"></p>
+      </div>
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="calcScore();document.getElementById('score-box').style.display='block'">Calculate My Score</button>
+        <button class="btn" style="background:var(--light);color:var(--navy);margin-left:.5rem;border:2px solid var(--navy)" onclick="clearTracker()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="font-size:1.2rem;font-weight:900;color:var(--orange);margin-bottom:.5rem">APEX Sales Framework</div>
+  <div>Accelerated Performance Excellence  |  Prepared for Sales Professionals</div>
+  <div style="margin-top:.5rem;color:var(--gray)">IGNITE_APEX Framework  |  © 2026  |  Confidential</div>
+</footer>
+
+<script>
+// Nav active state
+window.addEventListener('scroll', () => {
+  const sections = ['equation','attract','probe','execute','excel','roadmap','tracker'];
+  const links = document.querySelectorAll('.nav-links a');
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && window.scrollY >= el.offsetTop - 100) current = id;
+  });
+  links.forEach(link => {
+    link.classList.remove('active');
+    if(link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+
+// Score calculator
+function calcScore() {
+  const vals = [
+    {id:'t1', target:15, weight:20},
+    {id:'t2', target:50, weight:20},
+    {id:'t3', target:5,  weight:20},
+    {id:'t4', target:2,  weight:20},
+    {id:'t5', target:1,  weight:10},
+    {id:'t6', target:70, weight:10},
+  ];
+  let total = 0;
+  let filled = 0;
+  vals.forEach(v => {
+    const val = parseFloat(document.getElementById(v.id).value);
+    if(!isNaN(val)) {
+      filled++;
+      const pct = Math.min(val / v.target, 1.5);
+      total += pct * v.weight;
+    }
+  });
+  if(filled === 0) return;
+  const score = Math.round(Math.min(total, 100));
+  document.getElementById('score-display').textContent = score + '%';
+  const msgs = [
+    [90, '🔥 Exceptional week. You are executing at the top 10%.'],
+    [75, '💪 Strong week. Keep this up and the 90-day goal is locked.'],
+    [60, '📈 Good progress. Identify which pillar is lagging and fix it.'],
+    [0,  '⚡ Below target. Review your APEX checklist and recommit.']
+  ];
+  const msg = msgs.find(m => score >= m[0]);
+  document.getElementById('score-message').textContent = msg[1];
+  document.getElementById('score-box').style.display = 'block';
+}
+
+function clearTracker() {
+  ['t1','t2','t3','t4','t5','t6'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('score-box').style.display = 'none';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node *)",
+      "PowerShell(node --check \"C:\\\\Projects\\\\ignite-apex\\\\_syntax_check.js\" 2>&1)",
+      "PowerShell(New-Item *)",
+      "PowerShell(node --version)",
+      "PowerShell(netstat *)",
+      "PowerShell(python --version; python3 --version 2>$null)"
+    ]
+  }
+}
