@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Master Console Access</title></head>
+<body>
+<h1>Testing Supabase Access</h1>
+<pre id="output">Loading...</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const supabase = window.supabase.createClient(
+  'https://gokslnrvxqledagcwghq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva3NsbnJ2eHFsZWRhZ2N3Z2hxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NzU1NDksImV4cCI6MjA5MjE1MTU0OX0.1FqlAQ51IdgDSksDFswdARTb3aFEXQL5m7ZrUzMY69w'
+);
+
+async function test() {
+  const output = document.getElementById('output');
+  let log = '';
+  
+  try {
+    // Check session
+    const { data: { session } } = await supabase.auth.getSession();
+    log += '1. Session check:\n';
+    log += session ? `   ✓ Logged in as: ${session.user.email}\n` : '   ✗ No session\n';
+    
+    if (!session) {
+      log += '\n❌ Not logged in. Go to auth.html first.\n';
+      output.textContent = log;
+      return;
+    }
+    
+    // Check user profile
+    log += '\n2. Fetching user profile:\n';
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('name, role, org_id')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (profileError) {
+      log += `   ✗ ERROR: ${profileError.message}\n`;
+      log += `   Code: ${profileError.code}\n`;
+      log += '\n❌ RLS policy is blocking SELECT - run the SQL fix!\n';
+    } else if (!profile) {
+      log += '   ✗ No profile found\n';
+    } else {
+      log += `   ✓ Name: ${profile.name}\n`;
+      log += `   ✓ Role: ${profile.role}\n`;
+      log += `   ✓ Org ID: ${profile.org_id}\n`;
+    }
+    
+    // Check orgs access
+    log += '\n3. Fetching companies:\n';
+    const { data: orgs, error: orgsError } = await supabase
+      .from('orgs')
+      .select('id, company_name')
+      .order('company_name');
+    
+    if (orgsError) {
+      log += `   ✗ ERROR: ${orgsError.message}\n`;
+    } else if (!orgs || orgs.length === 0) {
+      log += '   ✗ No companies found\n';
+    } else {
+      log += `   ✓ Found ${orgs.length} companies:\n`;
+      orgs.slice(0, 5).forEach(org => {
+        log += `      - ${org.company_name}\n`;
+      });
+      if (orgs.length > 5) log += `      ... and ${orgs.length - 5} more\n`;
+    }
+    
+  } catch (err) {
+    log += `\n💥 EXCEPTION: ${err.message}\n`;
+  }
+  
+  output.textContent = log;
+}
+
+test();
+</script>
+</body>
+</html>
