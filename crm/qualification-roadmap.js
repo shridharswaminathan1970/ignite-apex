@@ -648,6 +648,32 @@ function renderGates(gates, opportunity) {
             style="width:100%;background:#fff;border:1.5px solid #D1C7B7;border-radius:8px;padding:.75rem;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical;min-height:80px"
             placeholder="Enter your answer here (be specific, use their words, include evidence)...">${opportunity[gate.field + '_notes'] || ''}</textarea>
 
+          <!-- Evidence Strength Calibration -->
+          <div style="background:#F8F5EF;border:1.5px solid #D1C7B7;border-radius:8px;padding:1rem;margin-top:1rem">
+            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F;margin-bottom:.75rem">📊 Rate Your Evidence Strength</div>
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.5rem">
+              <span style="font-size:.7rem;color:#DC2626;font-weight:700;min-width:50px">WEAK</span>
+              <input
+                type="range"
+                id="strength-${gate.field}"
+                min="1"
+                max="5"
+                value="${opportunity[gate.field + '_strength'] || 3}"
+                oninput="updateStrengthLabel('${gate.field}')"
+                onchange="saveGateStrength('${gate.field}')"
+                style="flex:1;height:8px;border-radius:5px;background:linear-gradient(to right, #FEE2E2 0%, #FEF3C7 50%, #D1FAE5 100%);outline:none;-webkit-appearance:none;cursor:pointer">
+              <span style="font-size:.7rem;color:#065F46;font-weight:700;min-width:60px">STRONG</span>
+            </div>
+            <div style="text-align:center;margin-top:.5rem">
+              <span id="strength-label-${gate.field}" style="display:inline-block;padding:.4rem .9rem;border-radius:6px;font-size:.75rem;font-weight:700"></span>
+            </div>
+            <div style="font-size:.7rem;color:#6B5D4F;margin-top:.75rem;line-height:1.5">
+              <strong>1-2:</strong> Generic/vague<br>
+              <strong>3:</strong> Has specifics, needs more evidence<br>
+              <strong>4-5:</strong> Specific, quantified, verified by multiple sources
+            </div>
+          </div>
+
           <!-- AI Coaching Result -->
           <div id="ai-coaching-${gate.field}" style="display:none;margin-top:1rem;background:#DBEAFE;border:2px solid #3B82F6;border-radius:8px;padding:1rem">
             <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#1E40AF;margin-bottom:.75rem">🤖 AI Coach Says:</div>
@@ -800,6 +826,9 @@ window.QualificationRoadmap = {
     const stageDetail = renderStageDetail(currentStageId, opportunity);
 
     container.innerHTML = roadmapRail + '<div id="stage-detail-container">' + stageDetail + '</div>';
+
+    // Initialize strength labels
+    initStrengthLabels(opportunity, IGNITE_ROADMAP.find(s => s.id === currentStageId));
   }
 };
 
@@ -807,7 +836,22 @@ window.QualificationRoadmap = {
 window.selectRoadmapStage = function(stageId) {
   const stageDetail = renderStageDetail(stageId, currentOpportunity);
   document.getElementById('stage-detail-container').innerHTML = stageDetail;
+
+  // Re-initialize strength labels for new stage
+  initStrengthLabels(currentOpportunity, IGNITE_ROADMAP.find(s => s.id === stageId));
 };
+
+function initStrengthLabels(opportunity, stage) {
+  if (!stage || !stage.gates) return;
+
+  stage.gates.forEach(gate => {
+    const field = gate.field;
+    const slider = document.getElementById(`strength-${field}`);
+    if (slider) {
+      updateStrengthLabel(field);
+    }
+  });
+}
 
 window.saveGateAnswer = async function(field) {
   const value = document.getElementById(`gate-${field}`).value;
@@ -836,6 +880,39 @@ window.toggleGate = async function(field) {
     console.log(`[Roadmap] Toggled ${field} = ${checked}`);
   } catch (err) {
     console.error(`[Roadmap] Toggle error:`, err);
+  }
+};
+
+// Evidence Strength Calibration
+window.updateStrengthLabel = function(field) {
+  const slider = document.getElementById(`strength-${field}`);
+  const label = document.getElementById(`strength-label-${field}`);
+  const value = parseInt(slider.value);
+
+  const labels = {
+    1: { text: '1 — Very Weak', bg: '#FEE2E2', color: '#991B1B' },
+    2: { text: '2 — Weak', bg: '#FED7AA', color: '#9A3412' },
+    3: { text: '3 — Moderate', bg: '#FEF3C7', color: '#92400E' },
+    4: { text: '4 — Strong', bg: '#BBF7D0', color: '#166534' },
+    5: { text: '5 — Very Strong', bg: '#D1FAE5', color: '#065F46' }
+  };
+
+  const l = labels[value];
+  label.textContent = l.text;
+  label.style.background = l.bg;
+  label.style.color = l.color;
+};
+
+window.saveGateStrength = async function(field) {
+  const value = parseInt(document.getElementById(`strength-${field}`).value);
+  try {
+    await window.supabaseClient
+      .from('opportunities')
+      .update({ [field + '_strength']: value })
+      .eq('id', oppId);
+    console.log(`[Roadmap] Saved ${field}_strength = ${value}`);
+  } catch (err) {
+    console.error(`[Roadmap] Strength save error:`, err);
   }
 };
 
