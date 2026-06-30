@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signing Out...</title>
+<style>
+body {
+  background: #08090D;
+  color: #EEF0F8;
+  font-family: Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+}
+.message {
+  text-align: center;
+  padding: 2rem;
+}
+.spinner {
+  border: 4px solid rgba(245, 158, 11, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #F59E0B;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 1rem auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+<div class="message">
+  <div class="spinner"></div>
+  <h2>Signing out and clearing cache...</h2>
+  <p id="status">Please wait...</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(async () => {
+  const status = document.getElementById('status');
+
+  try {
+    status.textContent = 'Creating Supabase client...';
+    const sb = window.supabase.createClient(
+      'https://gokslnrvxqledagcwghq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdva3NsbnJ2eHFsZWRhZ2N3Z2hxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NzU1NDksImV4cCI6MjA5MjE1MTU0OX0.1FqlAQ51IdgDSksDFswdARTb3aFEXQL5m7ZrUzMY69w'
+    );
+
+    status.textContent = 'Signing out from Supabase...';
+    await sb.auth.signOut();
+
+    status.textContent = 'Clearing local storage...';
+    localStorage.clear();
+
+    status.textContent = 'Clearing session storage...';
+    sessionStorage.clear();
+
+    status.textContent = '✓ All done! Redirecting to login...';
+
+    setTimeout(() => {
+      window.location.href = '/app/auth.html';
+    }, 1000);
+
+  } catch (err) {
+    status.textContent = '⚠️ Error: ' + err.message;
+    status.style.color = '#EF4444';
+    setTimeout(() => {
+      window.location.href = '/app/auth.html';
+    }, 2000);
+  }
+})();
+</script>
+</body>
+</html>
