@@ -511,7 +511,18 @@
     window.location.replace('./auth.html');
   }
 
-  init();
+  function waitForSupabaseClient(callback, attempts = 0) {
+    if (window.supabaseClient) {
+      callback();
+    } else if (attempts < 50) {
+      setTimeout(() => waitForSupabaseClient(callback, attempts + 1), 100);
+    } else {
+      console.error('supabaseClient never initialized');
+      alert('Failed to load. Please refresh the page.');
+    }
+  }
+
+  waitForSupabaseClient(init);
   </script>
 
   </body>
