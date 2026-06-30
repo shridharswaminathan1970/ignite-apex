@@ -76,6 +76,9 @@ serve(async (req) => {
       const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
       if (RESEND_API_KEY && resetUrl) {
         try {
+          // TEMPORARY: While using test domain, send all reset emails to shaamel@shaamelz.com
+          const recipientEmail = 'shaamel@shaamelz.com'
+
           await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -84,24 +87,30 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               from: 'IGNITE_APEX <onboarding@resend.dev>',
-              to: targetUser.email,
-              subject: 'Reset Your Password - IGNITE_APEX',
+              to: recipientEmail,
+              subject: `Password Reset for ${targetUser.name || targetUser.email} - IGNITE_APEX`,
               html: `
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
                   <h1 style="color:#F59E0B;font-size:24px">Password Reset Request</h1>
-                  <p>Hi ${targetUser.name || targetUser.email},</p>
-                  <p>Your account administrator has initiated a password reset for your IGNITE_APEX account.</p>
+
+                  <div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:15px;margin:20px 0">
+                    <p style="margin:0"><strong>⚠️ Admin Notice:</strong> This reset link is for user: <strong>${targetUser.name || targetUser.email}</strong> (${targetUser.email})</p>
+                  </div>
+
+                  <p>A password reset has been initiated for this user's IGNITE_APEX account.</p>
 
                   <div style="background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0">
-                    <p style="margin-top:0"><strong>Click the button below to reset your password:</strong></p>
-                    <a href="${resetUrl}" style="display:inline-block;background:#F59E0B;color:#000;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;margin:10px 0">Reset Password</a>
+                    <p style="margin-top:0"><strong>Password Reset Link:</strong></p>
+                    <a href="${resetUrl}" style="display:inline-block;background:#F59E0B;color:#000;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;margin:10px 0">Reset Password for ${targetUser.name || targetUser.email}</a>
                     <p style="color:#666;font-size:14px;margin-bottom:0">This link will expire in 1 hour.</p>
                   </div>
 
-                  <p style="color:#666;font-size:14px">If you didn't request this password reset, please contact your administrator immediately.</p>
+                  <div style="background:#EEF0F8;padding:15px;border-radius:8px;margin:20px 0">
+                    <p style="margin:0;font-size:14px"><strong>How to use:</strong> Forward this email to <code>${targetUser.email}</code> or send them the reset link directly via your preferred communication channel.</p>
+                  </div>
 
                   <hr style="border:none;border-top:1px solid #ddd;margin:30px 0">
-                  <p style="color:#999;font-size:11px">⚠️ TEMPORARY: Emails currently sent from onboarding@resend.dev while we complete domain verification for noreply@shaamelz.com</p>
+                  <p style="color:#999;font-size:11px">⚠️ TEMPORARY: All password reset emails route to shaamel@shaamelz.com while using Resend test domain. Once domain verification completes for noreply@shaamelz.com, emails will be sent directly to users.</p>
                 </div>
               `
             })
