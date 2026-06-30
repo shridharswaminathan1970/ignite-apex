@@ -200,6 +200,7 @@
                           user.is_active ? '<span style="color:var(--green)">🟢 Active</span>' : '<span style="color:var(--red)">🔴 Inactive</span>';
 
       const userName = (user.name || user.email).replace(/'/g, "\\'");
+      const userEmail = user.email.replace(/'/g, "\\'");
 
       li.innerHTML = `
         <div>
@@ -214,12 +215,11 @@
           <button class="btn-sm" onclick="editUser('${user.id}', '${userName}')">Edit</button>
           <button class="btn-sm" onclick="transferUser('${user.id}', '${userName}')">Transfer</button>
           <button class="btn-sm" onclick="promoteUser('${user.id}', '${userName}', '${user.role}')">Change Role</button>
-          <button class="btn-sm" onclick="manageUser('reset_password', '${user.id}', '${user.email}')">Reset Password</button>
+          <button class="btn-sm" onclick="manageUser('reset_password', '${user.id}', '${userEmail}')">Reset Password</button>
           ${status === 'active'
             ? `<button class="btn-sm" onclick="manageUser('suspend', '${user.id}', '${userName}')">Suspend</button>
                <button class="btn-sm" onclick="manageUser('deactivate', '${user.id}', '${userName}')">Deactivate</button>`
-            : `<button class="btn-sm btn-green" onclick="manageUser('reactivate', '${user.id}',
-  '${userName}')">Reactivate</button>`
+            : `<button class="btn-sm btn-green" onclick="manageUser('reactivate', '${user.id}', '${userName}')">Reactivate</button>`
           }
           <button class="btn-sm btn-danger" onclick="manageUser('delete', '${user.id}', '${userName}')">Delete</button>
         </div>
