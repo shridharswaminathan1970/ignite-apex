@@ -85,9 +85,10 @@
 
     <div id="tab-companies">
       <div class="company-selector">
-        <label
-  style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--t3);margin-bottom:.5rem;display:block">Select
-  Company</label>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:.5rem">
+          <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--t3)">Select Company</label>
+          <button id="add-user-btn" class="btn-sm btn-green" onclick="openAddUserModal()" style="display:none">+ Add User</button>
+        </div>
         <select id="company-selector" class="form-select" onchange="loadCompany()">
           <option value="">-- Select a company --</option>
         </select>
@@ -162,14 +163,17 @@
 
   async function loadCompany() {
     const companyId = document.getElementById('company-selector').value;
+    const addUserBtn = document.getElementById('add-user-btn');
 
     if (!companyId) {
       document.getElementById('empty').style.display = 'block';
       document.getElementById('user-list').style.display = 'none';
       document.getElementById('loading').style.display = 'none';
+      addUserBtn.style.display = 'none';
       return;
     }
 
+    addUserBtn.style.display = 'inline-block';
     document.getElementById('loading').style.display = 'block';
     document.getElementById('empty').style.display = 'none';
     document.getElementById('user-list').style.display = 'none';
@@ -635,6 +639,128 @@
       loadRegistrations();
     } catch (err) {
       console.error('[Master] Reject registration error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  async function openAddUserModal() {
+    try {
+      const companyId = document.getElementById('company-selector').value;
+      if (!companyId) {
+        alert('Please select a company first');
+        return;
+      }
+
+      const { data: teams } = await sb.from('teams').select('id, name').eq('org_id', companyId).order('name');
+      const { data: managers } = await sb.from('users').select('id, name, role').eq('org_id', companyId).in('role', ['super_admin', 'admin']).order('name');
+
+      const modalHtml = `
+        <div id="add-user-modal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;overflow-y:auto">
+          <div style="background:#0F1117;border:1px solid #1E2333;border-radius:12px;padding:2rem;max-width:600px;width:90%;margin:2rem">
+            <h3 style="color:#F59E0B;margin-bottom:1.5rem">Add New User</h3>
+
+            <div style="margin-bottom:1rem">
+              <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Full Name *</label>
+              <input type="text" id="new-user-name" placeholder="John Doe" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+            </div>
+
+            <div style="margin-bottom:1rem">
+              <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Email *</label>
+              <input type="email" id="new-user-email" placeholder="john@example.com" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+            </div>
+
+            <div style="margin-bottom:1rem">
+              <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Role *</label>
+              <select id="new-user-role" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+                <option value="sdr">SDR</option>
+                <option value="account_executive">Account Executive</option>
+                <option value="admin">Admin</option>
+                <option value="admin_m">Admin M (Read-Only)</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:1rem">
+              <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Team ${teams && teams.length > 0 ? '*' : '(will create NEW)'}</label>
+              <select id="new-user-team" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+                ${teams && teams.length > 0 ? teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('') : '<option value="">No teams (will create NEW)</option>'}
+              </select>
+            </div>
+
+            <div style="margin-bottom:1.5rem">
+              <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Manager ${managers && managers.length > 0 ? '*' : '(none available)'}</label>
+              <select id="new-user-manager" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+                ${managers && managers.length > 0 ? managers.map(m => `<option value="${m.id}">${m.name} (${m.role.replace(/_/g, ' ')})</option>`).join('') : '<option value="">No managers available</option>'}
+              </select>
+            </div>
+
+            <div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:1rem;margin-bottom:1.5rem;border-radius:4px">
+              <p style="color:#92400E;font-size:.85rem;margin:0">📧 Password reset link will be emailed to <strong>shaamel@shaamelz.com</strong> with user details. Forward it to the new user.</p>
+            </div>
+
+            <div style="display:flex;gap:.75rem;justify-content:flex-end">
+              <button onclick="closeAddUserModal()" style="background:#272E42;color:#8892AA;padding:.75rem 1.5rem;border-radius:8px;border:1px solid #1E2333;cursor:pointer">Cancel</button>
+              <button onclick="executeAddUser()" style="background:#10B981;color:#fff;padding:.75rem 1.5rem;border-radius:8px;border:none;font-weight:700;cursor:pointer">Add User</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    } catch (err) {
+      console.error('[Master] Open add user modal error:', err);
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  function closeAddUserModal() {
+    const modal = document.getElementById('add-user-modal');
+    if (modal) modal.remove();
+  }
+
+  async function executeAddUser() {
+    try {
+      const name = document.getElementById('new-user-name').value.trim();
+      const email = document.getElementById('new-user-email').value.trim();
+      const role = document.getElementById('new-user-role').value;
+      const teamId = document.getElementById('new-user-team').value;
+      const managerId = document.getElementById('new-user-manager').value;
+
+      if (!name || !email) {
+        alert('Please fill in name and email');
+        return;
+      }
+
+      if (!email.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
+      }
+
+      const { data: { session } } = await sb.auth.getSession();
+      const response = await fetch(`https://gokslnrvxqledagcwghq.supabase.co/functions/v1/generate-invite-link`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          role,
+          teamId: teamId || null,
+          managerId: managerId || null,
+          crmEnabled: true
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to create user');
+
+      closeAddUserModal();
+      alert(`✓ User created successfully!\n\nPassword reset email sent to shaamel@shaamelz.com\n\nForward the link to ${email}`);
+      loadCompany();
+    } catch (err) {
+      console.error('[Master] Execute add user error:', err);
       alert(`Error: ${err.message}`);
     }
   }

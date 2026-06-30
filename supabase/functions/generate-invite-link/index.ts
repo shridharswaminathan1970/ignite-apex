@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, role, managerId, crmEnabled = true } = await req.json()
+    const { email, name, role, managerId, teamId, crmEnabled = true } = await req.json()
 
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Missing authorization header')
@@ -79,22 +79,49 @@ serve(async (req) => {
       throw new Error(createError?.message || 'Failed to create user')
     }
 
-    let { data: teamAlpha } = await supabaseAdmin
-      .from('teams')
-      .select('id')
-      .eq('org_id', caller.org_id)
-      .eq('name', 'Team Alpha')
-      .single()
+    // Use provided teamId, or get/create Team Alpha if not provided
+    let finalTeamId = teamId
 
-    if (!teamAlpha) {
-      const { data: newTeam } = await supabaseAdmin
+    if (!finalTeamId) {
+      let { data: teamAlpha } = await supabaseAdmin
         .from('teams')
-        .insert({ name: 'Team Alpha', org_id: caller.org_id })
-        .select()
+        .select('id')
+        .eq('org_id', caller.org_id)
+        .eq('name', 'Team Alpha')
         .single()
 
-      teamAlpha = newTeam
+      if (!teamAlpha) {
+        const { data: newTeam } = await supabaseAdmin
+          .from('teams')
+          .insert({ name: 'Team Alpha', org_id: caller.org_id })
+          .select()
+          .single()
+
+        teamAlpha = newTeam
+      }
+
+      finalTeamId = teamAlpha?.id
     }
+
+    // Get team and company details for email
+    const { data: teamData } = await supabaseAdmin
+      .from('teams')
+      .select('name')
+      .eq('id', finalTeamId)
+      .single()
+
+    const { data: orgData } = await supabaseAdmin
+      .from('organisations')
+      .select('name')
+      .eq('id', caller.org_id)
+      .single()
+
+    // Get team leader (manager)
+    const { data: managerData } = managerId ? await supabaseAdmin
+      .from('users')
+      .select('name, email')
+      .eq('id', managerId)
+      .single() : { data: null }
 
     await supabaseAdmin.from('users').insert({
       id: newUser.user.id,
@@ -102,7 +129,7 @@ serve(async (req) => {
       name,
       role,
       org_id: caller.org_id,
-      team_id: teamAlpha?.id || null,
+      team_id: finalTeamId || null,
       manager_id: managerId || caller.id,
       is_active: true,
       crm_enabled: crmEnabled,
@@ -121,6 +148,7 @@ serve(async (req) => {
     const setupLink = resetLink?.properties?.action_link || null
 
     // TEMPORARY: Use onboarding.dev (Resend's test domain) until shaamelz.com verified
+    // Send to shaamel@shaamelz.com for admin to forward
     if (RESEND_API_KEY) {
       const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -131,13 +159,40 @@ serve(async (req) => {
         body: JSON.stringify({
           from: 'IGNITE_APEX <onboarding@resend.dev>',
           reply_to: caller.email,
-          to: email,
-          subject: 'Welcome to IGNITE_APEX CRM!',
+          to: 'shaamel@shaamelz.com',
+          subject: `New User Created: ${name} - IGNITE_APEX`,
           html: `
             <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-              <h1 style="color:#F59E0B;font-size:24px">Welcome to IGNITE_APEX CRM!</h1>
-              <p>Hi ${name},</p>
-              <p>Thank you for signing up for IGNITE_APEX CRM. Your account has been created${companyName !== 'NA' ? ` for ${companyName}` : ''}.</p>
+              <h1 style="color:#F59E0B;font-size:24px">New User Account Created</h1>
+
+              <div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:15px;margin:20px 0">
+                <p style="margin:0"><strong>⚠️ Admin Action Required:</strong> Forward the password reset link below to the new user's email: <strong>${email}</strong></p>
+              </div>
+
+              <div style="background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0">
+                <h2 style="margin-top:0;font-size:18px;color:#333">User Details</h2>
+                <table style="width:100%;font-size:14px">
+                  <tr><td style="padding:8px 0;color:#666"><strong>Name:</strong></td><td style="padding:8px 0">${name}</td></tr>
+                  <tr><td style="padding:8px 0;color:#666"><strong>Email:</strong></td><td style="padding:8px 0">${email}</td></tr>
+                  <tr><td style="padding:8px 0;color:#666"><strong>Role:</strong></td><td style="padding:8px 0">${role.replace(/_/g, ' ').toUpperCase()}</td></tr>
+                  <tr><td style="padding:8px 0;color:#666"><strong>Company:</strong></td><td style="padding:8px 0">${orgData?.name || 'Unknown'}</td></tr>
+                  <tr><td style="padding:8px 0;color:#666"><strong>Team:</strong></td><td style="padding:8px 0">${teamData?.name || 'Not assigned'}</td></tr>
+                  <tr><td style="padding:8px 0;color:#666"><strong>Team Leader:</strong></td><td style="padding:8px 0">${managerData?.name || caller.name} (${managerData?.email || caller.email})</td></tr>
+                </table>
+              </div>
+
+              <div style="background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0">
+                <h2 style="margin-top:0;font-size:18px;color:#333">🔑 Password Reset Link</h2>
+                <p style="margin-bottom:15px">Send this link to <strong>${email}</strong>:</p>
+                <a href="${setupLink}" style="display:inline-block;background:#F59E0B;color:#000;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;margin:10px 0">Set Password & Sign In</a>
+                <p style="color:#666;font-size:14px;margin-top:15px">Or copy this URL:<br><code style="background:#fff;padding:8px;border-radius:4px;display:block;margin-top:8px;word-break:break-all">${setupLink}</code></p>
+                <p style="color:#EF4444;font-size:14px;margin-top:10px">⚠️ This link expires in 1 hour.</p>
+              </div>
+
+              <div style="background:#EEF0F8;padding:15px;border-radius:8px;margin:20px 0">
+                <p style="margin:0;font-size:14px"><strong>Message to send to user:</strong></p>
+                <p style="margin:10px 0;font-size:14px;font-style:italic">"Hi ${name}, your IGNITE_APEX CRM account has been created! Click the link below to set your password and access your account. Your 99-day CRM trial has started automatically."</p>
+              </div>
               
               <div style="background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0">
                 <h2 style="margin-top:0;font-size:18px">🔑 Your Login Credentials</h2>
