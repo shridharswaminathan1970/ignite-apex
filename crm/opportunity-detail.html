@@ -120,6 +120,7 @@ textarea.form-input{min-height:100px;resize:vertical}
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" onclick="switchTab('qualification')">🗺️ Qualification Roadmap</button>
     <button class="tab" onclick="switchTab('meddpicc')">MEDDPICC</button>
     <button class="tab" onclick="switchTab('milestones')">Milestones</button>
     <button class="tab" onclick="switchTab('activities')">Activities</button>
@@ -154,6 +155,11 @@ textarea.form-input{min-height:100px;resize:vertical}
       <h3 class="section-title">Stage Bypass Log</h3>
       <div id="bypass-log-content"></div>
     </div>
+  </div>
+
+  <!-- QUALIFICATION ROADMAP TAB -->
+  <div class="tab-content" id="qualification-tab">
+    <!-- Roadmap renders here via qualification-roadmap.js -->
   </div>
 
   <!-- MEDDPICC TAB -->
@@ -297,6 +303,7 @@ textarea.form-input{min-height:100px;resize:vertical}
 <script src="../supabase-client.js"></script>
 <script src="../auth.js"></script>
 <script src="./crm-v2-client.js"></script>
+<script src="./qualification-roadmap.js"></script>
 
 <script>
 let currentOpp = null;
@@ -386,6 +393,13 @@ function renderOpportunity() {
       cb.closest('li').classList.add('checked');
     }
   });
+
+  // Qualification Roadmap - render Phase A
+  if (window.QualificationRoadmap) {
+    window.currentOpportunity = currentOpp;
+    window.oppId = oppId;
+    window.QualificationRoadmap.render(currentOpp);
+  }
 }
 
 async function loadActivities() {
