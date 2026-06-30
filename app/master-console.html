@@ -147,7 +147,7 @@
   }
 
   async function loadCompanies() {
-    const { data: orgs } = await sb.from('orgs').select('id, company_name').order('company_name');
+    const { data: orgs } = await sb.from('organisations').select('id, company_name').order('company_name');
 
     const selector = document.getElementById('company-selector');
     if (orgs) {
