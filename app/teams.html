@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Management — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;--t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;--amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+.header{background:var(--s1);border-bottom:1px solid var(--b1);padding:1rem 2rem;position:sticky;top:0;z-index:100}
+.header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.btn{background:var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;border:1px solid var(--b1);cursor:pointer;transition:all .2s;text-decoration:none}
+.btn:hover{background:var(--amber);color:#000;border-color:var(--amber)}
+.btn-green{background:var(--green);color:#fff;border:none}
+.btn-green:hover{background:#059669}
+.container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem}
+.team-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:1.5rem;transition:all .2s}
+.team-card:hover{border-color:var(--amber)}
+.team-name{font-size:1.2rem;font-weight:700;color:var(--t1);margin-bottom:.5rem}
+.team-leader{font-size:.85rem;color:var(--t3);margin-bottom:1rem}
+.team-leader strong{color:var(--amber)}
+.team-members{font-size:.75rem;color:var(--t2);margin-bottom:1rem}
+.team-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn-sm{padding:.4rem .75rem;font-size:.75rem;border-radius:6px;border:1px solid var(--b1);background:var(--s2);color:var(--t2);cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:var(--b1);color:var(--t1)}
+.btn-danger{border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.loading{text-align:center;padding:3rem;color:var(--t2)}
+.empty-state{text-align:center;padding:3rem;color:var(--t3)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-logo">TEAM MANAGEMENT</div>
+    <div style="display:flex;gap:1rem">
+      <a href="./launcher.html" class="btn">Back to Launcher</a>
+      <button class="btn" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Teams</h1>
+    <button class="btn btn-green" onclick="openCreateTeamModal()">+ Create Team</button>
+  </div>
+
+  <div id="loading" class="loading">Loading teams...</div>
+  <div id="empty" class="empty-state" style="display:none">No teams found. Create your first team!</div>
+  <div id="teams-grid" class="teams-grid" style="display:none"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script>
+let sb = null;
+let currentOrgId = null;
+
+async function init() {
+  sb = window.supabaseClient;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.replace('./auth.html');
+    return;
+  }
+
+  const { data: profile } = await sb.from('users').select('org_id, role').eq('id', session.user.id).single();
+
+  if (!profile || !['super_duper_admin', 'super_admin', 'admin'].includes(profile.role)) {
+    alert('Access denied. Admins only.');
+    window.location.replace('./launcher.html');
+    return;
+  }
+
+  currentOrgId = profile.org_id;
+  loadTeams();
+}
+
+async function loadTeams() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('empty').style.display = 'none';
+  document.getElementById('teams-grid').style.display = 'none';
+
+  const { data: teams } = await sb.from('teams').select('*').eq('org_id', currentOrgId).order('name');
+
+  document.getElementById('loading').style.display = 'none';
+
+  if (!teams || teams.length === 0) {
+    document.getElementById('empty').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('teams-grid').style.display = 'grid';
+  const grid = document.getElementById('teams-grid');
+  grid.innerHTML = '';
+
+  for (const team of teams) {
+    const { data: members } = await sb.from('users').select('id, name').eq('team_id', team.id);
+    const { data: leader } = team.team_leader_id ? await sb.from('users').select('name').eq('id', team.team_leader_id).single() : { data: null };
+
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.innerHTML = `
+      <div class="team-name">${team.name}</div>
+      <div class="team-leader">Leader: <strong>${leader?.name || 'None assigned'}</strong></div>
+      <div class="team-members">${members?.length || 0} team members</div>
+      <div class="team-actions">
+        <button class="btn-sm" onclick="renameTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}')">Rename</button>
+        <button class="btn-sm" onclick="assignLeader('${team.id}', '${team.name.replace(/'/g, "\\'")}')">Assign Leader</button>
+        <button class="btn-sm" onclick="viewMembers('${team.id}', '${team.name.replace(/'/g, "\\'")}')">View Members</button>
+        <button class="btn-sm btn-danger" onclick="deleteTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}', ${members?.length || 0})">Delete</button>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  }
+}
+
+function openCreateTeamModal() {
+  const modalHtml = `
+    <div id="create-team-modal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000">
+      <div style="background:#0F1117;border:1px solid #1E2333;border-radius:12px;padding:2rem;max-width:500px;width:90%">
+        <h3 style="color:#F59E0B;margin-bottom:1.5rem">Create New Team</h3>
+
+        <div style="margin-bottom:1.5rem">
+          <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Team Name</label>
+          <input type="text" id="new-team-name" placeholder="Sales Team A" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+        </div>
+
+        <div style="display:flex;gap:.75rem;justify-content:flex-end">
+          <button onclick="closeModal('create-team-modal')" style="background:#272E42;color:#8892AA;padding:.75rem 1.5rem;border-radius:8px;border:1px solid #1E2333;cursor:pointer">Cancel</button>
+          <button onclick="executeCreateTeam()" style="background:#10B981;color:#fff;padding:.75rem 1.5rem;border-radius:8px;border:none;font-weight:700;cursor:pointer">Create Team</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+async function executeCreateTeam() {
+  const name = document.getElementById('new-team-name').value.trim();
+  if (!name) {
+    alert('Please enter a team name');
+    return;
+  }
+
+  try {
+    await sb.from('teams').insert({ name, org_id: currentOrgId });
+    closeModal('create-team-modal');
+    alert('✓ Team created successfully');
+    loadTeams();
+  } catch (err) {
+    console.error('[Teams] Create error:', err);
+    alert(`Error: ${err.message}`);
+  }
+}
+
+async function renameTeam(teamId, currentName) {
+  const newName = prompt(`Rename team:\n\nCurrent: ${currentName}`, currentName);
+  if (!newName || newName === currentName) return;
+
+  try {
+    await sb.from('teams').update({ name: newName }).eq('id', teamId);
+    alert('✓ Team renamed successfully');
+    loadTeams();
+  } catch (err) {
+    console.error('[Teams] Rename error:', err);
+    alert(`Error: ${err.message}`);
+  }
+}
+
+async function assignLeader(teamId, teamName) {
+  try {
+    const { data: members } = await sb.from('users').select('id, name, role').eq('team_id', teamId).in('role', ['super_admin', 'admin']);
+
+    if (!members || members.length === 0) {
+      alert('No eligible leaders (super_admin/admin) in this team');
+      return;
+    }
+
+    const modalHtml = `
+      <div id="leader-modal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000">
+        <div style="background:#0F1117;border:1px solid #1E2333;border-radius:12px;padding:2rem;max-width:500px;width:90%">
+          <h3 style="color:#F59E0B;margin-bottom:1rem">Assign Team Leader</h3>
+          <p style="color:#8892AA;font-size:.85rem;margin-bottom:1.5rem">Team: ${teamName}</p>
+
+          <div style="margin-bottom:1.5rem">
+            <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:#8892AA;margin-bottom:.5rem">Select Leader</label>
+            <select id="team-leader" style="width:100%;background:#141720;border:1px solid #1E2333;border-radius:8px;padding:.75rem;color:#EEF0F8;font-size:.9rem">
+              ${members.map(m => `<option value="${m.id}">${m.name} (${m.role.replace(/_/g, ' ')})</option>`).join('')}
+            </select>
+          </div>
+
+          <div style="display:flex;gap:.75rem;justify-content:flex-end">
+            <button onclick="closeModal('leader-modal')" style="background:#272E42;color:#8892AA;padding:.75rem 1.5rem;border-radius:8px;border:1px solid #1E2333;cursor:pointer">Cancel</button>
+            <button onclick="executeAssignLeader('${teamId}')" style="background:#F59E0B;color:#000;padding:.75rem 1.5rem;border-radius:8px;border:none;font-weight:700;cursor:pointer">Assign</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  } catch (err) {
+    console.error('[Teams] Assign leader error:', err);
+    alert(`Error: ${err.message}`);
+  }
+}
+
+async function executeAssignLeader(teamId) {
+  const leaderId = document.getElementById('team-leader').value;
+
+  try {
+    await sb.from('teams').update({ team_leader_id: leaderId }).eq('id', teamId);
+    closeModal('leader-modal');
+    alert('✓ Team leader assigned successfully');
+    loadTeams();
+  } catch (err) {
+    console.error('[Teams] Execute assign leader error:', err);
+    alert(`Error: ${err.message}`);
+  }
+}
+
+async function viewMembers(teamId, teamName) {
+  const { data: members } = await sb.from('users').select('name, email, role').eq('team_id', teamId).order('name');
+
+  const membersList = members && members.length > 0
+    ? members.map(m => `<tr><td style="padding:.5rem">${m.name}</td><td style="padding:.5rem">${m.email}</td><td style="padding:.5rem">${m.role.replace(/_/g, ' ')}</td></tr>`).join('')
+    : '<tr><td colspan="3" style="padding:1rem;text-align:center;color:#8892AA">No members</td></tr>';
+
+  const modalHtml = `
+    <div id="members-modal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;overflow-y:auto">
+      <div style="background:#0F1117;border:1px solid #1E2333;border-radius:12px;padding:2rem;max-width:700px;width:90%;margin:2rem">
+        <h3 style="color:#F59E0B;margin-bottom:1rem">Team Members</h3>
+        <p style="color:#8892AA;font-size:.85rem;margin-bottom:1.5rem">Team: ${teamName}</p>
+
+        <table style="width:100%;font-size:.85rem;border-collapse:collapse">
+          <thead>
+            <tr style="border-bottom:2px solid #1E2333">
+              <th style="text-align:left;padding:.75rem;color:#8892AA">Name</th>
+              <th style="text-align:left;padding:.75rem;color:#8892AA">Email</th>
+              <th style="text-align:left;padding:.75rem;color:#8892AA">Role</th>
+            </tr>
+          </thead>
+          <tbody>${membersList}</tbody>
+        </table>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:1.5rem">
+          <button onclick="closeModal('members-modal')" style="background:#272E42;color:#8892AA;padding:.75rem 1.5rem;border-radius:8px;border:1px solid #1E2333;cursor:pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+async function deleteTeam(teamId, teamName, memberCount) {
+  if (memberCount > 0) {
+    alert(`Cannot delete team "${teamName}" - it has ${memberCount} members.\n\nPlease reassign all members to other teams first.`);
+    return;
+  }
+
+  if (!confirm(`Delete team "${teamName}"?\n\nThis cannot be undone.`)) return;
+
+  try {
+    await sb.from('teams').delete().eq('id', teamId);
+    alert('✓ Team deleted successfully');
+    loadTeams();
+  } catch (err) {
+    console.error('[Teams] Delete error:', err);
+    alert(`Error: ${err.message}`);
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) modal.remove();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.replace('./auth.html');
+}
+
+function waitForSupabaseClient(callback, attempts = 0) {
+  if (window.supabaseClient) {
+    callback();
+  } else if (attempts < 50) {
+    setTimeout(() => waitForSupabaseClient(callback, attempts + 1), 100);
+  } else {
+    console.error('supabaseClient never initialized');
+    alert('Failed to load. Please refresh the page.');
+  }
+}
+
+waitForSupabaseClient(init);
+</script>
+
+</body>
+</html>
