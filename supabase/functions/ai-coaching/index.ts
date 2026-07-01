@@ -1,6 +1,6 @@
 // supabase/functions/ai-coaching/index.ts
 // AI Coaching for IGNITE-APEX qualification
-// Provides: draft-to-confirm, weak evidence flags, next best action
+// Provides: draft-to-confirm, weak evidence flags, next best action, validation & scoring
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -16,7 +16,7 @@ interface CoachingRequest {
   gateField?: string
 
   // Sales OS mode
-  context?: 'sales_os' | 'raw_lead'
+  context?: 'sales_os' | 'raw_lead' | 'validate'
   gateLabel?: string
   currentAnswer?: string
   prospectName?: string
@@ -26,12 +26,22 @@ interface CoachingRequest {
   ownerName?: string
   currentAnswers?: string
   promptInstruction?: string
+
+  // Validation mode
+  userResponse?: string
 }
 
 interface CoachingResponse {
   draft: string
   weakEvidence: string[]
   nextAction: string
+  confidence: 'high' | 'medium' | 'low'
+}
+
+interface ValidationResponse {
+  points: number
+  feedback: string
+  meetsRequirements: boolean
   confidence: 'high' | 'medium' | 'low'
 }
 
@@ -65,7 +75,34 @@ serve(async (req) => {
     let gateIdentifier: string
 
     // Check context mode
-    if (requestData.context === 'raw_lead') {
+    if (requestData.context === 'validate') {
+      // Validation mode - score user's response
+      const { opportunityId, stageId, gateField, userResponse } = requestData
+
+      if (!opportunityId) {
+        throw new Error('opportunityId required for validation')
+      }
+
+      const { data: opp, error: oppError } = await supabase
+        .from('opportunities')
+        .select('*')
+        .eq('id', opportunityId)
+        .single()
+
+      if (oppError || !opp) {
+        throw new Error('Opportunity not found')
+      }
+
+      const validation = await validateResponse(opp, gateField!, userResponse!)
+
+      return new Response(JSON.stringify(validation), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+
+    } else if (requestData.context === 'raw_lead') {
       // Raw Lead mode - coaching for pre-IGNITE qualification
       context = `Deal: ${requestData.dealName || 'Unknown'}
 Owner: ${requestData.ownerName || 'Unknown'}
@@ -242,6 +279,90 @@ IMPORTANT: Respond with ONLY the JSON object below. No markdown code fences, no 
       draft: text,
       weakEvidence: ['Could not parse AI response'],
       nextAction: 'Review the response manually',
+      confidence: 'low'
+    }
+  }
+}
+
+async function validateResponse(opp: any, gateField: string, userResponse: string): Promise<ValidationResponse> {
+  const systemPrompt = `You must respond with ONLY a valid JSON object. No markdown. No code fences. No text before or after. Start your response with { and end with }.
+
+You are an expert B2B sales coach validating gate answers in the IGNITE-APEX qualification framework.
+
+Your job: Score the rep's answer on a scale of 0-10 based on:
+- Specificity (uses prospect's words, not generic)
+- Evidence (references specific conversations, documents, data)
+- Quantification (includes numbers, dates, names)
+- Verification (can be independently confirmed)
+
+Be brutally honest. A 10/10 answer is rare. Most answers are 5-7.`
+
+  const userPrompt = `Gate: ${gateField}
+Opportunity: ${opp.name}
+Account: ${opp.account_name || 'Unknown'}
+
+User's Answer:
+"${userResponse}"
+
+Context from deal:
+- 4U Unworkable: ${opp.demand_4u_unworkable_notes || 'Not captured'}
+- 4U Urgent: ${opp.demand_4u_urgent_notes || 'Not captured'}
+- Economic Buyer: ${opp.gate_economic_buyer_identified_notes || 'Not identified'}
+- Champion: ${opp.gate_champion_emerging_notes || 'No champion yet'}
+
+Score this answer 0-10 and provide:
+1. POINTS: Integer 0-10
+2. FEEDBACK: One sentence explaining the score (what's strong, what's missing)
+3. MEETS_REQUIREMENTS: true if >= 7 points, false otherwise
+4. CONFIDENCE: high/medium/low in your assessment
+
+IMPORTANT: Respond with ONLY the JSON object below.
+
+{
+  "points": 0-10,
+  "feedback": "...",
+  "meetsRequirements": true/false,
+  "confidence": "high|medium|low"
+}`
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_API_KEY!,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: userPrompt }
+      ]
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Anthropic API error: ${response.status} ${error}`)
+  }
+
+  const data = await response.json()
+  const text = data.content[0].text
+
+  try {
+    const parsed = JSON.parse(text)
+    return {
+      points: parsed.points || 0,
+      feedback: parsed.feedback || '',
+      meetsRequirements: parsed.meetsRequirements || false,
+      confidence: parsed.confidence || 'low'
+    }
+  } catch (e) {
+    return {
+      points: 5,
+      feedback: 'Could not parse validation response',
+      meetsRequirements: false,
       confidence: 'low'
     }
   }

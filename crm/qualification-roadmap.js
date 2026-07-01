@@ -1113,18 +1113,7 @@ function initStrengthLabels(opportunity, stage) {
   });
 }
 
-window.saveGateAnswer = async function(field) {
-  const value = document.getElementById(`gate-${field}`).value;
-  try {
-    await window.supabaseClient
-      .from('opportunities')
-      .update({ [field + '_notes']: value })
-      .eq('id', oppId);
-    console.log(`[Roadmap] Saved ${field}_notes`);
-  } catch (err) {
-    console.error(`[Roadmap] Save error:`, err);
-  }
-};
+// Moved to line 1400 with validation logic
 
 window.toggleGate = async function(field) {
   const checkbox = document.getElementById(`check-${field}`);
@@ -1304,7 +1293,7 @@ window.getAICoaching = async function(stageId, gateField) {
 }
 
 // Accept AI draft and move to next gate
-window.acceptAIDraft = function(stageId, gateField) {
+window.acceptAIDraft = async function(stageId, gateField) {
   const checkbox = document.getElementById(`accept-${gateField}`);
   if (!checkbox.checked) return;
 
@@ -1324,10 +1313,8 @@ window.acceptAIDraft = function(stageId, gateField) {
     gateCheckbox.dispatchEvent(new Event('change'));
   }
 
-  // Add to summary
-  if (!window.aiDraftSummary) window.aiDraftSummary = [];
-  window.aiDraftSummary.push({ field: gateField, draft: draftText });
-  updateAISummary();
+  // VALIDATE the response and allocate points
+  await validateAndScore(stageId, gateField, draftText, 'ai-accepted');
 
   // Find next gate and scroll to it
   const allGates = Array.from(document.querySelectorAll('[id^="ai-coaching-"]'));
@@ -1340,29 +1327,133 @@ window.acceptAIDraft = function(stageId, gateField) {
   }
 }
 
-// Update summary panel at bottom
+// Validate response and allocate points
+window.validateAndScore = async function(stageId, gateField, response, source) {
+  if (!response || !response.trim()) return;
+
+  try {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) return;
+
+    // Call Edge Function for validation
+    const validationResponse = await fetch(`${window.supabaseClient.supabaseUrl}/functions/v1/ai-coaching`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        context: 'validate',
+        opportunityId: oppId,
+        stageId: stageId,
+        gateField: gateField,
+        userResponse: response
+      })
+    });
+
+    if (!validationResponse.ok) throw new Error('Validation failed');
+
+    const responseText = await validationResponse.text();
+    let cleaned = responseText
+      .replace(/```json\n?/gi, '')
+      .replace(/```\n?/gi, '')
+      .trim();
+
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
+
+    const validation = JSON.parse(cleaned);
+
+    // Add to summary with points
+    if (!window.aiValidationSummary) window.aiValidationSummary = [];
+    window.aiValidationSummary.push({
+      field: gateField,
+      response: response,
+      source: source,
+      points: validation.points || 0,
+      feedback: validation.feedback || '',
+      meetsRequirements: validation.meetsRequirements || false
+    });
+
+    updateAISummary();
+
+  } catch (err) {
+    console.error('[Validation] Error:', err);
+  }
+}
+
+// Hook into textarea blur to validate manual entries
+window.saveGateAnswer = async function(field) {
+  const value = document.getElementById(`gate-${field}`).value;
+
+  // Save to database
+  try {
+    await window.supabaseClient
+      .from('opportunities')
+      .update({ [field + '_notes']: value })
+      .eq('id', oppId);
+  } catch (err) {
+    console.error('Save failed:', err);
+  }
+
+  // Validate if user typed something and moved to next field
+  if (value && value.trim()) {
+    const stageId = currentOpportunity.pipeline_stage; // Get current stage
+    await validateAndScore(stageId, field, value, 'manual');
+  }
+}
+
+// Update summary panel at bottom with validation scores
 window.updateAISummary = function() {
   let summaryContainer = document.getElementById('ai-summary-panel');
   if (!summaryContainer) {
     summaryContainer = document.createElement('div');
     summaryContainer.id = 'ai-summary-panel';
-    summaryContainer.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#FFF;border-top:3px solid #3B82F6;padding:1rem;box-shadow:0 -4px 12px rgba(0,0,0,0.1);max-height:200px;overflow-y:auto;z-index:1000';
+    summaryContainer.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#FFF;border-top:3px solid #3B82F6;padding:1.5rem;box-shadow:0 -4px 12px rgba(0,0,0,0.1);max-height:300px;overflow-y:auto;z-index:1000';
     document.body.appendChild(summaryContainer);
   }
 
-  if (!window.aiDraftSummary || window.aiDraftSummary.length === 0) {
+  if (!window.aiValidationSummary || window.aiValidationSummary.length === 0) {
     summaryContainer.style.display = 'none';
     return;
   }
 
+  const totalPoints = window.aiValidationSummary.reduce((sum, item) => sum + item.points, 0);
+  const maxPoints = window.aiValidationSummary.length * 10;
+  const percentage = Math.round((totalPoints / maxPoints) * 100);
+
   summaryContainer.style.display = 'block';
   summaryContainer.innerHTML = `
-    <div style="font-size:.85rem;font-weight:700;color:#1E40AF;margin-bottom:.5rem">📋 AI Drafts Accepted (${window.aiDraftSummary.length})</div>
-    ${window.aiDraftSummary.map(item => `
-      <div style="font-size:.75rem;color:#0D0C08;margin-bottom:.25rem">
-        <strong>${item.field}:</strong> ${item.draft.substring(0, 100)}${item.draft.length > 100 ? '...' : ''}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-size:1rem;font-weight:700;color:#1E40AF">📋 AI Coach Summary</div>
+      <div style="background:${percentage >= 70 ? '#D1FAE5' : percentage >= 50 ? '#FEF3C7' : '#FEE2E2'};color:${percentage >= 70 ? '#065F46' : percentage >= 50 ? '#92400E' : '#991B1B'};padding:.5rem 1rem;border-radius:6px;font-size:.85rem;font-weight:700">
+        ${totalPoints}/${maxPoints} points (${percentage}%)
       </div>
-    `).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.75rem">
+      ${window.aiValidationSummary.map(item => `
+        <div style="background:${item.meetsRequirements ? '#F0FDF4' : '#FFF7ED'};border:1px solid ${item.meetsRequirements ? '#86EFAC' : '#FCD34D'};border-radius:6px;padding:.75rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+            <div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase">${item.field}</div>
+            <div style="background:${item.meetsRequirements ? '#10B981' : '#F59E0B'};color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700">
+              ${item.points}/10 ${item.source === 'ai-accepted' ? '🤖' : '✍️'}
+            </div>
+          </div>
+          <div style="font-size:.75rem;color:#0D0C08;margin-bottom:.5rem;line-height:1.4">
+            ${item.response.substring(0, 80)}${item.response.length > 80 ? '...' : ''}
+          </div>
+          ${item.feedback ? `
+            <div style="font-size:.7rem;color:#64748B;font-style:italic;line-height:1.4">
+              💡 ${item.feedback}
+            </div>
+          ` : ''}
+        </div>
+      `).join('')}
+    </div>
   `;
 };
 
