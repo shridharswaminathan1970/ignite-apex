@@ -91,38 +91,45 @@ async function loadTeams() {
   document.getElementById('empty').style.display = 'none';
   document.getElementById('teams-grid').style.display = 'none';
 
-  const { data: teams } = await sb.from('teams').select('*').eq('org_id', currentOrgId).order('name');
+  try {
+    const { data: teams, error } = await sb.from('teams').select('*').eq('org_id', currentOrgId).order('name');
 
-  document.getElementById('loading').style.display = 'none';
+    if (error) throw error;
 
-  if (!teams || teams.length === 0) {
-    document.getElementById('empty').style.display = 'block';
-    return;
-  }
+    document.getElementById('loading').style.display = 'none';
 
-  document.getElementById('teams-grid').style.display = 'grid';
-  const grid = document.getElementById('teams-grid');
-  grid.innerHTML = '';
+    if (!teams || teams.length === 0) {
+      document.getElementById('empty').style.display = 'block';
+      return;
+    }
 
-  for (const team of teams) {
-    const { data: members } = await sb.from('users').select('id, name').eq('team_id', team.id);
-    const { data: leader } = team.team_leader_id ? await sb.from('users').select('name').eq('id', team.team_leader_id).single() : { data: null };
+    document.getElementById('teams-grid').style.display = 'grid';
+    const grid = document.getElementById('teams-grid');
+    grid.innerHTML = '';
 
-    const card = document.createElement('div');
-    card.className = 'team-card';
-    card.innerHTML = `
-      <div class="team-name">${team.name}</div>
-      <div class="team-leader">Leader: <strong>${leader?.name || 'None assigned'}</strong></div>
-      <div class="team-members">${members?.length || 0} team members</div>
-      <div class="team-actions">
-        <button class="btn-sm" onclick="renameTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}')">Rename</button>
-        <button class="btn-sm" onclick="assignLeader('${team.id}', '${team.name.replace(/'/g, "\\'")}')">Assign Leader</button>
-        <button class="btn-sm" onclick="viewMembers('${team.id}', '${team.name.replace(/'/g, "\\'")}')">View Members</button>
-        <button class="btn-sm btn-danger" onclick="deleteTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}', ${members?.length || 0})">Delete</button>
-      </div>
-    `;
+    for (const team of teams) {
+      const { data: members } = await sb.from('users').select('id, name').eq('team_id', team.id);
+      const { data: leader } = team.team_leader_id ? await sb.from('users').select('name').eq('id', team.team_leader_id).single() : { data: null };
 
-    grid.appendChild(card);
+      const card = document.createElement('div');
+      card.className = 'team-card';
+      card.innerHTML = `
+        <div class="team-name">${team.name}</div>
+        <div class="team-leader">Leader: <strong>${leader?.name || 'None assigned'}</strong></div>
+        <div class="team-members">${members?.length || 0} team members</div>
+        <div class="team-actions">
+          <button class="btn-sm" onclick="renameTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}')">Rename</button>
+          <button class="btn-sm" onclick="assignLeader('${team.id}', '${team.name.replace(/'/g, "\\'")}')">Assign Leader</button>
+          <button class="btn-sm" onclick="viewMembers('${team.id}', '${team.name.replace(/'/g, "\\'")}')">View Members</button>
+          <button class="btn-sm btn-danger" onclick="deleteTeam('${team.id}', '${team.name.replace(/'/g, "\\'")}', ${members?.length || 0})">Delete</button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    }
+  } catch (err) {
+    console.error('[Teams] Load error:', err);
+    document.getElementById('loading').innerHTML = '<div style="color:#EF4444">⚠️ Database temporarily unavailable. Please try again shortly.</div>';
   }
 }
 
@@ -156,13 +163,16 @@ async function executeCreateTeam() {
   }
 
   try {
-    await sb.from('teams').insert({ name, org_id: currentOrgId });
+    const { error } = await sb.from('teams').insert({ name, org_id: currentOrgId });
+    if (error) throw error;
     closeModal('create-team-modal');
     alert('✓ Team created successfully');
     loadTeams();
   } catch (err) {
     console.error('[Teams] Create error:', err);
-    alert(`Error: ${err.message}`);
+    alert(err.message.includes('FetchError') || err.message.includes('Failed to fetch')
+      ? '⚠️ Database temporarily unavailable. Please try again shortly.'
+      : `Error: ${err.message}`);
   }
 }
 
@@ -171,18 +181,23 @@ async function renameTeam(teamId, currentName) {
   if (!newName || newName === currentName) return;
 
   try {
-    await sb.from('teams').update({ name: newName }).eq('id', teamId);
+    const { error } = await sb.from('teams').update({ name: newName }).eq('id', teamId);
+    if (error) throw error;
     alert('✓ Team renamed successfully');
     loadTeams();
   } catch (err) {
     console.error('[Teams] Rename error:', err);
-    alert(`Error: ${err.message}`);
+    alert(err.message.includes('FetchError') || err.message.includes('Failed to fetch')
+      ? '⚠️ Database temporarily unavailable. Please try again shortly.'
+      : `Error: ${err.message}`);
   }
 }
 
 async function assignLeader(teamId, teamName) {
   try {
-    const { data: members } = await sb.from('users').select('id, name, role').eq('team_id', teamId).in('role', ['super_admin', 'admin']);
+    const { data: members, error } = await sb.from('users').select('id, name, role').eq('team_id', teamId).in('role', ['super_admin', 'admin']);
+
+    if (error) throw error;
 
     if (!members || members.length === 0) {
       alert('No eligible leaders (super_admin/admin) in this team');
@@ -213,7 +228,9 @@ async function assignLeader(teamId, teamName) {
     document.body.insertAdjacentHTML('beforeend', modalHtml);
   } catch (err) {
     console.error('[Teams] Assign leader error:', err);
-    alert(`Error: ${err.message}`);
+    alert(err.message.includes('FetchError') || err.message.includes('Failed to fetch')
+      ? '⚠️ Database temporarily unavailable. Please try again shortly.'
+      : `Error: ${err.message}`);
   }
 }
 
@@ -221,13 +238,16 @@ async function executeAssignLeader(teamId) {
   const leaderId = document.getElementById('team-leader').value;
 
   try {
-    await sb.from('teams').update({ team_leader_id: leaderId }).eq('id', teamId);
+    const { error } = await sb.from('teams').update({ team_leader_id: leaderId }).eq('id', teamId);
+    if (error) throw error;
     closeModal('leader-modal');
     alert('✓ Team leader assigned successfully');
     loadTeams();
   } catch (err) {
     console.error('[Teams] Execute assign leader error:', err);
-    alert(`Error: ${err.message}`);
+    alert(err.message.includes('FetchError') || err.message.includes('Failed to fetch')
+      ? '⚠️ Database temporarily unavailable. Please try again shortly.'
+      : `Error: ${err.message}`);
   }
 }
 
@@ -274,12 +294,15 @@ async function deleteTeam(teamId, teamName, memberCount) {
   if (!confirm(`Delete team "${teamName}"?\n\nThis cannot be undone.`)) return;
 
   try {
-    await sb.from('teams').delete().eq('id', teamId);
+    const { error } = await sb.from('teams').delete().eq('id', teamId);
+    if (error) throw error;
     alert('✓ Team deleted successfully');
     loadTeams();
   } catch (err) {
     console.error('[Teams] Delete error:', err);
-    alert(`Error: ${err.message}`);
+    alert(err.message.includes('FetchError') || err.message.includes('Failed to fetch')
+      ? '⚠️ Database temporarily unavailable. Please try again shortly.'
+      : `Error: ${err.message}`);
   }
 }
 
