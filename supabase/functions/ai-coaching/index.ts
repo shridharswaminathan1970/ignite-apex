@@ -10,9 +10,16 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 interface CoachingRequest {
-  opportunityId: string
-  stageId: string
-  gateField: string
+  // CRM mode (existing)
+  opportunityId?: string
+  stageId?: string
+  gateField?: string
+
+  // Sales OS mode (new)
+  context?: 'sales_os'
+  gateLabel?: string
+  currentAnswer?: string
+  prospectName?: string
 }
 
 interface CoachingResponse {
@@ -46,32 +53,55 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!)
 
-    const { opportunityId, stageId, gateField }: CoachingRequest = await req.json()
+    const requestData: CoachingRequest = await req.json()
 
-    // Fetch opportunity data
-    const { data: opp, error: oppError } = await supabase
-      .from('opportunities')
-      .select('*, opportunity_activities(*)')
-      .eq('id', opportunityId)
-      .single()
+    let context: string
+    let gateIdentifier: string
 
-    if (oppError || !opp) {
-      throw new Error('Opportunity not found')
+    // Check if this is Sales OS mode or CRM mode
+    if (requestData.context === 'sales_os') {
+      // Sales OS mode - simpler, no database lookup
+      context = `Prospect: ${requestData.prospectName || 'Unknown'}
+Gate: ${requestData.gateLabel}
+Current Answer: ${requestData.currentAnswer || '(empty)'}
+
+This is from the standalone IGNITE Sales OS. The rep is qualifying a prospect using the 4U framework.
+`
+      gateIdentifier = requestData.gateLabel || 'unknown'
+
+    } else {
+      // CRM mode - fetch opportunity from database
+      const { opportunityId, stageId, gateField } = requestData
+
+      if (!opportunityId) {
+        throw new Error('opportunityId required for CRM mode')
+      }
+
+      const { data: opp, error: oppError } = await supabase
+        .from('opportunities')
+        .select('*')
+        .eq('id', opportunityId)
+        .single()
+
+      if (oppError || !opp) {
+        throw new Error('Opportunity not found')
+      }
+
+      // Fetch recent activities
+      const { data: activities } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('opportunity_id', opportunityId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      // Build context for Claude
+      context = buildContext(opp, activities, stageId!, gateField!)
+      gateIdentifier = gateField!
     }
 
-    // Fetch recent activities and notes
-    const { data: activities } = await supabase
-      .from('opportunity_activities')
-      .select('*')
-      .eq('opportunity_id', opportunityId)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    // Build context for Claude
-    const context = buildContext(opp, activities, stageId, gateField)
-
     // Call Anthropic API
-    const coaching = await getCoaching(context, gateField)
+    const coaching = await getCoaching(context, gateIdentifier)
 
     return new Response(JSON.stringify(coaching), {
       headers: {
