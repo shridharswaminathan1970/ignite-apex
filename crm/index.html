@@ -524,7 +524,7 @@ async function initAuthAndOrg() {
     // Check CRM access: If trial not activated yet, redirect to activation page
     const { data: subscription } = await sb
       .from('org_subscriptions')
-      .select('trial_started_at, crm_enabled, status')
+      .select('trial_started_at, trial_ends_at, status')
       .eq('org_id', profile.org_id)
       .single();
 
@@ -541,9 +541,9 @@ async function initAuthAndOrg() {
       return false;
     }
 
-    // If trial started but CRM disabled (expired), redirect to upgrade
-    if (!subscription.crm_enabled) {
-      console.log('[CRM] CRM disabled (trial expired) - redirecting to pricing');
+    // If trial expired, redirect to upgrade
+    if (subscription.trial_ends_at && new Date(subscription.trial_ends_at) < new Date()) {
+      console.log('[CRM] Trial expired - redirecting to pricing');
       window.location.href = '/pricing.html';
       return false;
     }
