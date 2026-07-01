@@ -17,16 +17,17 @@ async function initOpportunitySync(supabaseClient, user) {
 
   console.log('[OpportunitySync] Initialized for user:', user.email);
 
-  // Load current opportunity from URL or create new
+  // Load current opportunity from URL
   const urlParams = new URLSearchParams(window.location.search);
   const oppId = urlParams.get('opp_id');
 
   if (oppId) {
     await loadOpportunity(oppId);
-  } else {
-    // Check if there's a draft in localStorage that needs syncing
-    await syncLocalDraftToDatabase();
   }
+
+  // NOTE: Removed auto-sync on page load
+  // Only sync when user explicitly saves (via saveOpportunityToDatabase())
+  // This prevents duplicate opportunities on every redirect
 }
 
 /**
