@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Management — IGNITE_APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#08090D;--s1:#0F1117;--s2:#141720;--b1:#1E2333;--b2:#272E42;--t1:#EEF0F8;--t2:#8892AA;--t3:#4A5268;--amber:#F59E0B;--amber2:#FCD34D;--green:#10B981;--blue:#3B82F6;--red:#EF4444}
+html,body{min-height:100vh;background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--t1)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+.header{background:var(--s1);border-bottom:1px solid var(--b1);padding:1rem 2rem;position:sticky;top:0;z-index:100}
+.header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--amber);letter-spacing:2px}
+.user-badge{background:var(--b1);padding:.5rem 1rem;border-radius:8px;font-size:.75rem}
+.btn{background:var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:8px;font-size:.8rem;border:1px solid var(--b1);cursor:pointer;transition:all .2s;text-decoration:none}
+.btn:hover{background:var(--amber);color:#000;border-color:var(--amber)}
+.container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.5rem}
+.page-subtitle{color:var(--t3);margin-bottom:2rem;font-size:.9rem}
+.user-list{list-style:none;background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:2rem}
+.user-item{padding:1rem;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:start}
+.user-item:last-child{border-bottom:none}
+.user-name{font-weight:600;color:var(--t1);margin-bottom:.25rem}
+.user-meta{font-size:.75rem;color:var(--t3);display:flex;gap:1rem;flex-wrap:wrap}
+.role-badge{background:var(--b2);padding:.2rem .5rem;border-radius:4px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.role-super_admin{background:var(--red);color:#fff}
+.role-admin{background:var(--amber);color:#000}
+.role-admin_m{background:var(--blue);color:#fff}
+.role-sdr{background:var(--green);color:#000}
+.role-account_executive{background:var(--t3);color:var(--t1)}
+.user-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn-sm{padding:.4rem .75rem;font-size:.75rem;border-radius:6px;border:1px solid var(--b1);background:var(--s2);color:var(--t2);cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:var(--b1);color:var(--t1)}
+.btn-sm:disabled{opacity:.3;cursor:not-allowed}
+.btn-danger{border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.loading{text-align:center;padding:3rem;color:var(--t2)}
+.empty-state{text-align:center;padding:3rem;color:var(--t3)}
+.btn-green{background:var(--green);color:#fff;border:none}
+.btn-green:hover{background:#059669}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-logo">USER MANAGEMENT</div>
+    <div style="display:flex;gap:1rem;align-items:center">
+      <div class="user-badge" id="currentUserBadge"></div>
+      <a href="./launcher.html" class="btn">Back to Launcher</a>
+      <button class="btn" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="access-denied" style="display:none;text-align:center;padding:3rem">
+    <h1 style="font-size:3rem;color:var(--red);margin-bottom:1rem">⛔ Access Denied</h1>
+    <p style="font-size:1.1rem;color:var(--t2)">You don't have permission to access user management.</p>
+  </div>
+
+  <div id="content" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem">
+      <div>
+        <h1 class="page-title">User Management</h1>
+        <p class="page-subtitle" id="scopeDescription"></p>
+      </div>
+      <button class="btn btn-green" id="addUserBtn" onclick="openAddUserModal()" style="display:none">+ Add User</button>
+    </div>
+
+    <div id="loading" class="loading">Loading users...</div>
+    <div id="empty" class="empty-state" style="display:none">No users found.</div>
+    <div id="user-list" class="user-list" style="display:none"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../supabase-client.js"></script>
+<script>
+let sb = null;
+let currentUser = null;
+let allUsers = [];
+
+async function init() {
+  sb = window.supabaseClient;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.replace('./auth.html');
+      return;
+    }
+
+    const { data: profile, error } = await sb.from('users').select('*').eq('id', session.user.id).single();
+
+    if (error) throw error;
+    if (!profile) throw new Error('Profile not found');
+
+    currentUser = profile;
+
+    // Check role access
+    if (!['super_admin', 'admin', 'admin_m'].includes(currentUser.role)) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+
+    // ponytail: show role in header
+    document.getElementById('currentUserBadge').innerHTML = `
+      <div style="color:var(--t1);font-weight:600">${currentUser.name || currentUser.email}</div>
+      <div style="color:var(--amber);font-size:.65rem;text-transform:uppercase;letter-spacing:1px;margin-top:.25rem">${currentUser.role.replace(/_/g, ' ')}</div>
+    `;
+
+    // Set scope description
+    const scopeMap = {
+      super_admin: 'Managing all users in your organization',
+      admin: 'Managing your downline (direct reports and their teams)',
+      admin_m: 'View-only access to all users in your organization'
+    };
+    document.getElementById('scopeDescription').textContent = scopeMap[currentUser.role] || '';
+
+    // Show/hide add button
+    if (currentUser.role !== 'admin_m') {
+      document.getElementById('addUserBtn').style.display = 'block';
+    }
+
+    document.getElementById('content').style.display = 'block';
+    loadUsers();
+
+  } catch (err) {
+    console.error('[User Management] Init error:', err);
+    alert(err.message.includes('FetchError') || err.message.includes('Failed to fetch')
+      ? '⚠️ Database temporarily unavailable. Please try again shortly.'
+      : `Error: ${err.message}`);
+  }
+}
+
+async function loadUsers() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('empty').style.display = 'none';
+  document.getElementById('user-list').style.display = 'none';
+
+  try {
+    let query = sb.from('users').select('*').eq('org_id', currentUser.org_id);
+
+    // Role-based filtering
+    if (currentUser.role === 'admin') {
+      // ponytail: admin sees downline only - get manager_id chain
+      const downlineIds = await getDownlineIds(currentUser.id);
+      downlineIds.push(currentUser.id); // Include self
+      query = query.in('id', downlineIds);
+    }
+
+    const { data: users, error } = await query.order('name');
+
+    if (error) throw error;
+
+    allUsers = users || [];
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (allUsers.length === 0) {
+      document.getElementById('empty').style.display = 'block';
+      return;
+    }
+
+    renderUserList();
+
+  } catch (err) {
+    console.error('[User Management] Load error:', err);
+    document.getElementById('loading').innerHTML = '<div style="color:var(--red)">⚠️ Database temporarily unavailable. Please try again shortly.</div>';
+  }
+}
+
+// ponytail: recursive downline fetch
+async function getDownlineIds(managerId) {
+  const { data } = await sb.from('users').select('id').eq('manager_id', managerId);
+  if (!data || data.length === 0) return [];
+
+  let ids = data.map(u => u.id);
+  for (const user of data) {
+    const childIds = await getDownlineIds(user.id);
+    ids = ids.concat(childIds);
+  }
+  return ids;
+}
+
+function renderUserList() {
+  const list = document.getElementById('user-list');
+  list.innerHTML = '';
+  list.style.display = 'block';
+
+  allUsers.forEach(user => {
+    const canManage = canManageUser(user);
+
+    const item = document.createElement('div');
+    item.className = 'user-item';
+    item.innerHTML = `
+      <div>
+        <div class="user-name">${user.name || user.email}</div>
+        <div class="user-meta">
+          <span>${user.email}</span>
+          <span class="role-badge role-${user.role}">${user.role.replace(/_/g, ' ')}</span>
+          ${user.status === 'suspended' ? '<span style="color:var(--red);font-weight:700">SUSPENDED</span>' : ''}
+        </div>
+      </div>
+      <div class="user-actions">
+        ${canManage ? `
+          <button class="btn-sm" onclick="editUser('${user.id}')">Edit</button>
+          <button class="btn-sm" onclick="changeRole('${user.id}')">Change Role</button>
+          <button class="btn-sm" onclick="transferUser('${user.id}')">Transfer</button>
+          ${user.status === 'active'
+            ? `<button class="btn-sm btn-danger" onclick="suspendUser('${user.id}')">Suspend</button>`
+            : `<button class="btn-sm" onclick="reactivateUser('${user.id}')">Reactivate</button>`
+          }
+        ` : '<span style="font-size:.75rem;color:var(--t3)">View only</span>'}
+      </div>
+    `;
+
+    list.appendChild(item);
+  });
+}
+
+// ponytail: check if current user can manage target user
+function canManageUser(targetUser) {
+  if (currentUser.role === 'admin_m') return false; // Read-only
+  if (currentUser.role === 'super_admin') {
+    // Can manage everyone except super_duper_admin
+    return targetUser.role !== 'super_duper_admin';
+  }
+  if (currentUser.role === 'admin') {
+    // Can only manage downline (not peers or above)
+    const forbiddenRoles = ['super_duper_admin', 'super_admin', 'admin', 'admin_m'];
+    return !forbiddenRoles.includes(targetUser.role);
+  }
+  return false;
+}
+
+function openAddUserModal() {
+  // ponytail: reuse manage-user Edge Function, show modal
+  alert('Add user modal - uses manage-user Edge Function (DB currently down, will implement after outage)');
+}
+
+function editUser(userId) {
+  alert(`Edit user ${userId} - uses manage-user Edge Function (DB currently down, will implement after outage)`);
+}
+
+function changeRole(userId) {
+  alert(`Change role ${userId} - uses manage-user Edge Function (DB currently down, will implement after outage)`);
+}
+
+function transferUser(userId) {
+  alert(`Transfer user ${userId} - uses manage-user Edge Function (DB currently down, will implement after outage)`);
+}
+
+function suspendUser(userId) {
+  alert(`Suspend user ${userId} - uses manage-user Edge Function (DB currently down, will implement after outage)`);
+}
+
+function reactivateUser(userId) {
+  alert(`Reactivate user ${userId} - uses manage-user Edge Function (DB currently down, will implement after outage)`);
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.replace('./auth.html');
+}
+
+function waitForSupabaseClient(callback, attempts = 0) {
+  if (window.supabaseClient) {
+    callback();
+  } else if (attempts < 50) {
+    setTimeout(() => waitForSupabaseClient(callback, attempts + 1), 100);
+  } else {
+    console.error('supabaseClient never initialized');
+    alert('Failed to load. Please refresh the page.');
+  }
+}
+
+waitForSupabaseClient(init);
+</script>
+
+</body>
+</html>
