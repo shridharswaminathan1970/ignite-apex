@@ -35,13 +35,13 @@ const IGNITE_ROADMAP = [
         label: 'Status quo is Unworkable',
         why: 'Their current situation is visibly broken — you can see it, they can describe it.',
         guidingQuestions: [
-          'What's breaking in your current setup?',
+          'What\'s breaking in your current setup?',
           'How is that impacting day-to-day operations?',
           'What workarounds are you running right now?'
         ],
         peelOnion: [
           'Surface symptom: "Our process is slow"',
-          'Layer 2: "What's making it slow?" → "Manual data entry"',
+          'Layer 2: "What\'s making it slow?" → "Manual data entry"',
           'Root cause: "Why manual?" → "Systems don\'t talk to each other, no integration"'
         ],
         strong: 'Ops team manually re-keys 400 orders/week into 3 systems. Takes 12 hours/week. Error rate ~8%.',
@@ -50,27 +50,27 @@ const IGNITE_ROADMAP = [
       {
         field: 'demand_4u_urgent',
         label: 'Trigger is Urgent',
-        why: 'There's a forcing event — a deadline, regulatory change, or consequence that makes this non-deferrable.',
+        why: 'There\'s a forcing event — a deadline, regulatory change, or consequence that makes this non-deferrable.',
         guidingQuestions: [
-          'What happens if this isn't solved in the next 6 months?',
+          'What happens if this isn\'t solved in the next 6 months?',
           'Is there a deadline or external forcing event?',
-          'What's changed recently that makes this urgent now?'
+          'What\'s changed recently that makes this urgent now?'
         ],
         peelOnion: [
           'Surface symptom: "We need to do this soon"',
           'Layer 2: "Why now?" → "Regulatory deadline / competitive pressure"',
           'Root cause: "What happens if you miss it?" → "Specific consequence with $ or strategic impact"'
         ],
-        strong: 'SOC 2 audit in Q3. Current system can't produce audit trail. Failure = lost enterprise deals.',
-        weak: 'They'd like to fix it eventually.'
+        strong: 'SOC 2 audit in Q3. Current system can\'t produce audit trail. Failure = lost enterprise deals.',
+        weak: 'They\'d like to fix it eventually.'
       },
       {
         field: 'demand_4u_unavoidable',
         label: 'Driver is Unavoidable',
-        why: 'External forces (regulation, market shift, competition) make this unavoidable — it's not optional.',
+        why: 'External forces (regulation, market shift, competition) make this unavoidable — it\'s not optional.',
         guidingQuestions: [
           'What external forces are driving this?',
-          'Is the market/regulation changing in a way you can't ignore?',
+          'Is the market/regulation changing in a way you can\'t ignore?',
           'What happens if you do nothing?'
         ],
         peelOnion: [
@@ -78,17 +78,17 @@ const IGNITE_ROADMAP = [
           'Layer 2: "What specific external force?" → "Regulation / Competition / Tech shift"',
           'Root cause: "Why can\'t you wait?" → "Consequence is outside your control and cannot be deferred"'
         ],
-        strong: 'GDPR compliance deadline. Current system can't do right-to-be-forgotten. Fines = €20M or 4% revenue.',
+        strong: 'GDPR compliance deadline. Current system can\'t do right-to-be-forgotten. Fines = €20M or 4% revenue.',
         weak: 'Management thinks it would be nice to have.'
       },
       {
         field: 'demand_4u_underserved',
         label: 'Currently Underserved',
-        why: 'No existing solution solves this well — there's a gap your product uniquely fills.',
+        why: 'No existing solution solves this well — there\'s a gap your product uniquely fills.',
         guidingQuestions: [
           'What have you tried so far?',
-          'Why didn't those solutions work?',
-          'What's missing from current alternatives?'
+          'Why didn\'t those solutions work?',
+          'What\'s missing from current alternatives?'
         ],
         peelOnion: [
           'Surface symptom: "Current tools don\'t work"',
@@ -96,7 +96,7 @@ const IGNITE_ROADMAP = [
           'Root cause: "Why don\'t they solve it?" → "Specific gap no existing solution fills"'
         ],
         strong: 'Tried 3 competitors. All lack real-time sync. Built in-house workaround, but it breaks monthly.',
-        weak: 'They haven't really looked at alternatives yet.'
+        weak: 'They haven\'t really looked at alternatives yet.'
       }
     ]
   },
@@ -108,8 +108,8 @@ const IGNITE_ROADMAP = [
     icon: '✓',
     why: {
       title: 'Stage 1 — Why this gate exists',
-      proving: 'You're proving they've engaged with you AND the pain is quantified. You have an account, contact, logged activity, and a dollar figure on the pain.',
-      cost: 'Moving to Discovery without this = you're chasing ghosts. No engagement + no quantified pain = no deal.'
+      proving: 'You\'re proving they\'ve engaged with you AND the pain is quantified. You have an account, contact, logged activity, and a dollar figure on the pain.',
+      cost: 'Moving to Discovery without this = you\'re chasing ghosts. No engagement + no quantified pain = no deal.'
     },
     gates: [
       {
@@ -131,26 +131,26 @@ const IGNITE_ROADMAP = [
       {
         field: 'gate_prospect_engaged',
         label: 'Prospect engaged',
-        why: 'They've responded — this isn't cold outreach ghosting.',
+        why: 'They\'ve responded — this isn\'t cold outreach ghosting.',
         guidingQuestions: [
           'Have you had a live conversation (call/meeting)?',
           'Did they ask follow-up questions?',
           'Did they introduce you to anyone else?'
         ],
-        strong: '45-min discovery call logged. Contact asked for technical details, intro'd their VP Engineering.',
+        strong: '45-min discovery call logged. Contact asked for technical details, intro\'d their VP Engineering.',
         weak: 'They opened my email.'
       },
       {
         field: 'gate_quantified_pain',
         label: 'Pain is quantified',
-        why: 'You need a dollar figure or measurable impact. "It's a problem" ≠ quantified.',
+        why: 'You need a dollar figure or measurable impact. "It\'s a problem" ≠ quantified.',
         guidingQuestions: [
           'What is this costing you today — in dollars, hours, or risk?',
           'How did you calculate that?',
           'Who confirmed this number?'
         ],
         strong: '$180k/year in manual labor + $60k in error correction. CFO confirmed budget exists.',
-        weak: 'They said it's expensive.'
+        weak: 'They said it\'s expensive.'
       }
     ]
   },
@@ -162,8 +162,8 @@ const IGNITE_ROADMAP = [
     icon: '🔍',
     why: {
       title: 'Stage 2 — Why this gate exists',
-      proving: 'You're proving WHO will buy (Economic Buyer), WHAT the pain costs (Metrics), WHO will champion internally (Champion), and WHY it ties to business outcomes.',
-      cost: 'No Economic Buyer = you're selling to someone who can't say yes. No Metrics = no ROI case. No Champion = dead deal.'
+      proving: 'You\'re proving WHO will buy (Economic Buyer), WHAT the pain costs (Metrics), WHO will champion internally (Champion), and WHY it ties to business outcomes.',
+      cost: 'No Economic Buyer = you\'re selling to someone who can\'t say yes. No Metrics = no ROI case. No Champion = dead deal.'
     },
     gates: [
       {
@@ -172,9 +172,9 @@ const IGNITE_ROADMAP = [
         why: 'The person who controls the budget and can sign the contract.',
         guidingQuestions: [
           'Who has budget authority for this purchase?',
-          'What's their title?',
+          'What\'s their title?',
           'Have you met them or been introduced?',
-          'What's their role in the decision process?'
+          'What\'s their role in the decision process?'
         ],
         strong: 'VP Operations, $500k budget authority. Met on Zoom, asked about implementation timeline.',
         weak: 'Someone mentioned the CFO approves these things.'
@@ -185,12 +185,12 @@ const IGNITE_ROADMAP = [
         why: 'The $ size of the pain, confirmed by multiple sources.',
         guidingQuestions: [
           'What KPIs are you tracking today that this impacts?',
-          'What's the cost per incident/error/delay?',
+          'What\'s the cost per incident/error/delay?',
           'How many incidents/errors/delays per month?',
           'Who owns these metrics internally?'
         ],
         strong: '$240k/year waste. 8% error rate × 5,000 orders/month × $60 avg correction cost. Ops Director confirmed.',
-        weak: 'It's probably costing them a lot.'
+        weak: 'It\'s probably costing them a lot.'
       },
       {
         field: 'gate_champion_emerging',
@@ -200,7 +200,7 @@ const IGNITE_ROADMAP = [
           'Who internally is pushing hardest for this change?',
           'Have they introduced you to other stakeholders?',
           'Are they helping you navigate the org?',
-          'What's in it for them personally if this gets done?'
+          'What\'s in it for them personally if this gets done?'
         ],
         strong: 'Director of Sales Ops. Introduced us to VP Sales, CFO, IT. Says her bonus tied to pipeline accuracy.',
         weak: 'The contact seems interested.'
@@ -212,9 +212,9 @@ const IGNITE_ROADMAP = [
         guidingQuestions: [
           'How does solving this impact company goals?',
           'What strategic initiative does this support?',
-          'What happens to the business if this isn't fixed?'
+          'What happens to the business if this isn\'t fixed?'
         ],
-        strong: 'CEO's #1 priority: improve forecast accuracy. Current miss rate = 15%. Board wants <5%.',
+        strong: 'CEO\'s #1 priority: improve forecast accuracy. Current miss rate = 15%. Board wants <5%.',
         weak: 'It would make things better.'
       }
     ]
@@ -227,14 +227,14 @@ const IGNITE_ROADMAP = [
     icon: '🎯',
     why: {
       title: 'Stage 3 — Why this gate exists',
-      proving: 'You're proving the solution FITS. They've seen it, confirmed fit, and documented HOW they'll decide and WHO is involved.',
-      cost: 'No demo = they don't know what they're buying. No Decision Criteria = they'll pick a competitor on price. No Decision Process = deal stalls forever.'
+      proving: 'You\'re proving the solution FITS. They\'ve seen it, confirmed fit, and documented HOW they\'ll decide and WHO is involved.',
+      cost: 'No demo = they don\'t know what they\'re buying. No Decision Criteria = they\'ll pick a competitor on price. No Decision Process = deal stalls forever.'
     },
     gates: [
       {
         field: 'gate_demo_delivered',
         label: 'Tailored demo/POC delivered',
-        why: 'They've seen the product solving THEIR problem, not a generic pitch.',
+        why: 'They\'ve seen the product solving THEIR problem, not a generic pitch.',
         guidingQuestions: [
           'Did you demo against their actual use case?',
           'Who attended the demo?',
@@ -247,7 +247,7 @@ const IGNITE_ROADMAP = [
       {
         field: 'gate_prospect_confirms_fit',
         label: 'Prospect confirms solution fit',
-        why: 'They've explicitly said "Yes, this solves our problem."',
+        why: 'They\'ve explicitly said "Yes, this solves our problem."',
         guidingQuestions: [
           'Did they explicitly confirm this solves their problem?',
           'What did they say?',
@@ -260,11 +260,11 @@ const IGNITE_ROADMAP = [
       {
         field: 'gate_decision_criteria_documented',
         label: 'Decision Criteria documented',
-        why: 'You know HOW they'll decide (features, price, security, support, etc.) and you're aligned.',
+        why: 'You know HOW they\'ll decide (features, price, security, support, etc.) and you\'re aligned.',
         guidingQuestions: [
           'What are your top 3 criteria for choosing a vendor?',
           'How will you score/rank vendors?',
-          'What's a dealbreaker?',
+          'What\'s a dealbreaker?',
           'How do we compare on each criterion?'
         ],
         strong: 'Criteria: (1) Real-time sync, (2) SOC 2, (3) <$10k/month. We meet all 3. Documented in their vendor scorecard.',
@@ -276,7 +276,7 @@ const IGNITE_ROADMAP = [
         why: 'You know WHO is involved, WHEN they meet, WHAT steps remain, and WHO has final say.',
         guidingQuestions: [
           'Who needs to approve this purchase?',
-          'What's the sequence of approvals?',
+          'What\'s the sequence of approvals?',
           'When does each approval happen?',
           'What could delay or block approval?'
         ],
@@ -293,8 +293,8 @@ const IGNITE_ROADMAP = [
     icon: '📄',
     why: {
       title: 'Stage 4 — Why this gate exists',
-      proving: 'You're proving the business case is IN FRONT OF the Economic Buyer, ROI is tied to their metrics, and the Paper Process (legal, procurement, security review) is mapped.',
-      cost: 'No business case to EB = you're selling to someone who can't buy. No paper process = deal dies in legal/procurement.'
+      proving: 'You\'re proving the business case is IN FRONT OF the Economic Buyer, ROI is tied to their metrics, and the Paper Process (legal, procurement, security review) is mapped.',
+      cost: 'No business case to EB = you\'re selling to someone who can\'t buy. No paper process = deal dies in legal/procurement.'
     },
     gates: [
       {
@@ -335,13 +335,13 @@ const IGNITE_ROADMAP = [
         label: 'Paper Process mapped',
         why: 'You know Legal, Security, Procurement steps and timelines.',
         guidingQuestions: [
-          'What's your contracting/procurement process?',
+          'What\'s your contracting/procurement process?',
           'Who reviews contracts (Legal, Security, Procurement)?',
           'How long does each review take?',
           'Any standard terms/redlines we should expect?'
         ],
         strong: 'Process: (1) Legal review (5 days) → (2) Security review (3 days) → (3) Procurement (2 days). Standard MSA, no custom terms.',
-        weak: 'They'll send it to Legal.'
+        weak: 'They\'ll send it to Legal.'
       },
       {
         field: 'gate_meddpicc_complete',
@@ -361,21 +361,21 @@ const IGNITE_ROADMAP = [
     icon: '🤝',
     why: {
       title: 'Stage 5 — Why this gate exists',
-      proving: 'You're proving they've verbally committed, terms are in final negotiation, close plan has dates, and competition is neutralized.',
-      cost: 'No verbal = they're still shopping. No close plan = "we'll get back to you" = dead. Competition not neutralized = they pick someone else.'
+      proving: 'You\'re proving they\'ve verbally committed, terms are in final negotiation, close plan has dates, and competition is neutralized.',
+      cost: 'No verbal = they\'re still shopping. No close plan = "we\'ll get back to you" = dead. Competition not neutralized = they pick someone else.'
     },
     gates: [
       {
         field: 'gate_verbal_commitment',
         label: 'Verbal commitment received',
-        why: 'They've said "Yes, we're moving forward with you" (not just "we like you").',
+        why: 'They\'ve said "Yes, we\'re moving forward with you" (not just "we like you").',
         guidingQuestions: [
-          'Did they explicitly say they're choosing you?',
+          'Did they explicitly say they\'re choosing you?',
           'Who said it?',
           'What were their exact words?'
         ],
-        strong: 'CFO: "We're moving forward with you. Let's finalize terms and get this signed by EOM."',
-        weak: 'They said we're their top choice.'
+        strong: 'CFO: "We\'re moving forward with you. Let\'s finalize terms and get this signed by EOM."',
+        weak: 'They said we\'re their top choice.'
       },
       {
         field: 'gate_terms_in_negotiation',
@@ -384,7 +384,7 @@ const IGNITE_ROADMAP = [
         guidingQuestions: [
           'What terms are still being negotiated?',
           'How far apart are you?',
-          'What's the blocker to final agreement?'
+          'What\'s the blocker to final agreement?'
         ],
         strong: 'Agreed on $120k/year, 3-year term. Negotiating payment terms: annual vs quarterly. Legal reviewing MSA redlines.',
         weak: 'Still discussing pricing.'
@@ -394,7 +394,7 @@ const IGNITE_ROADMAP = [
         label: 'Mutual close plan with dates',
         why: 'Both sides have committed to a timeline with specific dates/milestones.',
         guidingQuestions: [
-          'What's the target close date?',
+          'What\'s the target close date?',
           'What milestones remain before signing?',
           'Do they have the same timeline as you?'
         ],
@@ -415,14 +415,14 @@ const IGNITE_ROADMAP = [
       {
         field: 'gate_competition_neutralized',
         label: 'Competition neutralized',
-        why: 'They've explicitly chosen you over alternatives.',
+        why: 'They\'ve explicitly chosen you over alternatives.',
         guidingQuestions: [
           'Who else are they considering?',
           'Have they explicitly ruled them out?',
           'Why did they choose you?'
         ],
         strong: 'Evaluated Competitor X and Y. Chose us because of real-time sync + better support. Competitor X out, Y ruled out week 1.',
-        weak: 'We think we're ahead.'
+        weak: 'We think we\'re ahead.'
       }
     ]
   },
@@ -441,7 +441,7 @@ const IGNITE_ROADMAP = [
       {
         field: 'gate_contract_signed',
         label: 'Signed contract received',
-        why: 'Actual signature, not "they said they'll sign."',
+        why: 'Actual signature, not "they said they\'ll sign."',
         guidingQuestions: [],
         strong: 'Fully executed MSA + SOW received 6/28. Payment terms: Net-30, first invoice sent.',
         weak: 'They said they signed it.'
@@ -456,7 +456,7 @@ const IGNITE_ROADMAP = [
     icon: '🏗️',
     why: {
       title: 'Post-Sale — Why CEMENT exists',
-      proving: 'You didn't just win the deal — you're winning retention for 3-5 years. CEMENT = Customer success foundation.',
+      proving: 'You didn\'t just win the deal — you\'re winning retention for 3-5 years. CEMENT = Customer success foundation.',
       cost: 'Win the deal, lose the renewal = churn. Revenue today ≠ revenue retained. Great post-sale = 3-5 year LTV.'
     }
   }
@@ -555,7 +555,7 @@ function renderStageDetail(stageId, opportunity) {
       <div style="background:#FEF3C7;border-left:4px solid #D97706;border-radius:8px;padding:1.5rem;margin-bottom:2rem">
         <div style="font-size:.9rem;font-weight:700;color:#B45309;margin-bottom:.75rem">${stage.why.title}</div>
         <div style="font-size:.85rem;color:#1A1510;line-height:1.6;margin-bottom:1rem">
-          <strong>What you're proving:</strong> ${stage.why.proving}
+          <strong>What you\'re proving:</strong> ${stage.why.proving}
         </div>
         <div style="font-size:.85rem;color:#C2410C;line-height:1.6;font-weight:600">
           <strong>Cost of faking it:</strong> ${stage.why.cost}
@@ -694,7 +694,7 @@ function renderGates(gates, opportunity) {
                 ${isMet ? 'checked' : ''}
                 onchange="toggleGate('${gate.field}')"
                 style="width:20px;height:20px;cursor:pointer">
-              <span style="font-size:.85rem;color:#0D0C08;font-weight:600">Mark as complete (I've confirmed this gate is met)</span>
+              <span style="font-size:.85rem;color:#0D0C08;font-weight:600">Mark as complete (I\'ve confirmed this gate is met)</span>
             </label>
           </div>
         </div>
