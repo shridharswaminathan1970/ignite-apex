@@ -1279,7 +1279,16 @@ window.getAICoaching = async function(stageId, gateField) {
     draftEl.innerHTML = `
       <div style="font-size:.75rem;font-weight:700;color:#1E40AF;margin-bottom:.25rem">DRAFT ANSWER (review & edit before using):</div>
       <div style="background:#fff;border-radius:6px;padding:.75rem;font-size:.85rem;color:#0D0C08;line-height:1.6">${coaching.draft}</div>
-      <div style="font-size:.7rem;color:#6B5D4F;margin-top:.5rem">Confidence: ${coaching.confidence.toUpperCase()}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.5rem">
+        <div style="font-size:.7rem;color:#6B5D4F">Confidence: ${coaching.confidence.toUpperCase()}</div>
+        <button
+          onclick="document.getElementById('gate-${gateField}').value = this.closest('[id^=ai-draft-]').dataset.draft; document.getElementById('gate-${gateField}').dispatchEvent(new Event('change'));"
+          style="background:#10B981;color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer"
+          onmouseover="this.style.background='#059669'"
+          onmouseout="this.style.background='#10B981'">
+          ✅ Use This Draft
+        </button>
+      </div>
     `;
 
     if (coaching.weakEvidence && coaching.weakEvidence.length > 0) {
