@@ -1012,18 +1012,30 @@ async function triggerRawLeadAICoach(opportunity) {
     let coaching;
     try {
       const responseText = await response.text();
-      // Strip markdown code fences and any text after closing brace
-      let jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const closingBraceIdx = jsonText.lastIndexOf('}');
-      if (closingBraceIdx !== -1) {
-        jsonText = jsonText.substring(0, closingBraceIdx + 1);
+      // Step 1: Strip markdown fences
+      let cleaned = responseText
+        .replace(/```json\n?/gi, '')
+        .replace(/```\n?/gi, '')
+        .trim();
+
+      // Step 2: Extract JSON object only (everything between first { and last })
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
       }
-      coaching = JSON.parse(jsonText);
+
+      // Step 3: Parse JSON
+      coaching = JSON.parse(cleaned);
     } catch (parseErr) {
-      console.error('[AI Coach] JSON parse error:', parseErr);
-      // Fallback: try to extract JSON from response
-      const responseText = await response.text();
-      coaching = { draft: responseText.replace(/[{}]/g, '').replace(/"|'/g, ''), confidence: 'low' };
+      console.error('[AI Coach] JSON parse error:', parseErr, 'Response:', await response.text());
+      // Fallback: show cleaned text without JSON syntax
+      coaching = {
+        draft: (await response.text()).replace(/[{}"]/g, '').replace(/,\n/g, '\n'),
+        confidence: 'low',
+        weakEvidence: [],
+        nextAction: 'Review response manually'
+      };
     }
 
     // Confidence badge styling
@@ -1235,16 +1247,23 @@ window.getAICoaching = async function(stageId, gateField) {
     let coaching;
     try {
       const responseText = await response.text();
-      // Strip markdown code fences and any text after closing brace
-      let jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const closingBraceIdx = jsonText.lastIndexOf('}');
-      if (closingBraceIdx !== -1) {
-        jsonText = jsonText.substring(0, closingBraceIdx + 1);
+      // Step 1: Strip markdown fences
+      let cleaned = responseText
+        .replace(/```json\n?/gi, '')
+        .replace(/```\n?/gi, '')
+        .trim();
+
+      // Step 2: Extract JSON object only (everything between first { and last })
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
       }
-      coaching = JSON.parse(jsonText);
+
+      // Step 3: Parse JSON
+      coaching = JSON.parse(cleaned);
     } catch (parseErr) {
       console.error('[AI Coaching] JSON parse error:', parseErr);
-      // Fallback: display error
       throw new Error('Failed to parse AI response');
     }
 
