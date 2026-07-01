@@ -1009,16 +1009,64 @@ async function triggerRawLeadAICoach(opportunity) {
 
     if (!response.ok) throw new Error('AI unavailable');
 
-    const coaching = await response.json();
+    let coaching;
+    try {
+      const responseText = await response.text();
+      // Strip markdown code fences and any text after closing brace
+      let jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const closingBraceIdx = jsonText.lastIndexOf('}');
+      if (closingBraceIdx !== -1) {
+        jsonText = jsonText.substring(0, closingBraceIdx + 1);
+      }
+      coaching = JSON.parse(jsonText);
+    } catch (parseErr) {
+      console.error('[AI Coach] JSON parse error:', parseErr);
+      // Fallback: try to extract JSON from response
+      const responseText = await response.text();
+      coaching = { draft: responseText.replace(/[{}]/g, '').replace(/"|'/g, ''), confidence: 'low' };
+    }
+
+    // Confidence badge styling
+    const confidenceBadges = {
+      low: { bg: '#FEE2E2', text: '#991B1B', label: 'LOW' },
+      medium: { bg: '#FEF3C7', text: '#92400E', label: 'MEDIUM' },
+      high: { bg: '#D1FAE5', text: '#065F46', label: 'HIGH' }
+    };
+    const badge = confidenceBadges[coaching.confidence] || confidenceBadges.medium;
 
     container.innerHTML = `
       <div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:8px;padding:1.25rem">
-        <div style="display:flex;align-items:center;gap:.5rem;color:#B45309;margin-bottom:.75rem">
-          <span>🤖</span>
-          <span style="font-size:.85rem;font-weight:700">AI Coach</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="display:flex;align-items:center;gap:.5rem;color:#B45309">
+            <span>🤖</span>
+            <span style="font-size:.85rem;font-weight:700">AI Coach</span>
+          </div>
+          <span style="background:${badge.bg};color:${badge.text};padding:.2rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700">${badge.label}</span>
         </div>
-        <div style="font-size:.85rem;color:#0D0C08;line-height:1.6">
-          ${coaching.draft || coaching.nextAction || 'Complete the pre-check questions to get specific coaching.'}
+
+        <div style="border-top:1px solid #E5DFD5;padding-top:1rem">
+          ${coaching.draft ? `
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.75rem;font-weight:700;color:#B45309;margin-bottom:.5rem">📋 Coaching Note</div>
+              <div style="font-size:.85rem;color:#0D0C08;line-height:1.6">${coaching.draft}</div>
+            </div>
+          ` : ''}
+
+          ${coaching.weakEvidence && coaching.weakEvidence.length > 0 ? `
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.75rem;font-weight:700;color:#DC2626;margin-bottom:.5rem">⚠️ Weak Evidence Flags</div>
+              <ul style="margin:0;padding-left:1.5rem;font-size:.85rem;color:#991B1B;line-height:1.8">
+                ${coaching.weakEvidence.map(flag => `<li>${flag}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${coaching.nextAction ? `
+            <div style="background:#FFF7ED;border:1px solid #F59E0B;border-radius:6px;padding:.75rem">
+              <div style="font-size:.75rem;font-weight:700;color:#C2410C;margin-bottom:.5rem">🎯 Next Action</div>
+              <div style="font-size:.85rem;color:#0D0C08;font-weight:600">${coaching.nextAction}</div>
+            </div>
+          ` : ''}
         </div>
       </div>
     `;
@@ -1184,7 +1232,21 @@ window.getAICoaching = async function(stageId, gateField) {
       throw new Error(error.error || 'AI coaching failed');
     }
 
-    const coaching = await response.json();
+    let coaching;
+    try {
+      const responseText = await response.text();
+      // Strip markdown code fences and any text after closing brace
+      let jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const closingBraceIdx = jsonText.lastIndexOf('}');
+      if (closingBraceIdx !== -1) {
+        jsonText = jsonText.substring(0, closingBraceIdx + 1);
+      }
+      coaching = JSON.parse(jsonText);
+    } catch (parseErr) {
+      console.error('[AI Coaching] JSON parse error:', parseErr);
+      // Fallback: display error
+      throw new Error('Failed to parse AI response');
+    }
 
     // Display coaching
     const container = document.getElementById(`ai-coaching-${gateField}`);
