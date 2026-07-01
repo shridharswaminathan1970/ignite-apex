@@ -16,7 +16,13 @@ const IGNITE_ROADMAP = [
       title: 'Why this matters',
       proving: 'This is an unqualified inbound or outbound contact. No validation yet.',
       cost: 'Moving forward without validation = wasted cycles on deals that never close.'
-    }
+    },
+    preCheckQuestions: [
+      'What triggered this lead entering your pipeline?',
+      'Have you identified a named individual with budget authority?',
+      'What is the suspected pain — is it Unworkable, Urgent, Unavoidable, or Underserved?',
+      'Do you have enough to justify spending time on IGNITE diagnostic?'
+    ]
   },
   {
     id: 'ignite_gate',
@@ -472,11 +478,11 @@ function renderRoadmapRail(opportunity) {
       <div style="font-size:1.2rem;font-weight:700;color:#0D0C08;margin-bottom:1rem;display:flex;align-items:center;gap:.75rem">
         <span>🗺️</span>
         <span>Qualification Roadmap</span>
-        <span style="font-size:.7rem;background:#D97706;color:#fff;padding:.25rem .75rem;border-radius:6px;font-weight:700;letter-spacing:.5px">YOU ARE HERE: ${IGNITE_ROADMAP[currentStageIndex].name}</span>
+        <span style="font-size:.6rem;background:#D97706;color:#fff;padding:.2rem .5rem;border-radius:4px;font-weight:700;letter-spacing:.3px">YOU ARE HERE: ${IGNITE_ROADMAP[currentStageIndex].name}</span>
       </div>
 
       <!-- Horizontal Rail -->
-      <div style="display:flex;align-items:center;gap:.5rem;overflow-x:auto;padding:1rem 0">
+      <div style="display:flex;align-items:center;gap:.3rem;overflow:visible;padding:1rem 0">
   `;
 
   IGNITE_ROADMAP.forEach((stage, idx) => {
@@ -496,16 +502,16 @@ function renderRoadmapRail(opportunity) {
     }
 
     html += `
-      <div onclick="selectRoadmapStage('${stage.id}')" style="cursor:pointer;transition:all .2s;min-width:140px;background:${bgColor};border:3px solid ${borderColor};border-radius:10px;padding:1rem;text-align:center;">
-        <div style="font-size:2rem;margin-bottom:.5rem">${stage.icon}</div>
-        <div style="font-size:.75rem;font-weight:700;color:${textColor};margin-bottom:.25rem">${stage.name}</div>
-        <div style="font-size:1.1rem;font-weight:800;color:${textColor}">${stage.percent}%</div>
-        ${isCurrent ? '<div style="font-size:.7rem;color:' + textColor + ';margin-top:.25rem">▼ YOU ARE HERE</div>' : ''}
+      <div onclick="selectRoadmapStage('${stage.id}')" style="cursor:pointer;transition:all .2s;min-width:100px;max-width:110px;background:${bgColor};border:2px solid ${borderColor};border-radius:8px;padding:.6rem .4rem;text-align:center;">
+        <div style="font-size:24px;margin-bottom:.3rem">${stage.icon}</div>
+        <div style="font-size:11px;font-weight:700;color:${textColor};margin-bottom:.2rem;line-height:1.2">${stage.name}</div>
+        <div style="font-size:12px;font-weight:800;color:${textColor}">${stage.percent}%</div>
+        ${isCurrent ? '<div style="font-size:10px;color:' + textColor + ';margin-top:.2rem">▼</div>' : ''}
       </div>
     `;
 
     if (idx < IGNITE_ROADMAP.length - 1) {
-      html += `<div style="font-size:1.5rem;color:#C8BBAA">→</div>`;
+      html += `<div style="font-size:1.2rem;color:#C8BBAA">→</div>`;
     }
   });
 
@@ -536,6 +542,85 @@ function mapStageToRoadmapId(stage) {
   return map[stage] || 'raw_lead';
 }
 
+// Render Raw Lead pre-check questions with AI coaching
+function renderRawLeadPreCheck(opportunity) {
+  const questions = [
+    { id: 'raw_lead_trigger', label: 'What triggered this lead entering your pipeline?' },
+    { id: 'raw_lead_authority', label: 'Have you identified a named individual with budget authority?' },
+    { id: 'raw_lead_pain', label: 'What is the suspected pain — is it Unworkable, Urgent, Unavoidable, or Underserved?' },
+    { id: 'raw_lead_justify', label: 'Do you have enough to justify spending time on IGNITE diagnostic?' }
+  ];
+
+  const answeredCount = questions.filter(q => opportunity[q.id] && opportunity[q.id].trim()).length;
+  const canAdvance = answeredCount >= 2;
+
+  let html = `
+    <div style="background:#FFF7ED;border:2px solid #F59E0B;border-radius:12px;padding:1.5rem;margin-bottom:2rem">
+      <div style="font-size:1rem;font-weight:700;color:#C2410C;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+        <span>🔍</span>
+        <span>IGNITE Gate Pre-Check</span>
+      </div>
+      <div style="font-size:.85rem;color:#92400E;margin-bottom:1.5rem">
+        Answer these questions before advancing to the IGNITE Entry Gate. The AI Coach will help you determine if this lead is worth qualifying.
+      </div>
+
+      <!-- Progress -->
+      <div style="background:#fff;border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+        <div style="font-size:.75rem;font-weight:700;color:#6B5D4F;margin-bottom:.5rem">Pre-Qualification Progress</div>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden">
+            <div style="width:${(answeredCount / 4) * 100}%;height:100%;background:#10B981;transition:width .3s"></div>
+          </div>
+          <div style="font-size:.85rem;font-weight:700;color:#0D0C08">${answeredCount}/4</div>
+        </div>
+        <div style="font-size:.75rem;color:#6B5D4F;margin-top:.5rem">
+          ${canAdvance ? '✅ Complete 2+ questions — ready to advance' : `❌ Complete ${2 - answeredCount} more to advance`}
+        </div>
+      </div>
+
+      <!-- Questions -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        ${questions.map(q => {
+          const value = opportunity[q.id] || '';
+          return `
+            <div style="background:#fff;border:1px solid #E5DFD5;border-radius:8px;padding:1rem">
+              <label style="display:block;font-size:.85rem;font-weight:600;color:#0D0C08;margin-bottom:.5rem">${q.label}</label>
+              <textarea
+                id="${q.id}"
+                onchange="saveRawLeadAnswer('${q.id}')"
+                placeholder="Type your answer..."
+                style="width:100%;min-height:60px;padding:.5rem;border:1px solid #C8BBAA;border-radius:6px;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical"
+              >${value}</textarea>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- AI Coach Panel -->
+      <div id="raw-lead-ai-coach" style="margin-top:1.5rem"></div>
+
+      <!-- Advance Button -->
+      ${canAdvance ? `
+        <div style="margin-top:1.5rem;text-align:center">
+          <button
+            onclick="advanceToIgniteGate('${opportunity.id}')"
+            style="background:#10B981;color:#fff;border:none;padding:.75rem 1.5rem;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s"
+            onmouseover="this.style.background='#059669'"
+            onmouseout="this.style.background='#10B981'"
+          >
+            ✓ Advance to IGNITE Entry Gate (5%)
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  // Trigger AI coaching automatically after render
+  setTimeout(() => triggerRawLeadAICoach(opportunity), 500);
+
+  return html;
+}
+
 // Render stage detail with why-layer and gates
 function renderStageDetail(stageId, opportunity) {
   const stage = IGNITE_ROADMAP.find(s => s.id === stageId);
@@ -562,8 +647,11 @@ function renderStageDetail(stageId, opportunity) {
         </div>
       </div>
 
+      <!-- Raw Lead Pre-Check Questions -->
+      ${stage.id === 'raw_lead' ? renderRawLeadPreCheck(opportunity) : ''}
+
       <!-- Gates -->
-      ${stage.gates ? renderGates(stage.gates, opportunity) : '<div style="text-align:center;color:#9C8D7A;padding:2rem">No gates for this stage</div>'}
+      ${stage.gates ? renderGates(stage.gates, opportunity) : (stage.id === 'raw_lead' ? '' : '<div style="text-align:center;color:#9C8D7A;padding:2rem">No gates for this stage</div>')}
 
       <!-- IGNITE-specific: JTBD + 6 Diagnostics -->
       ${stage.id === 'ignite_gate' ? renderIGNITEExtras(opportunity) : ''}
@@ -836,6 +924,117 @@ window.QualificationRoadmap = {
     }
   }
 };
+
+// Raw Lead helper functions
+window.saveRawLeadAnswer = async function(field) {
+  const value = document.getElementById(field).value;
+  try {
+    await window.supabaseClient
+      .from('opportunities')
+      .update({ [field]: value })
+      .eq('id', oppId);
+    console.log(`[Roadmap] Saved ${field}`);
+
+    // Re-render to update progress
+    const { data: opp } = await window.supabaseClient
+      .from('opportunities')
+      .select('*')
+      .eq('id', oppId)
+      .single();
+
+    if (opp) {
+      const stageDetail = renderStageDetail('raw_lead', opp);
+      document.getElementById('stage-detail-container').innerHTML = stageDetail;
+    }
+  } catch (err) {
+    console.error(`[Roadmap] Save error:`, err);
+  }
+};
+
+window.advanceToIgniteGate = async function(opportunityId) {
+  try {
+    await window.supabaseClient
+      .from('opportunities')
+      .update({ stage: 'IGNITE Entry Gate', pipeline_stage: 'Lead' })
+      .eq('id', opportunityId);
+
+    // Reload opportunity
+    window.location.reload();
+  } catch (err) {
+    console.error('[Roadmap] Advance error:', err);
+    alert('Failed to advance stage');
+  }
+};
+
+async function triggerRawLeadAICoach(opportunity) {
+  const container = document.getElementById('raw-lead-ai-coach');
+  if (!container) return;
+
+  // Show loading
+  container.innerHTML = `
+    <div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:8px;padding:1.25rem">
+      <div style="display:flex;align-items:center;gap:.5rem;color:#B45309;margin-bottom:.75rem">
+        <span>🤖</span>
+        <span style="font-size:.85rem;font-weight:700">AI Coach</span>
+      </div>
+      <div style="font-size:.85rem;color:#92400E">Loading coaching...</div>
+    </div>
+  `;
+
+  try {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const answers = [
+      opportunity.raw_lead_trigger,
+      opportunity.raw_lead_authority,
+      opportunity.raw_lead_pain,
+      opportunity.raw_lead_justify
+    ].filter(a => a && a.trim()).join('\n');
+
+    const response = await fetch(`${window.supabaseClient.supabaseUrl}/functions/v1/ai-coaching`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        context: 'raw_lead',
+        dealName: opportunity.name || opportunity.company_name,
+        ownerName: opportunity.owner_name || 'rep',
+        currentAnswers: answers,
+        promptInstruction: 'This rep has a new Raw Lead. Give them 2-3 specific questions to ask the prospect to determine if this lead is worth running through the IGNITE diagnostic. Be concise, specific, and practical.'
+      })
+    });
+
+    if (!response.ok) throw new Error('AI unavailable');
+
+    const coaching = await response.json();
+
+    container.innerHTML = `
+      <div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:8px;padding:1.25rem">
+        <div style="display:flex;align-items:center;gap:.5rem;color:#B45309;margin-bottom:.75rem">
+          <span>🤖</span>
+          <span style="font-size:.85rem;font-weight:700">AI Coach</span>
+        </div>
+        <div style="font-size:.85rem;color:#0D0C08;line-height:1.6">
+          ${coaching.draft || coaching.nextAction || 'Complete the pre-check questions to get specific coaching.'}
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    console.error('[AI Coach] Error:', err);
+    container.innerHTML = `
+      <div style="background:#F3F4F6;border-left:4px solid #9CA3AF;border-radius:8px;padding:1.25rem">
+        <div style="display:flex;align-items:center;gap:.5rem;color:#6B7280;margin-bottom:.5rem">
+          <span>🤖</span>
+          <span style="font-size:.85rem;font-weight:700">AI Coach</span>
+        </div>
+        <div style="font-size:.85rem;color:#6B7280">AI coaching temporarily unavailable. Complete the questions above and advance when ready.</div>
+      </div>
+    `;
+  }
+}
 
 // Global functions for UI interactions
 window.selectRoadmapStage = function(stageId) {

@@ -15,11 +15,17 @@ interface CoachingRequest {
   stageId?: string
   gateField?: string
 
-  // Sales OS mode (new)
-  context?: 'sales_os'
+  // Sales OS mode
+  context?: 'sales_os' | 'raw_lead'
   gateLabel?: string
   currentAnswer?: string
   prospectName?: string
+
+  // Raw Lead mode
+  dealName?: string
+  ownerName?: string
+  currentAnswers?: string
+  promptInstruction?: string
 }
 
 interface CoachingResponse {
@@ -58,8 +64,21 @@ serve(async (req) => {
     let context: string
     let gateIdentifier: string
 
-    // Check if this is Sales OS mode or CRM mode
-    if (requestData.context === 'sales_os') {
+    // Check context mode
+    if (requestData.context === 'raw_lead') {
+      // Raw Lead mode - coaching for pre-IGNITE qualification
+      context = `Deal: ${requestData.dealName || 'Unknown'}
+Owner: ${requestData.ownerName || 'Unknown'}
+Stage: Raw Lead (0%)
+
+Current Pre-Check Answers:
+${requestData.currentAnswers || '(none yet)'}
+
+${requestData.promptInstruction || 'Provide coaching for this Raw Lead.'}
+`
+      gateIdentifier = 'raw_lead'
+
+    } else if (requestData.context === 'sales_os') {
       // Sales OS mode - simpler, no database lookup
       context = `Prospect: ${requestData.prospectName || 'Unknown'}
 Gate: ${requestData.gateLabel}
