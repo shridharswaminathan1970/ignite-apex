@@ -720,21 +720,20 @@ function renderGates(gates, opportunity) {
         </div>
 
         <div style="border-top:1px solid ${isMet ? '#A7F3D0' : '#FCA5A5'};padding-top:1rem;margin-top:1rem">
+          <!-- AI Coaching (auto-loaded) -->
+          <div id="ai-coaching-${gate.field}" style="margin-bottom:1rem;background:#DBEAFE;border:2px solid #3B82F6;border-radius:8px;padding:1rem">
+            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#1E40AF;margin-bottom:.75rem">🤖 AI Coach</div>
+            <div style="font-size:.85rem;color:#64748B">⏳ Analyzing gate...</div>
+          </div>
+
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
             <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6B5D4F">Your Answer:</label>
-            <button
-              onclick="getAICoaching('${stageId}', '${gate.field}')"
-              style="background:#3B82F6;color:#fff;border:none;padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s"
-              onmouseover="this.style.background='#2563EB'"
-              onmouseout="this.style.background='#3B82F6'">
-              🤖 Get AI Coaching
-            </button>
           </div>
           <textarea
             id="gate-${gate.field}"
             onchange="saveGateAnswer('${gate.field}')"
             style="width:100%;background:#fff;border:1.5px solid #D1C7B7;border-radius:8px;padding:.75rem;font-family:inherit;font-size:.85rem;color:#0D0C08;resize:vertical;min-height:80px"
-            placeholder="Enter your answer here (be specific, use their words, include evidence)...">${opportunity[gate.field + '_notes'] || ''}</textarea>
+            placeholder="Review AI draft above, then accept or type your own...">${opportunity[gate.field + '_notes'] || ''}</textarea>
 
           <!-- Evidence Strength Calibration -->
           <div style="background:#F8F5EF;border:1.5px solid #D1C7B7;border-radius:8px;padding:1rem;margin-top:1rem">
@@ -762,17 +761,6 @@ function renderGates(gates, opportunity) {
             </div>
           </div>
 
-          <!-- AI Coaching Result -->
-          <div id="ai-coaching-${gate.field}" style="display:none;margin-top:1rem;background:#DBEAFE;border:2px solid #3B82F6;border-radius:8px;padding:1rem">
-            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#1E40AF;margin-bottom:.75rem">🤖 AI Coach Says:</div>
-            <div id="ai-draft-${gate.field}" style="margin-bottom:1rem"></div>
-            <div id="ai-weak-${gate.field}" style="margin-bottom:1rem"></div>
-            <div id="ai-next-${gate.field}"></div>
-            <div style="margin-top:1rem;display:flex;gap:.5rem">
-              <button onclick="acceptAIDraft('${gate.field}')" style="background:#10B981;color:#fff;border:none;padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer">✓ Use This Draft</button>
-              <button onclick="dismissAICoaching('${gate.field}')" style="background:#6B7280;color:#fff;border:none;padding:.5rem 1rem;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer">✕ Dismiss</button>
-            </div>
-          </div>
 
           <div style="margin-top:.75rem">
             <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
@@ -1103,6 +1091,14 @@ window.selectRoadmapStage = function(stageId) {
 
   // Re-initialize strength labels for new stage
   initStrengthLabels(currentOpportunity, IGNITE_ROADMAP.find(s => s.id === stageId));
+
+  // Auto-trigger AI coaching for all gates in this stage
+  const stage = IGNITE_ROADMAP.find(s => s.id === stageId);
+  if (stage && stage.gates) {
+    stage.gates.forEach((gate, idx) => {
+      setTimeout(() => getAICoaching(stageId, gate.field), idx * 500);
+    });
+  }
 };
 
 function initStrengthLabels(opportunity, stage) {
@@ -1217,10 +1213,8 @@ window.saveGateStrength = async function(field) {
 
 // AI Coaching functions
 window.getAICoaching = async function(stageId, gateField) {
-  const btn = event.target;
-  const originalText = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Thinking...';
+  const container = document.getElementById(`ai-coaching-${gateField}`);
+  if (!container) return;
 
   try {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
@@ -1247,64 +1241,55 @@ window.getAICoaching = async function(stageId, gateField) {
     let coaching;
     try {
       const responseText = await response.text();
-      // Step 1: Strip markdown fences
       let cleaned = responseText
         .replace(/```json\n?/gi, '')
         .replace(/```\n?/gi, '')
         .trim();
 
-      // Step 2: Extract JSON object only (everything between first { and last })
       const firstBrace = cleaned.indexOf('{');
       const lastBrace = cleaned.lastIndexOf('}');
       if (firstBrace !== -1 && lastBrace !== -1) {
         cleaned = cleaned.substring(firstBrace, lastBrace + 1);
       }
 
-      // Step 3: Parse JSON
       coaching = JSON.parse(cleaned);
     } catch (parseErr) {
       console.error('[AI Coaching] JSON parse error:', parseErr);
       throw new Error('Failed to parse AI response');
     }
 
-    // Display coaching
-    const container = document.getElementById(`ai-coaching-${gateField}`);
-    const draftEl = document.getElementById(`ai-draft-${gateField}`);
-    const weakEl = document.getElementById(`ai-weak-${gateField}`);
-    const nextEl = document.getElementById(`ai-next-${gateField}`);
+    // Confidence badge
+    const badges = { low: '#FCA5A5', medium: '#FCD34D', high: '#6EE7B7' };
+    const badgeColor = badges[coaching.confidence] || badges.medium;
 
-    // Store draft in data attribute for later use
-    draftEl.dataset.draft = coaching.draft;
-
-    draftEl.innerHTML = `
-      <div style="font-size:.75rem;font-weight:700;color:#1E40AF;margin-bottom:.25rem">DRAFT ANSWER (review & edit before using):</div>
-      <div style="background:#fff;border-radius:6px;padding:.75rem;font-size:.85rem;color:#0D0C08;line-height:1.6">${coaching.draft}</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.5rem">
-        <div style="font-size:.7rem;color:#6B5D4F">Confidence: ${coaching.confidence.toUpperCase()}</div>
-        <button
-          onclick="document.getElementById('gate-${gateField}').value = this.closest('[id^=ai-draft-]').dataset.draft; document.getElementById('gate-${gateField}').dispatchEvent(new Event('change'));"
-          style="background:#10B981;color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer"
-          onmouseover="this.style.background='#059669'"
-          onmouseout="this.style.background='#10B981'">
-          ✅ Use This Draft
-        </button>
+    // Render coaching with checkbox to accept
+    container.innerHTML = `
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#1E40AF;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+        🤖 AI Coach Suggests
+        <span style="background:${badgeColor};color:#0D0C08;padding:.2rem .5rem;border-radius:4px;font-size:.65rem">${coaching.confidence.toUpperCase()}</span>
       </div>
-    `;
 
-    if (coaching.weakEvidence && coaching.weakEvidence.length > 0) {
-      weakEl.innerHTML = `
-        <div style="font-size:.75rem;font-weight:700;color:#DC2626;margin-bottom:.5rem">⚠️ WEAK EVIDENCE FLAGS:</div>
-        <ul style="margin:0;padding-left:1.5rem;color:#991B1B;font-size:.8rem;line-height:1.8">
-          ${coaching.weakEvidence.map(flag => `<li>${flag}</li>`).join('')}
-        </ul>
-      `;
-    } else {
-      weakEl.innerHTML = '';
-    }
+      <div style="background:#fff;border-radius:6px;padding:.75rem;margin-bottom:.75rem">
+        <div style="font-size:.85rem;color:#0D0C08;line-height:1.6;margin-bottom:.5rem">${coaching.draft}</div>
+        ${coaching.weakEvidence && coaching.weakEvidence.length > 0 ? `
+          <div style="font-size:.75rem;color:#DC2626;margin-top:.5rem;padding:.5rem;background:#FEE;border-radius:4px">
+            ⚠️ ${coaching.weakEvidence.join(' • ')}
+          </div>
+        ` : ''}
+      </div>
 
-    nextEl.innerHTML = `
-      <div style="font-size:.75rem;font-weight:700;color:#065F46;margin-bottom:.5rem">✅ NEXT BEST ACTION:</div>
-      <div style="background:#D1FAE5;border-radius:6px;padding:.75rem;font-size:.85rem;color:#065F46;font-weight:600">${coaching.nextAction}</div>
+      <label style="display:flex;align-items:center;gap:.75rem;cursor:pointer;padding:.75rem;background:#F0FDF4;border:2px solid #86EFAC;border-radius:6px;margin-bottom:.75rem">
+        <input
+          type="checkbox"
+          id="accept-${gateField}"
+          onchange="acceptAIDraft('${stageId}', '${gateField}')"
+          style="width:20px;height:20px;cursor:pointer">
+        <span style="font-size:.85rem;color:#065F46;font-weight:700">✓ Accept this draft and move to next gate</span>
+      </label>
+
+      <div style="font-size:.75rem;color:#065F46;padding:.5rem;background:#F0FDF4;border-radius:4px">
+        🎯 ${coaching.nextAction}
+      </div>
     `;
 
     container.style.display = 'block';
@@ -1312,11 +1297,73 @@ window.getAICoaching = async function(stageId, gateField) {
 
   } catch (err) {
     console.error('[AI Coaching] Error:', err);
-    alert('AI coaching failed: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = originalText;
+    container.innerHTML = `
+      <div style="font-size:.85rem;color:#DC2626">AI unavailable. Type your answer manually.</div>
+    `;
   }
+}
+
+// Accept AI draft and move to next gate
+window.acceptAIDraft = function(stageId, gateField) {
+  const checkbox = document.getElementById(`accept-${gateField}`);
+  if (!checkbox.checked) return;
+
+  // Get the draft text from AI coaching container
+  const container = document.getElementById(`ai-coaching-${gateField}`);
+  const draftText = container.querySelector('[style*="line-height:1.6"]').textContent.trim();
+
+  // Fill textarea
+  const textarea = document.getElementById(`gate-${gateField}`);
+  textarea.value = draftText;
+  textarea.dispatchEvent(new Event('change'));
+
+  // Mark gate as met
+  const gateCheckbox = document.getElementById(`check-${gateField}`);
+  if (gateCheckbox) {
+    gateCheckbox.checked = true;
+    gateCheckbox.dispatchEvent(new Event('change'));
+  }
+
+  // Add to summary
+  if (!window.aiDraftSummary) window.aiDraftSummary = [];
+  window.aiDraftSummary.push({ field: gateField, draft: draftText });
+  updateAISummary();
+
+  // Find next gate and scroll to it
+  const allGates = Array.from(document.querySelectorAll('[id^="ai-coaching-"]'));
+  const currentIndex = allGates.findIndex(el => el.id === `ai-coaching-${gateField}`);
+  if (currentIndex !== -1 && currentIndex < allGates.length - 1) {
+    const nextGate = allGates[currentIndex + 1];
+    setTimeout(() => {
+      nextGate.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }
+}
+
+// Update summary panel at bottom
+window.updateAISummary = function() {
+  let summaryContainer = document.getElementById('ai-summary-panel');
+  if (!summaryContainer) {
+    summaryContainer = document.createElement('div');
+    summaryContainer.id = 'ai-summary-panel';
+    summaryContainer.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#FFF;border-top:3px solid #3B82F6;padding:1rem;box-shadow:0 -4px 12px rgba(0,0,0,0.1);max-height:200px;overflow-y:auto;z-index:1000';
+    document.body.appendChild(summaryContainer);
+  }
+
+  if (!window.aiDraftSummary || window.aiDraftSummary.length === 0) {
+    summaryContainer.style.display = 'none';
+    return;
+  }
+
+  summaryContainer.style.display = 'block';
+  summaryContainer.innerHTML = `
+    <div style="font-size:.85rem;font-weight:700;color:#1E40AF;margin-bottom:.5rem">📋 AI Drafts Accepted (${window.aiDraftSummary.length})</div>
+    ${window.aiDraftSummary.map(item => `
+      <div style="font-size:.75rem;color:#0D0C08;margin-bottom:.25rem">
+        <strong>${item.field}:</strong> ${item.draft.substring(0, 100)}${item.draft.length > 100 ? '...' : ''}
+      </div>
+    `).join('')}
+  `;
 };
 
 window.acceptAIDraft = function(gateField) {
