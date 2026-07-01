@@ -107,8 +107,17 @@ function populateFormFromDatabase(opp) {
 /**
  * Save current Sales OS state to database
  * Debounced to avoid excessive writes
+ *
+ * IMPORTANT: Only syncs if there's an existing opportunity ID
+ * This prevents auto-creating duplicates on page load with stale localStorage
  */
 function saveOpportunityToDatabase() {
+  // Don't sync if no opportunity is loaded
+  if (!_currentOpportunityId) {
+    console.log('[OpportunitySync] Skipping save - no opportunity loaded. Use CRM to create opportunities.');
+    return;
+  }
+
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
     await _performSync();
