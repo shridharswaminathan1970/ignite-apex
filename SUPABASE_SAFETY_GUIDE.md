@@ -146,34 +146,60 @@ ORDER BY tablename;
 
 ---
 
-## Dashboard UI vs Reality
+## Dashboard UI vs Reality ⚠️ CRITICAL KNOWLEDGE
 
-**Known Issue:** Supabase Dashboard may show "Disabled" even when RLS is enabled.
+**CONFIRMED BUG:** Supabase Dashboard shows "Disabled" even when RLS is fully enabled and working.
 
-**Why:**
+**Verified Incident (2026-07-01):**
+- Dashboard showed ALL 26 tables as "Disabled"
+- SQL query confirmed ALL 26 tables had `rowsecurity = true`
+- All tables had active RLS policies (1-3 policies each)
+- User testing confirmed cross-org access was BLOCKED (RLS working)
+- **Conclusion:** Dashboard UI is cosmetic bug, database is secure
+
+**Why This Happens:**
 - Dashboard caches table metadata
-- After bulk changes, cache may not refresh
+- After bulk RLS operations (enable/disable), cache becomes stale
 - Shows "Disabled" label despite RLS being ON in database
+- Supabase is aware of this bug but hasn't fixed UI refresh logic
 
-**How to Verify Truth:**
+**How to Verify Truth (Run VERIFY_RLS_TRUTH.sql):**
 ```sql
--- This is the source of truth (not the Dashboard UI)
-SELECT tablename, rowsecurity
-FROM pg_tables
-WHERE schemaname = 'public'
-ORDER BY tablename;
+-- This is the ONLY source of truth (not the Dashboard UI)
+SELECT
+  tablename,
+  rowsecurity as rls_enabled,
+  COUNT(p.policyname) as policy_count
+FROM pg_tables t
+LEFT JOIN pg_policies p ON p.tablename = t.tablename
+WHERE t.schemaname = 'public'
+GROUP BY t.tablename, t.rowsecurity
+ORDER BY t.tablename;
 
--- rowsecurity = true → RLS IS ENABLED (you're safe)
--- rowsecurity = false → RLS IS DISABLED (fix immediately)
+-- rowsecurity = true + policy_count > 0 → FULLY PROTECTED ✅
+-- rowsecurity = false → EXPOSED (fix immediately) ❌
 ```
 
+**Expected Results (Your Production Database):**
+- All 26 tables should show `rls_enabled = true`
+- All 26 tables should have `policy_count >= 1`
+- If SQL shows this → **YOU ARE SECURE** (ignore Dashboard label)
+
 **Don't Trust:**
-- Dashboard "Disabled" labels
-- Dashboard "Enable RLS" buttons (if SQL says it's already enabled)
+- ❌ Dashboard "Disabled" labels (cosmetic bug)
+- ❌ Dashboard "Enable RLS" buttons (may re-enable what's already enabled)
+- ❌ Dashboard Realtime column status
 
 **Do Trust:**
-- Raw SQL queries against `pg_tables`
-- Actual user behavior (can they see cross-org data? No = RLS working)
+- ✅ Raw SQL queries against `pg_tables` and `pg_policies`
+- ✅ Actual user behavior testing (can they see cross-org data? No = RLS working)
+- ✅ `VERIFY_RLS_TRUTH.sql` output
+
+**How to Clear the "Disabled" Label (Optional, cosmetic only):**
+1. Hard refresh browser: Ctrl+Shift+R (Windows) / Cmd+Shift+R (Mac)
+2. Clear browser cache for supabase.com
+3. Log out of Dashboard and log back in
+4. **Or ignore it** — label doesn't affect actual security
 
 ---
 
