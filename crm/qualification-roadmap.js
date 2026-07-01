@@ -829,6 +829,11 @@ window.QualificationRoadmap = {
 
     // Initialize strength labels
     initStrengthLabels(opportunity, IGNITE_ROADMAP.find(s => s.id === currentStageId));
+
+    // Initialize AI Co-Pilot
+    if (window.initAICoPilot) {
+      window.initAICoPilot(opportunity.id);
+    }
   }
 };
 
@@ -903,6 +908,11 @@ window.toggleGate = async function(field) {
     await loadOpportunity(oppId);
 
     console.log(`[Roadmap] Toggled ${field} = ${checked}`);
+
+    // Trigger AI coaching after toggle
+    if (window.triggerCoachingAfterSave) {
+      window.triggerCoachingAfterSave(oppId, field);
+    }
   } catch (err) {
     console.error(`[Roadmap] Toggle error:`, err);
   }
@@ -936,6 +946,11 @@ window.saveGateStrength = async function(field) {
       .update({ [field + '_strength']: value })
       .eq('id', oppId);
     console.log(`[Roadmap] Saved ${field}_strength = ${value}`);
+
+    // Trigger AI coaching after save
+    if (window.triggerCoachingAfterSave) {
+      window.triggerCoachingAfterSave(oppId, field);
+    }
   } catch (err) {
     console.error(`[Roadmap] Strength save error:`, err);
   }
